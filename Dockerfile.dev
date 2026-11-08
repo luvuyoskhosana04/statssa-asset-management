@@ -1,0 +1,14 @@
+FROM snipe/snipe-it:v8.8.0
+WORKDIR /var/www/html
+USER root
+COPY --chown=docker:staff app ./app
+COPY --chown=docker:staff bootstrap ./bootstrap
+COPY --chown=docker:staff config ./config
+COPY --chown=docker:staff database ./database
+COPY --chown=docker:staff resources ./resources
+COPY --chown=docker:staff routes ./routes
+COPY --chown=docker:staff public ./public
+COPY --chown=docker:staff composer.json composer.lock artisan ./
+USER docker
+RUN composer install --no-dev --no-interaction --prefer-dist --no-progress
+USER root

@@ -1,0 +1,80 @@
+@font-face{font-family:Inter;src:url('../fonts/Inter-Variable.woff2') format('woff2');font-weight:100 900;font-display:swap}
+:root{color-scheme:light;--ink:#262529;--muted:#77757e;--purple:#7050cf;--purple-hover:#5d3bbb;--line:#e7e3f0}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--ink);font-family:Inter,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.page-shell{max-width:1580px;min-height:100svh;margin:auto;padding:35px 5.2vw 24px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.page-shell::before,.page-shell::after{content:"";pointer-events:none;position:absolute;border:1px solid #f4f2f7;border-radius:45%;z-index:-1;transform:rotate(-28deg)}
+.page-shell::before{width:900px;height:600px;left:-740px;top:240px}
+.page-shell::after{width:1100px;height:500px;right:-660px;top:-350px}
+.welcome-header{display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:38px}
+.wordmark{display:flex;align-items:center}
+.official-logo{display:block;width:260px;max-width:100%;height:auto}
+.header-note{font-size:13px;color:var(--muted)}
+main{flex:1;display:flex;align-items:center;padding:30px 0 32px}
+.welcome-grid{width:100%;max-width:1180px;margin-inline:auto;display:grid;grid-template-columns:minmax(0,.88fr) minmax(0,1.12fr);gap:34px;align-items:center}
+.welcome-copy{padding:0 0 0 8px;max-width:550px}
+h1{margin:0;font-size:clamp(54px,5.1vw,76px);line-height:1.1;font-weight:500;letter-spacing:-3.8px}
+h1>span{display:block}
+.welcome-intro{font-size:clamp(25px,2.65vw,38px);line-height:1.3;letter-spacing:-1.7px;margin-bottom:13px;font-weight:400}
+.platform-name{font-weight:760;position:relative;white-space:nowrap;letter-spacing:-4.1px}
+.heading-orbit{display:inline-block;width:24px;height:24px;background:#bde8f4;border-radius:50% 50% 50% 6px;margin-left:13px;vertical-align:top;position:relative;top:9px;transform:rotate(-15deg)}
+.heading-orbit::after{content:"";width:13px;height:7px;border:2px solid white;border-radius:50%;position:absolute;top:6px;left:5px;transform:rotate(-28deg)}
+.welcome-description{max-width:430px;margin:26px 0 30px;font-size:17px;line-height:1.65;color:var(--muted);letter-spacing:-.35px}
+.role-form{max-width:460px}
+.role-form label{display:block;font-size:13px;font-weight:650;margin:0 0 10px;color:#514a60}
+.sign-in-controls{display:grid;grid-template-columns:minmax(0,1fr) 145px;gap:12px}
+.select-wrap{position:relative;min-width:0}
+.select-wrap::after{content:"";border:solid #766b88;border-width:0 1.8px 1.8px 0;padding:3px;transform:rotate(45deg);position:absolute;right:19px;top:23px;pointer-events:none}
+select{font:inherit;font-size:14px;width:100%;height:56px;border:1px solid var(--line);border-radius:15px;background:#fff;appearance:none;padding:0 39px 0 18px;color:var(--ink);cursor:pointer;transition:border-color .15s}
+select:has(option[value=""]:checked){color:#746c7a}
+select:hover{border-color:#b9a6df}
+.sign-in-button{display:flex;justify-content:space-between;align-items:center;gap:12px;height:56px;padding:0 20px;border:0;border-radius:28px;background:var(--purple);color:#fff;font:inherit;font-size:15px;font-weight:550;cursor:pointer;transition:background .15s,transform .15s}
+.sign-in-button:hover{background:var(--purple-hover);transform:translateY(-1px)}
+.sign-in-button:active{transform:translateY(0)}
+.sign-in-button:disabled{opacity:.75;cursor:wait;transform:none}
+.button-arrow{font-size:22px;line-height:1}
+select:focus-visible,button:focus-visible{outline:3px solid #bea7ef;outline-offset:4px}
+.role-hint{font-size:12px;color:#746c7a;line-height:1.5;margin:13px 0 0}
+.role-error{font-size:13px;line-height:1.5;color:#aa2445;margin:12px 0 0}
+select[aria-invalid="true"]{border-color:#aa2445}
+.welcome-artwork{margin:0;position:relative;max-width:590px;justify-self:end;width:100%}
+.welcome-artwork img{display:block;width:100%;height:auto;mix-blend-mode:multiply}
+.welcome-footer{display:flex;justify-content:space-between;gap:20px;font-size:11px;line-height:1.5;color:#776f7f;padding-top:15px}
+.skip-link{position:fixed;left:20px;top:-70px;z-index:10;background:#fff;color:#5d3bbb;padding:12px 20px;border:2px solid var(--purple);border-radius:8px}
+.skip-link:focus{top:16px}
+@media(min-width:1500px){.page-shell{padding-left:80px;padding-right:80px}.welcome-grid{gap:58px}}
+@media(max-width:1080px){.page-shell{padding:28px 4vw 20px}.welcome-grid{gap:20px;grid-template-columns:1fr 1.05fr}h1{font-size:56px;letter-spacing:-3.3px}.platform-name{letter-spacing:-4px}.welcome-intro{font-size:28px}.welcome-description{font-size:16px;margin:24px 0 28px}.sign-in-controls{grid-template-columns:minmax(0,1fr) 126px;gap:9px}.sign-in-button{padding:0 17px}.heading-orbit{width:20px;height:20px;margin-left:9px;top:7px}.heading-orbit::after{top:4px;left:4px}}
+@media(max-width:760px){.page-shell{padding:24px 6vw 20px}.header-note{font-size:11px}.official-logo{width:184px}main{padding:44px 0 22px}.welcome-grid{grid-template-columns:1fr;gap:38px}.welcome-copy{padding:0;max-width:none}h1{font-size:clamp(52px,11.5vw,72px);line-height:1.06}.welcome-intro{font-size:clamp(27px,6vw,36px);margin-bottom:12px}.welcome-description{max-width:440px;margin:24px 0 28px;line-height:1.6}.role-form{max-width:none}.welcome-artwork{max-width:460px;justify-self:center}.welcome-footer{font-size:10px}.heading-orbit{width:23px;height:23px}.heading-orbit::after{top:6px;left:5px}}
+@media(max-width:380px){.header-note{display:none}.sign-in-controls{grid-template-columns:1fr}.sign-in-button{justify-content:center}.welcome-footer span:last-child{display:none}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+/* The real sign-in surface is lifted into place by a small hand. */
+.welcome-intro-playing{overflow:hidden;background:#f3f3f6}
+.welcome-intro-playing .page-shell{background:#fff;box-shadow:0 -8px 30px #25232d0d;will-change:transform}
+.welcome-reveal[hidden]{display:none}
+.welcome-reveal{position:fixed;inset:0;z-index:100;isolation:isolate}
+.reveal-stage{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.reveal-creases{position:absolute;top:-35px;left:calc(50% - 180px);width:360px;height:220px;opacity:1;will-change:transform;pointer-events:none;filter:blur(.8px)}
+.reveal-grip-shadow{position:absolute;top:-8px;left:calc(50% - 32px);width:64px;height:22px;border-radius:50%;background:radial-gradient(ellipse,#443b504d,transparent 70%);opacity:0;will-change:transform}
+.reveal-hand{position:absolute;top:-208px;left:calc(50% - 72px);width:144px;height:216px;transform-origin:50% 100%;will-change:transform;filter:drop-shadow(3px 5px 5px #34234320)}
+.reveal-hand img{width:100%;height:100%;object-fit:contain;object-position:center bottom;display:block}
+.reveal-skip{position:absolute;right:28px;bottom:26px;min-height:44px;padding:10px 18px;border:1px solid #bfb5cf;border-radius:24px;background:#ffffffed;color:#40364e;font:inherit;font-size:13px;cursor:pointer}
+.reveal-skip:hover{background:#f5f1fb;border-color:#9583ae}
+@media(max-width:760px){.reveal-skip{right:20px;bottom:20px}.reveal-creases{width:260px;height:159px;left:calc(50% - 130px);top:-25.3px}.reveal-hand{width:116px;height:174px;left:calc(50% - 58px);top:-168px}}
+@media(prefers-reduced-motion:reduce){.welcome-reveal{display:none!important}}
+
+.welcome-footer .support-link{color:#2563a6;text-decoration:underline;text-underline-offset:3px;display:inline-flex;align-items:center;min-height:44px}
+.welcome-footer .support-link:hover{color:#1d4e85}
+.welcome-footer .support-link:focus-visible{outline:2px solid #2563a6;outline-offset:4px;border-radius:2px}
+
+/* Credential sign-in retains the welcome screen's visual language. */
+.credential-field{margin-bottom:16px}
+.stats-sa-welcome .credential-field input{display:block;width:100%;min-width:0;height:50px;border:1px solid var(--line);border-radius:8px;padding:0 16px;background:#fff;color:var(--ink);font:inherit;font-size:14px;transition:border-color .2s}
+.stats-sa-welcome .credential-field input::placeholder{color:#87847d;opacity:1}
+.stats-sa-welcome .credential-field input:hover{border-color:#996735}
+.stats-sa-welcome .credential-field input:focus-visible{outline:2px solid #996735;outline-offset:3px}
+.stats-sa-welcome .credential-field input[aria-invalid=true]{border-color:#bc3434}
+.credential-actions{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.credential-actions a{color:#2563a6;font-size:13px;min-height:44px;display:inline-flex;align-items:center;text-underline-offset:3px}
+.credential-actions .sign-in-button{min-width:145px;height:50px}
+@media(max-width:380px){.credential-actions{flex-wrap:wrap}.credential-actions .sign-in-button{width:100%}}

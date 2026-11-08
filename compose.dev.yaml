@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "127.0.0.1:${APP_PORT:-8000}:80"
+    env_file: .env
+    volumes:
+      - app_storage:/var/lib/snipeit
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: mariadb:11.4.7
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+volumes:
+  db_data:
+  app_storage:
