@@ -77,7 +77,7 @@
         shell.style.removeProperty('transform-origin');
         document.body.classList.remove('welcome-intro-playing');
         if (overlay.contains(document.activeElement)) {
-            (previousFocus && previousFocus !== document.body ? previousFocus : document.getElementById('role')).focus({preventScroll: true});
+            (previousFocus && previousFocus !== document.body ? previousFocus : document.getElementById('username')).focus({preventScroll: true});
         }
     }
     function render(now) {
