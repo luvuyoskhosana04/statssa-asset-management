@@ -8,6 +8,7 @@
 
 {{-- Page content --}}
 @section('inputFields')
+<div class="kit-definition-help"><p class="kit-eyebrow">{{ trans('admin/kits/general.template_label') }}</p><p>{{ trans('admin/kits/general.template_help') }}</p></div>
 @include ('partials.forms.edit.name', ['translated_name' => trans('general.name')])
 @stop
 
@@ -29,12 +30,12 @@
                         </h3>
                     </div>
                     <div class="col-md-4 text-right">
-                        <a href="{{ route('modal.show', ['type' => 'kit-model', 'itemId' => $item->id]) }}" data-refresh="kitModelsTable" data-toggle="modal" data-target="#createModal" class="btn btn-theme btn-sm pull-right"><i class="fas fa-plus icon-white"></i> {{ trans('button.append')}}</a>
+                        <a href="{{ route('modal.show', ['type' => 'kit-model', 'itemId' => $item->id]) }}" data-refresh="kitModelsTable" data-toggle="modal" data-target="#createModal" class="btn btn-theme btn-sm pull-right"><i class="fas fa-plus icon-white"></i> {{ trans('admin/kits/general.add_model')}}</a>
                     </div>
                 </div>
             </div>
             <div class="box-body">
-
+                <p class="kit-model-help">{{ trans('admin/kits/general.model_help') }}</p>
                 <table
                 data-cookie-id-table="kitModelsTable"
                 data-columns="{{ \App\Presenters\PredefinedKitPresenter::dataTableModels() }}"

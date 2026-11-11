@@ -285,8 +285,8 @@
                     var permissionSummary = permissionsEditable ? allow + ' allowed, ' + deny + ' denied' + (kind === 'user' ? '; remaining settings inherit their defaults.' : '.') : 'Read-only for your role.';
                     dl.append(node('dt', '', 'Individual permissions'), node('dd', '', permissionSummary));
                 }
-                if (!dl.children.length) dl.append(node('dt', '', 'Details'), node('dd', '', 'No additional information provided.'));
-                section.append(dl);
+                if (!dl.children.length && !(kind === 'kit' && i === 1)) dl.append(node('dt', '', 'Details'), node('dd', '', 'No additional information provided.'));
+                if (dl.children.length) section.append(dl);
                 review.append(section);
             });
         }

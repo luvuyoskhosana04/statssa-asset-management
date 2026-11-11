@@ -10,6 +10,14 @@
 
 {{-- Content --}}
 @section('content')
+    <section class="kit-workspace-intro">
+        <div><p class="kit-eyebrow">{{ trans('admin/kits/general.template_label') }}</p><h2>{{ trans('admin/kits/general.workspace_title') }}</h2><p>{{ trans('admin/kits/general.workspace_help') }}</p></div>
+        <ol class="kit-process-guide" aria-label="{{ trans('general.kits') }}">
+            <li><span>1</span>{{ trans('admin/kits/general.define_contents') }}</li>
+            <li><span>2</span>{{ trans('admin/kits/general.review_stock') }}</li>
+            <li><span>3</span>{{ trans('admin/kits/general.assign_person') }}</li>
+        </ol>
+    </section>
     <x-container>
         <x-box name="kits" sr_only_title>
 

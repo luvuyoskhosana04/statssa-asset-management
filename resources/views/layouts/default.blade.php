@@ -51,7 +51,7 @@
     @endif
 
 
-        <link rel="stylesheet" href="{{ asset('css/interface-refresh.css') }}?v=75">
+        <link rel="stylesheet" href="{{ asset('css/interface-refresh.css') }}?v=76">
         <link rel="stylesheet" href="{{ asset('css/icon-states.css') }}?v=2">
         <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=39">
 
@@ -1491,7 +1491,7 @@
         <script defer src="{{ asset('js/table-column-filters.js') }}?v=7" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/table-pagination.js') }}?v=1" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/interface-motion.js') }}?v=8" nonce="{{ csrf_token() }}"></script>
-        <script defer src="{{ asset('js/form-stepper.js') }}?v=18" nonce="{{ csrf_token() }}"></script>
+        <script defer src="{{ asset('js/form-stepper.js') }}?v=19" nonce="{{ csrf_token() }}"></script>
         @if (request()->routeIs('settings.*') && ! request()->routeIs('settings.index', 'settings.ldap.wizard'))
             <script defer src="{{ asset('js/settings-tabs.js') }}?v=1" nonce="{{ csrf_token() }}"></script>
         @endif
