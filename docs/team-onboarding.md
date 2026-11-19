@@ -62,6 +62,8 @@ git switch development
 git pull --ff-only origin development
 ```
 
+If your running design preview is in a separate checkout, pulling this repository does not update that preview. Ask Codex to compare the checkouts and synchronise reviewed source changes while preserving local environment files, runtime overrides and uncommitted work.
+
 Rebuild the local application when source changed. Run migrations only when the reviewed change requires them. Pulling code does not synchronise databases or uploaded files and does not deploy the AWS environment.
 
 To inspect an unmerged branch, fetch it and check it out separately. Do not merge it into your own task branch just to preview it. Split tasks by feature to reduce editing conflicts, and resolve conflicts against current development before merging.
