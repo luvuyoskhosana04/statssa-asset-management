@@ -27,7 +27,7 @@ Inspect stylesheet order in `resources/views/layouts/default.blade.php` and `lay
 
 ## Workflows to preserve
 
-- Credentials sign-in: `auth/login.blade.php`, `Auth/LoginController.php`, `auth/partials/` and the welcome layout. Existing account permissions control access.
+- Normal credentials sign-in: `auth/login.blade.php`, `Auth/LoginController.php`, `auth/partials/` and the welcome layout. Existing account permissions control access.
 - Asset, license and user creation: feature edit views and `form-stepper.js`. Review final values before submission and preserve values on Back.
 - Import: `app/Livewire/Importer.php` and `resources/views/livewire/importer.blade.php`. Keep type, mapping and preview separate. Cancellation must reflect what has actually completed.
 - Inventory: feature index view, API controller and transformer. Preserve identifier columns, explicit assignment context and checkin/checkout actions.
@@ -37,3 +37,5 @@ Inspect stylesheet order in `resources/views/layouts/default.blade.php` and `lay
 ## UI review
 
 Check desktop and narrow mobile widths, keyboard navigation, visible labels and errors, reduced motion, light/dark themes, empty/loading states and long values. Preserve bronze primary actions, blue record links and red destructive/error states. Do not use colour alone for status.
+
+The optional local demo uses `auth/role-login.blade.php` and `auth.demo_role_login`. It is disabled by default and rejected unless the configured application URL is localhost. It selects existing demo accounts; it does not create accounts or change permissions.

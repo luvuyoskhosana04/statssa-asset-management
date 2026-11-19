@@ -6,6 +6,7 @@ Full application source for the Stats SA asset management solution, built on Sni
 
 | I need to... | Open |
 | --- | --- |
+| Join the project and work in Codex | [Team onboarding](docs/team-onboarding.md) |
 | Run the project | [Local setup](docs/getting-started.md) |
 | Find a screen or form | [Page and module map](docs/pages/README.md) |
 | Understand a role | [Role guides](docs/roles/README.md) |
@@ -34,7 +35,7 @@ docs/roles/          Seven role guides and permission references
 
 Roles share feature pages. Authorization controls which pages and actions a user can access. Do not copy the same page into separate role folders.
 
-Sign-in uses username and password. The account's existing permissions determine access; users cannot choose their own role at sign-in.
+Normal sign-in uses username and password. The local design demo can opt into the restored role dropdown with `DEMO_ROLE_LOGIN=true`; a server-side localhost guard rejects that mode on hosted URLs. Existing role accounts must already exist. Keep this flag off on shared and production deployments.
 
 This repository contains source, not a running database. Local credentials, records, uploaded documents, logs and dependencies are excluded. Set up a fresh local database or arrange an authorised data transfer separately.
 

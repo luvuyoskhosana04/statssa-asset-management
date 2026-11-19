@@ -1,5 +1,7 @@
 # Developer guide
 
+Start with [team onboarding](team-onboarding.md) when joining the project.
+
 1. [Get running](getting-started.md).
 2. Find the feature in the [page map](pages/README.md).
 3. Review the relevant [role guide](roles/README.md).

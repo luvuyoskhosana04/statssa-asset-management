@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=28">
 </head>
 <body class="stats-sa-welcome">
-    <a class="skip-link" href="#username">{{ trans('auth/role-login.skip') }}</a>
+    <a class="skip-link" href="#{{ config('auth.demo_role_login') ? 'role' : 'username' }}">{{ trans('auth/role-login.skip') }}</a>
     <div class="page-shell">
         <header class="welcome-header">
             <div class="wordmark">

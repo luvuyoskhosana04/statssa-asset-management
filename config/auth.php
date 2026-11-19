@@ -175,4 +175,16 @@ return [
     */
     'login_autocomplete' => env('LOGIN_AUTOCOMPLETE', false),
 
+    'demo_role_login' => env('DEMO_ROLE_LOGIN', false),
+
+    'demo_roles' => [
+        'superuser' => 'admin',
+        'asset_manager' => 'assetmgr',
+        'license_manager' => 'licensemgr',
+        'accessory_manager' => 'accessorymgr',
+        'consumable_manager' => 'consumablemgr',
+        'component_manager' => 'componentmgr',
+        'user_manager' => 'usermgr',
+    ],
+
 ];

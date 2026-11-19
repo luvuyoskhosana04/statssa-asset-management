@@ -1,6 +1,15 @@
 # Validation
 
-## Checked on 8 November 2026
+## Local role selector checked on 19 November 2026
+
+- Restored the optional localhost role selector and its existing regression coverage.
+- 18 authentication feature tests passed with 96 assertions in an isolated MySQL test database.
+- Covers all seven demo roles, invalid/missing roles, unavailable/inactive accounts, unchanged permissions, restricted-role access, non-local URL rejection and credential sign-in when demo mode is off.
+- Controller syntax and PHP formatting passed. The local role dropdown was inspected in the browser.
+- Fresh developer Docker builds, hosted authentication and Dima's own machine remain to be checked on their receiving environments.
+
+
+## Historical credential checks on 8 November 2026
 
 - Credential sign-in: 12 feature tests, 49 assertions passed against a separate MySQL test database.
 - Covers all seven reference account roles, missing credentials, inactive users, incorrect passwords, removal of the passwordless bypass and restricted asset access for User Manager.

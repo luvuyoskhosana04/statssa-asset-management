@@ -1,3 +1,14 @@
+# Team collaboration
+
+- This repository belongs to `luvuyoskhosana04`. Keep its origin and ownership unchanged.
+- Read `docs/team-onboarding.md` and `CONTRIBUTING.md` before starting a contribution.
+- Fetch origin and create a feature branch from current `origin/development`. Check for uncommitted work first and preserve it.
+- Push contributor work to its feature branch and open a pull request targeting `development`. Do not push directly to `main` or `development`, merge, or deploy unless the owner explicitly requests that action.
+- Read the applicable `.ai/rules/index.md` entries. Keep shared pages organised by feature and check permissions for affected roles.
+- Never commit local environment files, credentials, database exports or uploaded records. Use a separate test database.
+- Do not enable password-free demo role access on hosted deployments. The optional role selector is restricted to localhost.
+- Use plain language and do not use em dashes in documentation, UI copy or handoff messages.
+
 <laravel-boost-guidelines>
 === .ai/snipe-it-architecture rules ===
 

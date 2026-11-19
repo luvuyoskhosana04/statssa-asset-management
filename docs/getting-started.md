@@ -7,6 +7,7 @@ Install Git, Python 3 and Docker Desktop (or a compatible Docker Compose engine)
 ```bash
 git clone https://github.com/luvuyoskhosana04/statssa-asset-management.git
 cd statssa-asset-management
+git switch development
 python3 scripts/init-local.py
 docker compose -f compose.dev.yaml up -d --build
 ```
@@ -41,7 +42,7 @@ Do not use the Python initializer unchanged for native PHP: it sets `DB_HOST=db`
 
 ## Users and roles
 
-Create user accounts and permission groups through the administrator UI. Reference role guides live in [roles](roles/README.md). Do not depend on factory/demo usernames or a shared password. The passwordless role picker has been removed.
+Create user accounts and permission groups through the administrator UI. Reference role guides live in [roles](roles/README.md). Do not depend on factory/demo usernames or a shared password. For the optional localhost role selector, see [team onboarding](team-onboarding.md#local-role-selector). Normal fresh installs use credential sign-in.
 
 ## What is not included
 

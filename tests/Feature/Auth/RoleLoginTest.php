@@ -8,69 +8,132 @@ use Tests\TestCase;
 
 class RoleLoginTest extends TestCase
 {
-    public function test_page_requires_credentials_instead_of_role_selection(): void
+    protected function setUp(): void
     {
-        config(['auth.demo_role_login' => true]);
-        User::factory()->create();
+        parent::setUp();
 
-        $this->get(route('login'))->assertOk()
-            ->assertSee('name="username"', false)
-            ->assertSee('type="password"', false)
-            ->assertDontSee('name="role"', false);
+        config(['auth.demo_role_login' => true, 'app.url' => 'http://localhost:8000']);
+        User::factory()->create();
     }
 
-    #[DataProvider('account_roles')]
-    public function test_credentials_sign_in_to_the_existing_account_without_changing_permissions(string $state): void
+    public function test_page_renders_with_roles_and_without_password_fields(): void
     {
-        $user = User::factory()->{$state}()->create();
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertSee('Welcome to the')
+            ->assertSee('Asset Manager')
+            ->assertSee('name="role"', false)
+            ->assertDontSee('type="password"', false);
+    }
+
+    #[DataProvider('demo_roles')]
+    public function test_selected_role_signs_in_without_a_password(string $role, string $state, string $username): void
+    {
+        $user = User::factory()->{$state}()->create(['username' => $username, 'last_login' => null]);
         $permissions = $user->permissions;
 
-        $this->post(route('login'), ['username' => $user->username, 'password' => 'password', 'role' => 'superuser'])
-            ->assertRedirect();
+        $this->post(route('login'), ['role' => $role])
+            ->assertRedirect(route('home'));
 
         $this->assertAuthenticatedAs($user);
+        $this->assertNotNull($user->fresh()->last_login);
         $this->assertSame($permissions, $user->fresh()->permissions);
     }
 
-    public static function account_roles(): array
+    public static function demo_roles(): array
     {
-        return array_map(fn ($state) => [$state], [
-            'firstAdmin', 'assetManager', 'licenseManager', 'accessoryManager',
-            'consumableManager', 'componentManager', 'userManager',
-        ]);
+        return [
+            ['superuser', 'firstAdmin', 'admin'],
+            ['asset_manager', 'assetManager', 'assetmgr'],
+            ['license_manager', 'licenseManager', 'licensemgr'],
+            ['accessory_manager', 'accessoryManager', 'accessorymgr'],
+            ['consumable_manager', 'consumableManager', 'consumablemgr'],
+            ['component_manager', 'componentManager', 'componentmgr'],
+            ['user_manager', 'userManager', 'usermgr'],
+        ];
     }
 
-    public function test_role_only_submission_cannot_bypass_password_authentication(): void
+    public function test_login_page_shows_session_recovery_errors(): void
     {
-        config(['auth.demo_role_login' => true]);
+        $this->withSession(['error' => 'Your session has expired. Please try again.'])
+            ->get(route('login'))
+            ->assertOk()
+            ->assertSee('Your session has expired. Please try again.');
+    }
+
+    #[DataProvider('invalid_roles')]
+    public function test_missing_or_unrecognised_roles_do_not_authenticate(array $input): void
+    {
+        $this->from(route('login'))->post(route('login'), $input)
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors('role');
+
+        $this->assertGuest();
+    }
+
+    public static function invalid_roles(): array
+    {
+        return [[[]], [['role' => 'administrator']], [['role' => ['superuser']]]];
+    }
+
+    public function test_inactive_role_account_cannot_sign_in(): void
+    {
+        User::factory()->assetManager()->create(['activated' => 0]);
+
+        $this->post(route('login'), ['role' => 'asset_manager'])
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors('role');
+
+        $this->assertGuest();
+    }
+
+    public function test_missing_role_account_cannot_sign_in(): void
+    {
+        $this->post(route('login'), ['role' => 'asset_manager'])
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors('role');
+
+        $this->assertGuest();
+    }
+
+    public function test_submitted_username_cannot_override_selected_role(): void
+    {
         User::factory()->firstAdmin()->create();
+        $manager = User::factory()->assetManager()->create();
+
+        $this->post(route('login'), ['role' => 'asset_manager', 'username' => 'admin'])
+            ->assertRedirect(route('home'));
+
+        $this->assertAuthenticatedAs($manager);
+    }
+
+    public function test_user_manager_cannot_access_assets_after_role_sign_in(): void
+    {
+        User::factory()->userManager()->create();
+
+        $this->post(route('login'), ['role' => 'user_manager']);
+
+        $this->get(route('hardware.index'))->assertForbidden();
+    }
+
+    public function test_role_login_is_refused_when_application_url_is_not_local(): void
+    {
+        config(['app.url' => 'https://example.com']);
+
+        $this->get('/login')->assertForbidden();
+        $this->post('/login', ['role' => 'superuser'])->assertForbidden();
+        $this->assertGuest();
+    }
+
+    public function test_disabling_demo_role_login_restores_password_sign_in(): void
+    {
+        config(['auth.demo_role_login' => false]);
+
+        $this->get(route('login'))->assertOk()->assertSee('type="password"', false);
 
         $this->from(route('login'))->post(route('login'), ['role' => 'superuser'])
             ->assertSessionHasErrors(['username', 'password']);
-        $this->assertGuest();
-    }
 
-    public function test_wrong_password_cannot_sign_in_and_is_not_rendered_back(): void
-    {
-        $user = User::factory()->create();
-        $this->from(route('login'))->post(route('login'), ['username' => $user->username, 'password' => 'incorrect-password'])
-            ->assertSessionHas('error');
         $this->assertGuest();
-        $this->get(route('login'))->assertDontSee('incorrect-password');
-    }
-
-    public function test_inactive_account_cannot_sign_in(): void
-    {
-        $user = User::factory()->create(['activated' => 0]);
-        $this->from(route('login'))->post(route('login'), ['username' => $user->username, 'password' => 'password'])
-            ->assertSessionHas('error');
-        $this->assertGuest();
-    }
-
-    public function test_user_manager_cannot_access_assets_after_sign_in(): void
-    {
-        $user = User::factory()->userManager()->create();
-        $this->post(route('login'), ['username' => $user->username, 'password' => 'password']);
-        $this->get(route('hardware.index'))->assertForbidden();
     }
 }

@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Redirect;
 
 /**
@@ -73,6 +74,16 @@ class LoginController extends Controller
 
     public function showLoginForm(Request $request)
     {
+        if (config('auth.demo_role_login')) {
+            $this->ensureLocalRoleLogin();
+
+            if (Auth::check()) {
+                return redirect()->route('home');
+            }
+
+            return view('auth.role-login', ['roles' => array_keys(config('auth.demo_roles'))]);
+        }
+
         $this->loginViaRemoteUser($request);
         $this->loginViaSaml($request);
         if (Auth::check()) {
@@ -280,6 +291,9 @@ class LoginController extends Controller
      */
     public function login(Request $request)
     {
+        if (config('auth.demo_role_login')) {
+            return $this->loginAsDemoRole($request);
+        }
         // If the environment is set to ALWAYS require SAML, return access denied
         if (config('app.require_saml')) {
             Log::debug('require SAML is enabled in the .env - return a 403');
@@ -358,6 +372,41 @@ class LoginController extends Controller
 
         // Redirect to the users page
         return Helper::safeIntended()->with('success', trans('auth/message.signin.success'));
+    }
+
+    private function ensureLocalRoleLogin(): void
+    {
+        abort_unless(in_array(parse_url(config('app.url'), PHP_URL_HOST), ['localhost', '127.0.0.1', '::1'], true), 403);
+    }
+
+    private function loginAsDemoRole(Request $request): RedirectResponse
+    {
+        $this->ensureLocalRoleLogin();
+
+        $roles = config('auth.demo_roles');
+        $validated = $request->validate([
+            'role' => ['required', 'string', Rule::in(array_keys($roles))],
+        ], [
+            'role.required' => trans('auth/role-login.choose_role'),
+            'role.in' => trans('auth/role-login.choose_role'),
+            'role.string' => trans('auth/role-login.choose_role'),
+        ]);
+
+        $user = User::where('username', $roles[$validated['role']])->where('activated', 1)->first();
+
+        if (! $user) {
+            return redirect()->route('login')
+                ->withErrors(['role' => trans('auth/role-login.unavailable')])
+                ->withInput($request->only('role'));
+        }
+
+        Auth::login($user);
+        $request->session()->regenerate();
+        $request->session()->forget(['loggedout', 'url.intended', 'backUrl']);
+        $user->last_login = now();
+        $user->saveQuietly();
+
+        return redirect()->route('home');
     }
 
     /**

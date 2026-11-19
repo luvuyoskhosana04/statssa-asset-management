@@ -17,7 +17,7 @@ return [
     'placeholder' => 'Choose your role',
     'sign_in' => 'Sign in',
     'signing_in' => 'Signing in…',
-    'hint' => 'Sign in with your account to access your allocated workspace.',
+    'hint' => 'Select a role to enter your workspace.',
     'choose_role' => 'Choose a role from the list to continue.',
     'unavailable' => 'This role is not available right now. Choose another role or contact your administrator.',
     'artwork_alt' => 'Connected office assets on soft Stats SA colour panels: a laptop, office chair, printer, monitor, keyboard and mouse, iPad and desktop computer.',
