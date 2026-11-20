@@ -493,3 +493,12 @@ Pages, partials and reusable view fragments are grouped by source directory. Not
 - [resources/views/vendor/pagination/simple-bootstrap-4.blade.php](../../resources/views/vendor/pagination/simple-bootstrap-4.blade.php)
 - [resources/views/vendor/pagination/simple-default.blade.php](../../resources/views/vendor/pagination/simple-default.blade.php)
 - [resources/views/vendor/passport/authorize.blade.php](../../resources/views/vendor/passport/authorize.blade.php)
+
+## Projects
+
+- [resources/views/projects/edit.blade.php](../../resources/views/projects/edit.blade.php)
+- [resources/views/projects/index.blade.php](../../resources/views/projects/index.blade.php)
+- [resources/views/projects/issue-index.blade.php](../../resources/views/projects/issue-index.blade.php)
+- [resources/views/projects/issue-session.blade.php](../../resources/views/projects/issue-session.blade.php)
+- [resources/views/projects/layout.blade.php](../../resources/views/projects/layout.blade.php)
+- [resources/views/projects/show.blade.php](../../resources/views/projects/show.blade.php)

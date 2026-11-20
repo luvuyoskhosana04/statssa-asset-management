@@ -6,9 +6,11 @@ Example paths identify feature entry points. Individual routes and permissions v
 
 | Area | Example path | Views | Web controller area | Purpose and role context |
 | --- | --- | --- | --- | --- |
-| Dashboard | `/` | [resources/views/dashboard.blade.php](../../resources/views/dashboard.blade.php) | [app/Http/Controllers/DashboardController.php](../../app/Http/Controllers/DashboardController.php) | Shared landing page; global summaries depend on permissions |
+| Dashboard | `/` | [resources/views/dashboard.blade.php](../../resources/views/dashboard.blade.php) | [app/Http/Controllers/DashboardController.php](../../app/Http/Controllers/DashboardController.php) | Reporting dashboard with return, warranty, offboarding and asset comparisons; permission filtered |
 | Sign-in | `/login` | [resources/views/auth](../../resources/views/auth) | [app/Http/Controllers/Auth](../../app/Http/Controllers/Auth) | Public credentials form; password recovery and optional configured identity providers |
 | Assets | `/hardware` | [resources/views/hardware](../../resources/views/hardware) | [app/Http/Controllers/Assets](../../app/Http/Controllers/Assets) | Asset Manager; inventory, record, create/edit, checkout/checkin, audit and files |
+| Projects | `/projects` | [resources/views/projects](../../resources/views/projects) | [app/Http/Controllers/Projects](../../app/Http/Controllers/Projects) | Local project records, employee membership, reservations, issue sessions and physical handover; company scoped |
+| Barcode receiving | `/hardware/receive-tag` | [receiving views](../../resources/views/hardware/receive-batch-create.blade.php) | [AssetReceivingController](../../app/Http/Controllers/Assets/AssetReceivingController.php) | Scan new barcodes into a removable draft; Save creates assets and receipt history atomically |
 | Licenses | `/licenses` | [resources/views/licenses](../../resources/views/licenses) | [app/Http/Controllers/Licenses](../../app/Http/Controllers/Licenses) | License Manager; product records, seats, assignments and files |
 | Accessories | `/accessories` | [resources/views/accessories](../../resources/views/accessories) | [app/Http/Controllers/Accessories](../../app/Http/Controllers/Accessories) | Accessory Manager; stock, assignments and files |
 | Consumables | `/consumables` | [resources/views/consumables](../../resources/views/consumables) | [app/Http/Controllers/Consumables](../../app/Http/Controllers/Consumables) | Consumable Manager; stock and issue transactions |

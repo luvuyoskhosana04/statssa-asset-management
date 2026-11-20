@@ -910,8 +910,225 @@
         new MutationObserver(schedule).observe(document.body, {childList: true, subtree: true, attributes: true, attributeFilter: ['required', 'disabled']});
     }
 
+    function sidebarHoverNavigation() {
+        document.querySelectorAll('.main-sidebar .sidebar-menu').forEach(menu => {
+            let keyboardMode = false, pointer = null;
+            const sections = Array.from(menu.querySelectorAll('li.treeview')).map((item, index) => {
+                if (!item.id) item.id = 'sidebar-branch-' + index;
+                return {
+                    item,
+                    link: Array.from(item.children).find(child => child.tagName === 'A'),
+                    panel: Array.from(item.children).find(child => child.classList.contains('treeview-menu')),
+                    openTimer: null, closeTimer: null
+                };
+            }).filter(section => section.link && section.panel);
+            function familyContains(section, target) {
+                if (!target || !(target instanceof Element)) return false;
+                return section.item.contains(target) || target.closest('.asset-nav-panel')?.dataset.sidebarOwner === section.item.id;
+            }
+            function sync() {
+                sections.forEach(section => section.link.setAttribute('aria-expanded', String(section.item.classList.contains('menu-open'))));
+            }
+            function close(section) {
+                clearTimeout(section.openTimer); clearTimeout(section.closeTimer);
+                if (!section.item.classList.contains('menu-open')) return;
+                const tree = $(menu).data('lte.tree');
+                if (tree) tree.collapse($(section.panel), $(section.item));
+                sync();
+            }
+            function leave(section) {
+                clearTimeout(section.openTimer); clearTimeout(section.closeTimer);
+                section.closeTimer = setTimeout(() => {
+                    if (pointer && familyContains(section, document.elementFromPoint(pointer.x, pointer.y))) return;
+                    if (!keyboardMode || !familyContains(section, document.activeElement)) close(section);
+                }, 360);
+            }
+            function open(section) {
+                clearTimeout(section.closeTimer);
+                if (section.item.classList.contains('menu-open')) return;
+                if (!$(menu).data('lte.tree') && $.fn.tree) $(menu).tree();
+                const tree = $(menu).data('lte.tree');
+                if (tree) {
+                    const speed = tree.options.animationSpeed;
+                    tree.options.animationSpeed = 0;
+                    tree.expand($(section.panel), $(section.item));
+                    tree.options.animationSpeed = speed;
+                }
+                sync();
+            }
+            sections.forEach(section => {
+                section.link.setAttribute('aria-expanded', String(section.item.classList.contains('menu-open')));
+                section.link.addEventListener('pointerenter', event => {
+                    if (event.pointerType !== 'mouse' || !window.matchMedia('(hover: hover)').matches) return;
+                    keyboardMode = false;
+                    clearTimeout(section.openTimer); clearTimeout(section.closeTimer);
+                    open(section);
+                });
+                section.link.addEventListener('pointerleave', () => clearTimeout(section.openTimer));
+                section.item.addEventListener('pointerenter', () => clearTimeout(section.closeTimer));
+                section.item.addEventListener('pointerleave', () => leave(section));
+                section.link.addEventListener('keydown', event => {
+                    keyboardMode = true;
+                    if (event.key === 'ArrowRight') { event.preventDefault(); open(section); }
+                    if (event.key === 'Escape') { event.preventDefault(); close(section); }
+                });
+            });
+            document.addEventListener('keydown', () => { keyboardMode = true; });
+            document.addEventListener('pointerover', event => {
+                if (event.pointerType !== 'mouse') return;
+                keyboardMode = false;
+                pointer = {x: event.clientX, y: event.clientY};
+                sections.forEach(section => {
+                    if (familyContains(section, event.target)) clearTimeout(section.closeTimer);
+                    else if (familyContains(section, event.relatedTarget)) leave(section);
+                });
+            });
+            document.addEventListener('pointermove', event => {
+                if (event.pointerType === 'mouse') pointer = {x: event.clientX, y: event.clientY};
+            });
+            document.addEventListener('mouseleave', () => { pointer = null; sections.forEach(leave); });
+            $(menu).on('expanded.tree collapsed.tree', sync);
+        });
+    }
+
+    function assetNavigation() {
+        const groups = Array.from(document.querySelectorAll('[data-asset-nav-group]'));
+        if (!groups.length) return;
+        const desktop = window.matchMedia('(min-width: 768px)');
+        let current = null, hovered = null, openTimer, closeTimer, keyboardMode = false;
+        const entries = groups.map(group => {
+            const trigger = group.querySelector('.asset-nav-trigger');
+            const panel = group.querySelector('.asset-nav-panel');
+            group.classList.toggle('active', !!panel.querySelector('li.active'));
+            panel.hidden = true;
+            group.classList.add('asset-nav-ready');
+            panel.dataset.sidebarOwner = group.closest('.treeview').id;
+            return {group, trigger, panel};
+        });
+        function close(restoreFocus) {
+            clearTimeout(openTimer); clearTimeout(closeTimer);
+            if (!current) return;
+            const previous = current;
+            current = null;
+            hovered = null;
+            previous.panel.hidden = true;
+            previous.trigger.setAttribute('aria-expanded', 'false');
+            previous.group.classList.remove('asset-nav-open');
+            if (restoreFocus) previous.trigger.focus();
+        }
+        function position(entry) {
+            if (!desktop.matches) return;
+            const sidebar = document.querySelector('.main-sidebar').getBoundingClientRect();
+            const anchor = entry.trigger.getBoundingClientRect();
+            const rtl = document.documentElement.dir === 'rtl';
+            const width = Math.min(300, window.innerWidth - 24);
+            entry.panel.style.width = width + 'px';
+            entry.panel.style.maxHeight = Math.max(120, window.innerHeight - 24) + 'px';
+            const left = rtl ? sidebar.left - width - 8 : sidebar.right + 8;
+            entry.panel.style.left = Math.max(12, Math.min(left, window.innerWidth - width - 12)) + 'px';
+            entry.panel.style.top = Math.max(12, Math.min(anchor.top, window.innerHeight - entry.panel.offsetHeight - 12)) + 'px';
+        }
+        function open(entry, focusLink) {
+            clearTimeout(openTimer); clearTimeout(closeTimer);
+            if (current !== entry) close(false);
+            current = entry;
+            entry.panel.hidden = false;
+            entry.trigger.setAttribute('aria-expanded', 'true');
+            entry.group.classList.add('asset-nav-open');
+            position(entry);
+            if (focusLink) entry.panel.querySelector('a')?.focus();
+        }
+        function leave() {
+            clearTimeout(openTimer);
+            clearTimeout(closeTimer);
+            closeTimer = setTimeout(() => {
+                closeTimer = null;
+                if (current && (!keyboardMode || (!current.panel.contains(document.activeElement) && document.activeElement !== current.trigger))) close(false);
+            }, 260);
+        }
+        function layout() {
+            close(false);
+            entries.forEach(entry => {
+                entry.panel.classList.toggle('asset-nav-floating', desktop.matches);
+                (desktop.matches ? document.body : entry.group).appendChild(entry.panel);
+                if (!desktop.matches) entry.panel.removeAttribute('style');
+            });
+        }
+        entries.forEach(entry => {
+            entry.trigger.addEventListener('click', event => {
+                event.preventDefault(); event.stopPropagation();
+                current === entry ? close(false) : open(entry, false);
+            });
+            entry.trigger.addEventListener('keydown', event => {
+                keyboardMode = true;
+                if (event.key === 'ArrowRight' || event.key === 'ArrowDown' || (event.key === 'Tab' && !event.shiftKey && current === entry)) {
+                    event.preventDefault(); open(entry, true);
+                }
+            });
+            entry.panel.addEventListener('keydown', event => {
+                if (event.key === 'ArrowLeft') { event.preventDefault(); close(true); }
+                if (event.key === 'Tab') {
+                    const links = Array.from(entry.panel.querySelectorAll('a'));
+                    if (event.shiftKey && event.target === links[0]) { event.preventDefault(); close(true); }
+                    else if (!event.shiftKey && event.target === links[links.length - 1]) {
+                        event.preventDefault();
+                        const next = entries[entries.indexOf(entry) + 1]?.trigger || entry.group.closest('.treeview')?.nextElementSibling?.querySelector('a');
+                        close(false); next?.focus();
+                    }
+                }
+            });
+            entry.panel.addEventListener('click', event => { if (event.target.closest('a')) close(false); });
+        });
+        function trackGroupHover(event) {
+            if (!desktop.matches || (event.pointerType && event.pointerType !== 'mouse')) return;
+            const target = event.target;
+            if (!(target instanceof Element)) return;
+            keyboardMode = false;
+            const entry = entries.find(candidate => candidate.group.contains(target) || candidate.panel.contains(target));
+            if (entry) {
+                clearTimeout(closeTimer); closeTimer = null;
+                if (entry === current || entry === hovered) return;
+                hovered = entry;
+                clearTimeout(openTimer);
+                open(entry, false);
+            } else {
+                hovered = null;
+                clearTimeout(openTimer);
+                if (current && !closeTimer) leave();
+            }
+        }
+        document.addEventListener('pointerover', trackGroupHover);
+        document.addEventListener('pointermove', trackGroupHover);
+        document.addEventListener('mouseover', trackGroupHover);
+        document.addEventListener('mousemove', trackGroupHover);
+        document.addEventListener('pointerout', event => {
+            if (!event.relatedTarget) { hovered = null; leave(); }
+        });
+        document.addEventListener('keydown', event => {
+            keyboardMode = true;
+            if (event.key === 'Escape' && current) { event.preventDefault(); close(true); }
+        });
+        document.addEventListener('pointerdown', event => {
+            if (current && !current.group.contains(event.target) && !current.panel.contains(event.target)) close(false);
+        });
+        document.addEventListener('focusin', event => {
+            if (current && event.target !== current.trigger && !current.panel.contains(event.target)) close(false);
+        });
+        document.querySelector('.main-sidebar > .sidebar')?.addEventListener('scroll', () => close(false), {passive: true});
+        document.querySelector('[data-toggle="push-menu"]')?.addEventListener('click', () => close(false));
+        const assets = groups[0].closest('.treeview');
+        if (assets) new MutationObserver(() => {
+            if (current && !assets.classList.contains('menu-open')) close(false);
+        }).observe(assets, {attributes: true, attributeFilter: ['class']});
+        desktop.addEventListener('change', layout);
+        window.addEventListener('resize', () => { if (current) position(current); });
+        layout();
+    }
+
     $(document).on('post-body.bs.table post-header.bs.table reset-view.bs.table', '.snipe-table', function () { if (this.tagName !== 'TABLE') return; tableTools(this); catalogue(this); });
     $(function () {
+        sidebarHoverNavigation();
+        assetNavigation();
         document.querySelectorAll('.main-header a[href]').forEach(link => {
             const path = new URL(link.href, location.href).pathname.replace(/\/$/, '');
             if (path && path !== '/' && (location.pathname === path || location.pathname.startsWith(path + '/')) && link.querySelector('i')) link.setAttribute('aria-current', 'page');

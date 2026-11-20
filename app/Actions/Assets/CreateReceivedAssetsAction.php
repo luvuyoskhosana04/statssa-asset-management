@@ -1,0 +1,112 @@
+<?php
+
+namespace App\Actions\Assets;
+
+use App\Models\Asset;
+use App\Models\AssetModel;
+use App\Models\Company;
+use App\Models\Location;
+use App\Models\Setting;
+use App\Models\Statuslabel;
+use App\Models\User;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
+
+class CreateReceivedAssetsAction
+{
+    public static function run(User $actor, array $data): array
+    {
+        Gate::forUser($actor)->authorize('create', Asset::class);
+        $items = array_map(fn ($item) => ['asset_tag' => trim($item['asset_tag']), 'model_id' => (int) ($item['model_id'] ?? $data['model_id'] ?? 0)], $data['items']);
+        $sorted = $items;
+        usort($sorted, fn ($a, $b) => strcmp($a['asset_tag'], $b['asset_tag']));
+        $settings = ['company_id' => (int) ($data['company_id'] ?? 0), 'location_id' => (int) ($data['location_id'] ?? 0),
+            'status_id' => (int) $data['status_id'], 'order_number' => trim((string) ($data['order_number'] ?? '')), 'note' => trim((string) ($data['note'] ?? ''))];
+        $hash = hash('sha256', json_encode(['mode' => 'create-from-barcode', 'settings' => $settings, 'items' => $sorted], JSON_THROW_ON_ERROR));
+        $key = strtolower($data['request_key']);
+        try {
+            return DB::transaction(function () use ($actor, $items, $settings, $hash, $key): array {
+                if ($batch = DB::table('asset_receipt_batches')->where('request_key', $key)->lockForUpdate()->first()) {
+                    return self::replay($actor, $batch, $hash);
+                }
+                $company = $settings['company_id'] ? Company::findOrFail($settings['company_id']) : null;
+                if (Setting::getSettings()->full_multiple_companies_support && ! $actor->hasAccess('superuser') && ! $company) {
+                    throw ValidationException::withMessages(['company_id' => trans('intake.company_required')]);
+                }
+                $location = $settings['location_id'] ? Location::findOrFail($settings['location_id']) : null;
+                $status = Statuslabel::whereKey($settings['status_id'])->where('archived', 0)->firstOrFail();
+                $models = AssetModel::with('category')->whereIn('id', array_column($items, 'model_id'))->get()->keyBy('id');
+                foreach ($items as $index => $item) {
+                    if (! $item['asset_tag']) {
+                        throw ValidationException::withMessages(['items.'.$index.'.asset_tag' => trans('intake.invalid_barcode')]);
+                    }
+                    if (! isset($models[$item['model_id']]) || $models[$item['model_id']]->category?->category_type !== 'asset') {
+                        throw ValidationException::withMessages(['items.'.$index.'.model_id' => trans('intake.model_required')]);
+                    }
+                    if (DB::table('assets')->where('asset_tag', $item['asset_tag'])->lockForUpdate()->exists()
+                        || DB::table('asset_receipts')->where('asset_tag', $item['asset_tag'])->exists()) {
+                        throw ValidationException::withMessages(['items.'.$index.'.asset_tag' => trans('intake.exists', ['barcode' => $item['asset_tag']])]);
+                    }
+                }
+                $time = now();
+                $batchId = DB::table('asset_receipt_batches')->insertGetId([
+                    'request_key' => $key, 'request_hash' => $hash, 'received_by' => $actor->id,
+                    'receiver_name' => $actor->display_name ?: trim($actor->first_name.' '.$actor->last_name),
+                    'order_number' => $settings['order_number'] ?: null, 'status_id' => $status->id, 'status_name' => $status->name,
+                    'location_id' => $location?->id, 'location_name' => $location?->name, 'created_at' => $time, 'updated_at' => $time,
+                ]);
+                foreach ($items as $index => $item) {
+                    $asset = new Asset;
+                    $asset->asset_tag = $item['asset_tag'];
+                    $asset->model_id = $item['model_id'];
+                    $asset->status_id = $status->id;
+                    $asset->company_id = $company?->id;
+                    $asset->location_id = $location?->id;
+                    $asset->rtd_location_id = $location?->id;
+                    $asset->order_number = $settings['order_number'] ?: null;
+                    $asset->notes = $settings['note'] ?: null;
+                    $asset->created_by = $actor->id;
+                    $asset->model()->associate($models[$item['model_id']]);
+                    $asset->setRules(array_merge($asset->getRules(), $asset->customFieldValidationRules()));
+                    if (! $asset->save()) {
+                        $messages = [];
+                        foreach ($asset->getErrors()->toArray() as $field => $errors) {
+                            $messages['items.'.$index.'.'.$field] = $errors;
+                        }
+                        throw ValidationException::withMessages($messages);
+                    }
+                    DB::table('asset_receipts')->insert([
+                        'batch_id' => $batchId, 'asset_id' => $asset->id, 'received_by' => $actor->id,
+                        'serial' => '', 'previous_tag' => '', 'asset_tag' => $asset->asset_tag, 'condition' => 'not_recorded',
+                        'note' => $settings['note'] ?: null, 'model_name' => $models[$item['model_id']]->name,
+                        'status_id' => $status->id, 'status_name' => $status->name, 'location_id' => $location?->id,
+                        'location_name' => $location?->name, 'order_number' => $settings['order_number'] ?: null,
+                        'created_at' => $time, 'updated_at' => $time,
+                    ]);
+                    $asset->logCreate(trans('intake.audit_note', ['batch' => 'RCV-'.str_pad((string) $batchId, 6, '0', STR_PAD_LEFT)]));
+                }
+
+                return ['batch_id' => $batchId, 'item_count' => count($items)];
+            }, 3);
+        } catch (UniqueConstraintViolationException $exception) {
+            if ($batch = DB::table('asset_receipt_batches')->where('request_key', $key)->first()) {
+                return self::replay($actor, $batch, $hash);
+            }
+            throw ValidationException::withMessages(['items' => trans('intake.conflict')]);
+        }
+    }
+
+    private static function replay(User $actor, object $batch, string $hash): array
+    {
+        abort_unless((int) $batch->received_by === $actor->id, 403);
+        if ($batch->request_hash !== $hash) {
+            throw ValidationException::withMessages(['request_key' => trans('presentation.receive_batch_already_saved')]);
+        }
+        $ids = DB::table('asset_receipts')->where('batch_id', $batch->id)->pluck('asset_id');
+        abort_unless(Asset::withTrashed()->whereIn('id', $ids)->count() === $ids->count(), 403);
+
+        return ['batch_id' => $batch->id, 'item_count' => $ids->count()];
+    }
+}

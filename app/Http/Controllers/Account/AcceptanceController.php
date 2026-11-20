@@ -346,6 +346,13 @@ class AcceptanceController extends Controller
                 'sign_in_place_resource_type',
             ]);
 
+            $projectSession = session()->pull('project_issue_return');
+            if ($projectSession && \Illuminate\Support\Facades\DB::table('project_issue_sessions')
+                ->where('id', $projectSession)->where('created_by', $currentUser->id)
+                ->whereIn('id', \Illuminate\Support\Facades\DB::table('project_issues')->where('acceptance_id', $acceptance->id)->select('session_id'))->exists()) {
+                return redirect()->route('projects.issue.show', $projectSession)->with('success', $return_msg);
+            }
+
             return $redirect->with('success', $return_msg);
         }
 

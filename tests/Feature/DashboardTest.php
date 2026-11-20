@@ -2,11 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Accessory;
 use App\Models\Asset;
-use App\Models\Component;
-use App\Models\Consumable;
-use App\Models\License;
 use App\Models\User;
 use Tests\TestCase;
 
@@ -23,21 +19,20 @@ class DashboardTest extends TestCase
             ->assertRedirect(route('view-assets'));
     }
 
-    public function test_admin_sees_dashboard_with_top_boxes(): void
+    public function test_admin_sees_reporting_dashboard_without_legacy_cards(): void
     {
         Asset::factory()->count(2)->create();
 
-        $response = $this->actingAs(User::factory()->admin()->create())
+        $this->actingAs(User::factory()->admin()->create())
             ->get(route('home'))
             ->assertOk()
-            ->assertViewIs('dashboard');
-
-        // Top-boxes row carries the counts array cells. The license
-        // box uses number_format($counts['license']) so a rendered
-        // dashboard for an admin includes the localized formatted
-        // count. Non-admin coverage below asserts these are absent.
-        $response->assertSee(trans('general.assets'), false);
-        $response->assertSee(trans('general.licenses'), false);
+            ->assertViewIs('dashboard')
+            ->assertSee('id="dashboard-insights"', false)
+            ->assertSee('data-insight-chart="statuses"', false)
+            ->assertDontSee('dashboard small-box', false)
+            ->assertDontSee('dashboard-today-calendar', false)
+            ->assertDontSee('activityReport', false)
+            ->assertDontSee('wire:lazy', false);
     }
 
     public function test_non_admin_with_view_asset_sees_dashboard_without_top_boxes(): void
@@ -65,38 +60,22 @@ class DashboardTest extends TestCase
         $response->assertDontSee(trans('general.dashboard_empty'), false);
     }
 
-    public function test_counts_are_loaded_correctly_for_admins(): void
+    public function test_empty_inventory_still_renders_reporting_dashboard(): void
     {
-        Asset::factory()->count(2)->create();
-        Accessory::factory()->count(2)->create();
-        License::factory()->count(2)->create();
-        Consumable::factory()->count(2)->create();
-        Component::factory()->count(2)->create();
-
         $this->actingAs(User::factory()->admin()->create())
             ->get(route('home'))
-            ->assertViewIs('dashboard')
-            ->assertViewHas('counts', function ($value) {
-                $accessoryCount = Accessory::count();
-                $assetCount = Asset::count();
-                $componentCount = Component::count();
-                $consumableCount = Consumable::count();
-                $licenseCount = License::assetcount();
-                $userCount = User::count();
+            ->assertOk()
+            ->assertSee('id="dashboard-insights"', false)
+            ->assertDontSee(trans('general.dashboard_empty'), false);
+    }
 
-                $this->assertEquals($value['accessory'], $accessoryCount, 'Accessory count incorrect.');
-                $this->assertEquals($value['asset'], $assetCount, 'Asset count incorrect.');
-                $this->assertEquals($value['license'], $licenseCount, 'License count incorrect.');
-                $this->assertEquals($value['consumable'], $consumableCount, 'Consumable count incorrect.');
-                $this->assertEquals($value['component'], $componentCount, 'Component count incorrect.');
-                $this->assertEquals($value['user'], $userCount, 'User count incorrect.');
-                $this->assertEquals(
-                    $value['grand_total'],
-                    $accessoryCount + $assetCount + $consumableCount + $licenseCount,
-                    'Grand total count incorrect.'
-                );
-
-                return true;
-            });
+    public function test_accessory_only_viewer_sees_permission_context_instead_of_blank_dashboard(): void
+    {
+        $this->actingAs(User::factory()->viewAccessories()->create())
+            ->get(route('home'))
+            ->assertOk()
+            ->assertSee(trans('presentation.reporting_unavailable'))
+            ->assertDontSee('id="dashboard-insights"', false)
+            ->assertDontSee('dashboard small-box', false);
     }
 }
