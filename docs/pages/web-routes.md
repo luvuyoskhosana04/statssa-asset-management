@@ -428,3 +428,36 @@ Snapshot from Laravel route:list on 8 November 2026. 424 registered endpoints. R
 | `GET|HEAD` | `/{object_type}/{id}/files/{file_id}` | `ui.files.show` | [App\Http\Controllers\UploadedFilesController@show](../../app/Http/Controllers/UploadedFilesController.php) |
 | `DELETE` | `/{object_type}/{id}/files/{file_id}/delete` | `ui.files.destroy` | [App\Http\Controllers\UploadedFilesController@destroy](../../app/Http/Controllers/UploadedFilesController.php) |
 | `GET|HEAD` | `/{object_type}/{id}/qr_code` | `qr_code/common` | [App\Http\Controllers\QrCodeController@show](../../app/Http/Controllers/QrCodeController.php) |
+
+## Projects routes
+
+Verified on 20 November 2026. Local project management and issue sessions use the web authentication and CSRF middleware. ProjectPolicy and company scope apply.
+
+| Method | Path | Route name | Handler |
+| --- | --- | --- | --- |
+| `GET / HEAD` | `/projects` | `projects.index` | [App\Http\Controllers\Projects\ProjectsController@index](../../app/Http/Controllers/Projects/ProjectsController.php) |
+| `POST` | `/projects` | `projects.store` | [App\Http\Controllers\Projects\ProjectsController@store](../../app/Http/Controllers/Projects/ProjectsController.php) |
+| `GET / HEAD` | `/projects/asset-issue` | `projects.issue.index` | [App\Http\Controllers\Projects\ProjectIssueController@index](../../app/Http/Controllers/Projects/ProjectIssueController.php) |
+| `POST` | `/projects/asset-issue` | `projects.issue.start` | [App\Http\Controllers\Projects\ProjectIssueController@start](../../app/Http/Controllers/Projects/ProjectIssueController.php) |
+| `GET / HEAD` | `/projects/asset-issue/{session}` | `projects.issue.show` | [App\Http\Controllers\Projects\ProjectIssueController@show](../../app/Http/Controllers/Projects/ProjectIssueController.php) |
+| `POST` | `/projects/asset-issue/{session}/close` | `projects.issue.close` | [App\Http\Controllers\Projects\ProjectIssueController@close](../../app/Http/Controllers/Projects/ProjectIssueController.php) |
+| `POST` | `/projects/asset-issue/{session}/issue` | `projects.issue.store` | [App\Http\Controllers\Projects\ProjectIssueController@store](../../app/Http/Controllers/Projects/ProjectIssueController.php) |
+| `POST` | `/projects/asset-issue/{session}/{issue}/handover` | `projects.issue.handover` | [App\Http\Controllers\Projects\ProjectIssueController@handover](../../app/Http/Controllers/Projects/ProjectIssueController.php) |
+| `POST` | `/projects/asset-issue/{session}/{issue}/resolve` | `projects.issue.resolve` | [App\Http\Controllers\Projects\ProjectIssueController@resolve](../../app/Http/Controllers/Projects/ProjectIssueController.php) |
+| `GET / HEAD` | `/projects/asset-issue/{session}/{issue}/sign` | `projects.issue.sign` | [App\Http\Controllers\Projects\ProjectIssueController@resume](../../app/Http/Controllers/Projects/ProjectIssueController.php) |
+| `GET / HEAD` | `/projects/create` | `projects.create` | [App\Http\Controllers\Projects\ProjectsController@create](../../app/Http/Controllers/Projects/ProjectsController.php) |
+| `GET / HEAD` | `/projects/{project}` | `projects.show` | [App\Http\Controllers\Projects\ProjectsController@show](../../app/Http/Controllers/Projects/ProjectsController.php) |
+| `PUT` | `/projects/{project}` | `projects.update` | [App\Http\Controllers\Projects\ProjectsController@update](../../app/Http/Controllers/Projects/ProjectsController.php) |
+| `DELETE` | `/projects/{project}/assets/{asset}` | `projects.release` | [App\Http\Controllers\Projects\ProjectsController@release](../../app/Http/Controllers/Projects/ProjectsController.php) |
+| `GET / HEAD` | `/projects/{project}/edit` | `projects.edit` | [App\Http\Controllers\Projects\ProjectsController@edit](../../app/Http/Controllers/Projects/ProjectsController.php) |
+| `POST` | `/projects/{project}/members` | `projects.members.store` | [App\Http\Controllers\Projects\ProjectsController@member](../../app/Http/Controllers/Projects/ProjectsController.php) |
+| `DELETE` | `/projects/{project}/members/{user}` | `projects.members.remove` | [App\Http\Controllers\Projects\ProjectsController@removeMember](../../app/Http/Controllers/Projects/ProjectsController.php) |
+| `POST` | `/projects/{project}/reserve` | `projects.reserve` | [App\Http\Controllers\Projects\ProjectsController@reserve](../../app/Http/Controllers/Projects/ProjectsController.php) |
+
+## New asset barcode intake
+
+| Method | Path | Route name | Handler |
+| --- | --- | --- | --- |
+| `POST` | `/hardware/receive-tag/new-batches` | `hardware.receive.new-batches.store` | [AssetReceivingController@storeNewBatch](../../app/Http/Controllers/Assets/AssetReceivingController.php) |
+
+The web authentication and CSRF middleware remain enabled. Asset creation and viewing permissions are required. Scanning drafts does not create records; the final request creates the full batch atomically.

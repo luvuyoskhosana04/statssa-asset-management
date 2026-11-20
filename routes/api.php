@@ -1467,6 +1467,7 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
      * Dashboard widget API routes.
      */
     Route::group(['prefix' => 'dashboard'], function () {
+        Route::get('insights', [Api\DashboardInsightsController::class, 'index'])->name('api.dashboard.insights');
 
         Route::get('activity',
             [

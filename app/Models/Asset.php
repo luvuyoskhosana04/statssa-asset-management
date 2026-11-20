@@ -569,6 +569,10 @@ class Asset extends Depreciable
     public function availableForCheckout()
     {
 
+        if ($this->exists && \Illuminate\Support\Facades\DB::table('project_asset')->where('asset_id', $this->id)->exists()) {
+            return false;
+        }
+
         // This asset is not currently assigned to anyone and is not deleted...
         if ((! $this->assigned_to) && (! $this->deleted_at)) {
 

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Assets\AssetCheckinController;
 use App\Http\Controllers\Assets\AssetCheckoutController;
+use App\Http\Controllers\Assets\AssetReceivingController;
 use App\Http\Controllers\Assets\AssetsController;
 use App\Http\Controllers\Assets\BulkAssetsController;
 use App\Http\Controllers\BulkMaintenancesController;
@@ -27,6 +28,19 @@ Route::group(
     ],
 
     function () {
+
+        Route::get('receive-tag', [AssetReceivingController::class, 'index'])
+            ->name('hardware.receive.index')
+            ->breadcrumbs(fn (Trail $trail) => $trail->parent('hardware.index')
+                ->push(trans('presentation.receive_title'), route('hardware.receive.index')));
+        Route::get('receive-tag/create', [AssetReceivingController::class, 'create'])->name('hardware.receive.create')
+            ->breadcrumbs(fn (Trail $trail) => $trail->parent('hardware.receive.index')->push(trans('presentation.receive_new'), route('hardware.receive.create')));
+        Route::post('receive-tag/new-batches', [AssetReceivingController::class, 'storeNewBatch'])->name('hardware.receive.new-batches.store');
+        Route::post('receive-tag/batches', [AssetReceivingController::class, 'storeBatch'])->name('hardware.receive.batches.store');
+        Route::get('receive-tag/batches/{batchId}', [AssetReceivingController::class, 'show'])->whereNumber('batchId')->name('hardware.receive.show')
+            ->breadcrumbs(fn (Trail $trail, $batchId) => $trail->parent('hardware.receive.index')->push('RCV-'.str_pad((string) $batchId, 6, '0', STR_PAD_LEFT)));
+        Route::post('receive-tag/lookup', [AssetReceivingController::class, 'lookup'])->name('hardware.receive.lookup');
+        Route::post('receive-tag/{assetId}/scan', [AssetReceivingController::class, 'store'])->whereNumber('assetId')->name('hardware.receive.store');
 
         Route::get('bulkaudit', [AssetsController::class, 'quickScan'])
             ->name('assets.bulkaudit')

@@ -402,6 +402,15 @@ body.ui-refresh {--ui-card-edge:var(--stats-sand-700)}
 [data-theme=dark] .ui-refresh .summary-cards a[href$="/consumables"] {--ui-card-edge:var(--stats-amber-400)}
 [data-theme=dark] .ui-refresh .summary-cards a[href$="/components"] {--ui-card-edge:var(--stats-terracotta-400)}
 [data-theme=dark] .ui-refresh .summary-cards a[href$="/users"] {--ui-card-edge:var(--stats-sage-500)}
+/* Dashboard reporting cards retain the previous summary-card bottom accents. */
+.ui-refresh #dashboard-insights .insight-summary {position:relative;overflow:hidden}
+.ui-refresh #dashboard-insights .insight-summary::after {content:"";display:block;position:absolute;inset-inline:0;bottom:0;height:5px;background:var(--ui-card-edge);pointer-events:none}
+.ui-refresh #dashboard-insights .insight-summary:has([data-insight-value="due"]) {--ui-card-edge:var(--stats-sand-600)}
+.ui-refresh #dashboard-insights .insight-summary:has([data-insight-value="warranties"]) {--ui-card-edge:var(--stats-sage-600)}
+.ui-refresh #dashboard-insights .insight-summary:has([data-insight-value="offboarding"]) {--ui-card-edge:var(--stats-stone-500)}
+[data-theme=dark] .ui-refresh #dashboard-insights .insight-summary:has([data-insight-value="due"]) {--ui-card-edge:var(--stats-sand-400)}
+[data-theme=dark] .ui-refresh #dashboard-insights .insight-summary:has([data-insight-value="warranties"]) {--ui-card-edge:var(--stats-sage-400)}
+[data-theme=dark] .ui-refresh #dashboard-insights .insight-summary:has([data-insight-value="offboarding"]) {--ui-card-edge:var(--stats-stone-400)}
 /* Every listing uses the same labelled Create New action. */
 .ui-refresh .fixed-table-toolbar [name=btnAdd].table-create-button {
     display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:6px 10px;

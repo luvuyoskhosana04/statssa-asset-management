@@ -2,7 +2,11 @@
     <div class="col-md-12" id="error-notification">
         <x-alert type="danger" icon="warning" :title="trans('general.notification_error')" aria-live="assertive" aria-atomic="true">
             <button type="button" class="close" data-dismiss="alert" aria-label="{{ trans('general.close') }}"><span aria-hidden="true">&times;</span></button>
-            {{ trans('general.notification_error_hint') }}
+            @if (request()->routeIs('projects.issue.*'))
+                <ul>@foreach ($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul>
+            @else
+                {{ trans('general.notification_error_hint') }}
+            @endif
         </x-alert>
     </div>
 @endif

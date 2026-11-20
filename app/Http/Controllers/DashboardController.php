@@ -3,12 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\Helper;
-use App\Models\Accessory;
-use App\Models\Asset;
-use App\Models\Company;
-use App\Models\Component;
-use App\Models\Consumable;
-use App\Models\License;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Artisan;
@@ -41,29 +35,11 @@ class DashboardController extends Controller
             return Helper::safeIntended('account/view-assets');
         }
 
-        // Top-boxes + empty-inventory shortcut are admin-only in the
-        // dashboard blade, so the six count queries only need to run
-        // for admins. Non-admins get an empty array and the view's
-        // hasAccess('admin') gates short-circuit before touching any
-        // $counts key.
-        $counts = [];
-        if (auth()->user()->hasAccess('admin')) {
-            $counts['asset'] = Asset::count();
-            $counts['accessory'] = Accessory::count();
-            $counts['license'] = License::assetcount();
-            $counts['consumable'] = Consumable::count();
-            $counts['component'] = Component::count();
-            $counts['user'] = Company::scopeCompanyables(auth()->user())->count();
-            $counts['grand_total'] = $counts['asset'] + $counts['accessory'] + $counts['license'] + $counts['consumable'];
-        }
-
         if ((! file_exists(storage_path().'/oauth-private.key')) || (! file_exists(storage_path().'/oauth-public.key'))) {
             Artisan::call('migrate', ['--force' => true]);
             Artisan::call('passport:install', ['--no-interaction' => true]);
         }
 
-        return view('dashboard')
-            ->with('asset_stats', null)
-            ->with('counts', $counts);
+        return view('dashboard');
     }
 }
