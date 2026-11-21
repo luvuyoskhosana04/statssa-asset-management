@@ -135,6 +135,7 @@ class CheckoutAcceptance extends Model
          * Update state for the checked out item
          */
         $this->checkoutable->acceptedCheckout($this->assignedTo, $signature_filename, $filename);
+        \App\Actions\Projects\ResolveProjectIssueAcceptanceAction::run($this);
     }
 
     /**
@@ -153,6 +154,7 @@ class CheckoutAcceptance extends Model
          * Update state for the checked out item
          */
         $this->checkoutable->declinedCheckout($this->assignedTo, $signature_filename);
+        \App\Actions\Projects\ResolveProjectIssueAcceptanceAction::run($this);
     }
 
     /**

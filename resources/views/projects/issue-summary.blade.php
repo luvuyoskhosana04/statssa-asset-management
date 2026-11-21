@@ -1,6 +1,1 @@
-<dl class="project-issue-summary">
-    <div><dt>{{ trans('projects.worker') }}</dt><dd data-issue-value="worker"></dd></div>
-    <div><dt>{{ trans('projects.scanned_identifier') }}</dt><dd data-issue-value="asset"></dd></div>
-    <div><dt>{{ trans('projects.example_type') }}</dt><dd data-issue-value="type"></dd></div>
-    <div><dt>{{ trans('projects.return_by') }}</dt><dd data-issue-value="returnDate"></dd></div>
-</dl>
+<dl class="project-issue-summary"><div><dt>{{ trans('projects.title') }}</dt><dd>{{ $project->name }}</dd></div>@foreach(['worker'=>'employee_name','asset'=>'asset','model'=>'assets','condition'=>'condition','returnDate'=>'return_by'] as $field=>$label)<div><dt>{{ $field === 'model' ? trans('general.asset_model') : trans('projects.'.$label) }}</dt><dd data-issue-value="{{ $field }}"></dd></div>@endforeach</dl>

@@ -35,6 +35,11 @@ Route::group(
                 ->push(trans('presentation.receive_title'), route('hardware.receive.index')));
         Route::get('receive-tag/create', [AssetReceivingController::class, 'create'])->name('hardware.receive.create')
             ->breadcrumbs(fn (Trail $trail) => $trail->parent('hardware.receive.index')->push(trans('presentation.receive_new'), route('hardware.receive.create')));
+        Route::post('receive-tag/drafts', [AssetReceivingController::class, 'saveDraft'])->name('hardware.receive.drafts.store');
+        Route::get('receive-tag/drafts/{draft}', [AssetReceivingController::class, 'create'])->whereUuid('draft')->name('hardware.receive.drafts.resume')
+            ->breadcrumbs(fn (Trail $trail) => $trail->parent('hardware.receive.index')->push(trans('intake.resume_draft')));
+        Route::delete('receive-tag/drafts/{draft}', [AssetReceivingController::class, 'discardDraft'])->whereUuid('draft')->name('hardware.receive.drafts.discard');
+        Route::post('receive-tag/check-barcode', [AssetReceivingController::class, 'checkBarcode'])->name('hardware.receive.check-barcode');
         Route::post('receive-tag/new-batches', [AssetReceivingController::class, 'storeNewBatch'])->name('hardware.receive.new-batches.store');
         Route::post('receive-tag/batches', [AssetReceivingController::class, 'storeBatch'])->name('hardware.receive.batches.store');
         Route::get('receive-tag/batches/{batchId}', [AssetReceivingController::class, 'show'])->whereNumber('batchId')->name('hardware.receive.show')

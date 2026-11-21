@@ -8,7 +8,7 @@ class ProjectAssetRequest extends Request
 {
     public function authorize(): bool
     {
-        return $this->user()->can('update', Project::class);
+        return ! $this->routeIs('projects.members.*') && $this->user()->can('update', Project::class);
     }
 
     public function rules(): array
@@ -19,7 +19,10 @@ class ProjectAssetRequest extends Request
             'worker' => ($this->routeIs('projects.issue.store') ? 'required' : 'sometimes|required').'|string|max:255',
             'asset' => ($this->routeIs('projects.issue.store') ? 'required' : 'sometimes|required').'|string|max:255',
             'project_id' => ($this->routeIs('projects.issue.start') ? 'required' : 'sometimes|required').'|integer',
-            'expected_checkin' => 'sometimes|required|date_format:Y-m-d|after_or_equal:today',
+            'expected_checkin' => ($this->routeIs('projects.issue.store') ? 'required' : 'sometimes|required').'|date_format:Y-m-d|after_or_equal:today',
+            'reviewed' => ($this->routeIs('projects.issue.store') ? 'accepted' : 'sometimes|accepted'),
+            'handover_declared' => ($this->routeIs('projects.issue.store') ? 'accepted' : 'sometimes|accepted'),
+            'note' => 'nullable|string|max:5000',
         ];
     }
 }

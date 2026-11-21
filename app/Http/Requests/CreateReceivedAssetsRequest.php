@@ -16,6 +16,8 @@ class CreateReceivedAssetsRequest extends Request
     {
         return [
             'request_key' => ['required', 'uuid'],
+            'intake_mode' => ['nullable', 'in:two_scan'],
+            'items.*.serial' => ['required_if:intake_mode,two_scan', 'nullable', 'string', 'max:255', 'distinct:ignore_case', 'not_regex:/[\x00-\x1F\x7F]/u'],
             'model_id' => ['nullable', 'integer', Rule::exists('models', 'id')->whereNull('deleted_at')],
             'status_id' => ['required', 'integer', Rule::exists('status_labels', 'id')->whereNull('deleted_at')->where('archived', 0)],
             'company_id' => ['nullable', 'integer', Rule::exists('companies', 'id')->whereNull('deleted_at')],

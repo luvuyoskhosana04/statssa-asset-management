@@ -6,11 +6,13 @@ use App\Actions\Assets\CreateReceivedAssetsAction;
 use App\Actions\Assets\SaveReceivingBatchAction;
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CheckIntakeBarcodeRequest;
 use App\Http\Requests\CreateReceivedAssetsRequest;
 use App\Http\Requests\LookupReceivingAssetRequest;
 use App\Http\Requests\ReceiptHistoryRequest;
 use App\Http\Requests\ReceiveAssetRequest;
 use App\Http\Requests\SaveReceivingBatchRequest;
+use App\Http\Requests\SaveReceivingDraftRequest;
 use App\Models\Asset;
 use App\Models\AssetModel;
 use App\Models\Company;
@@ -60,15 +62,22 @@ class AssetReceivingController extends Controller
         $batches = $query->select($columns)->selectRaw('COUNT(ri.id) AS item_count')->groupBy($columns)
             ->orderByDesc('rb.created_at')->orderByDesc('rb.id')->paginate(20)->withQueryString();
 
-        return view('hardware.receive-tag', compact('batches', 'search'));
+        $drafts = DB::table('asset_receiving_drafts')->where('user_id', auth()->id())->orderByDesc('updated_at')->paginate(20, ['*'], 'draft_page')->withQueryString();
+        $tab = $request->input('tab') === 'drafts' ? 'drafts' : 'history';
+
+        return view('hardware.receive-tag', compact('batches', 'search', 'drafts', 'tab'));
     }
 
-    public function create(): View
+    public function create(?string $draft = null): View
     {
         $this->authorize('create', Asset::class);
         $this->authorize('view', Asset::class);
 
+        $savedDraft = $draft ? DB::table('asset_receiving_drafts')->where('id', $draft)->where('user_id', auth()->id())->first() : null;
+        abort_if($draft && ! $savedDraft, 404);
+
         return view('hardware.receive-batch-create', [
+            'savedDraft' => $savedDraft ? json_decode($savedDraft->payload, true) : null,
             'models' => AssetModel::whereHas('category', fn ($q) => $q->where('category_type', 'asset'))->orderBy('name')->get(['id', 'name', 'model_number']),
             'companies' => Company::orderBy('name')->get(['id', 'name']),
             'statuses' => Statuslabel::where('archived', 0)->orderBy('name')->get(),
@@ -76,9 +85,49 @@ class AssetReceivingController extends Controller
         ]);
     }
 
+    public function saveDraft(SaveReceivingDraftRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        $id = strtolower($data['request_key']);
+        abort_if(DB::table('asset_receiving_drafts')->where('id', $id)->where('user_id', '!=', $request->user()->id)->exists(), 403);
+        abort_if(DB::table('asset_receipt_batches')->where('request_key', $id)->exists(), 409);
+        $version = (int) ($data['version'] ?? 1);
+        $payload = ['version' => $version, 'request_key' => $id, 'company_id' => $data['company_id'] ?? '', 'items' => array_map(fn ($item) => array_merge(
+            ['asset_tag' => $item['asset_tag'] ?? '', 'model_id' => $item['model_id'] ?? null],
+            $version === 2 ? ['id' => $item['id'] ?? (string) \Illuminate\Support\Str::uuid(), 'serial' => $item['serial'] ?? '', 'stage' => $item['stage'] ?? 'pending'] : []
+        ), $data['items'])];
+        DB::table('asset_receiving_drafts')->updateOrInsert(['id' => $id, 'user_id' => $request->user()->id], [
+            'payload' => json_encode($payload, JSON_THROW_ON_ERROR), 'item_count' => count($data['items']), 'updated_at' => now(),
+        ]);
+
+        return response()->json(Helper::formatStandardApiResponse('success', [
+            'draft_id' => $id, 'history_url' => route('hardware.receive.index', ['tab' => 'drafts']),
+        ], trans('intake.draft_saved')));
+    }
+
+    public function discardDraft(string $draft): JsonResponse
+    {
+        $this->authorize('create', Asset::class);
+        $this->authorize('view', Asset::class);
+        DB::table('asset_receiving_drafts')->where('id', $draft)->where('user_id', auth()->id())->delete();
+
+        return response()->json(Helper::formatStandardApiResponse('success', null));
+    }
+
+    public function checkBarcode(CheckIntakeBarcodeRequest $request): JsonResponse
+    {
+        $barcode = trim($request->validated('barcode'));
+        $exists = DB::table('assets')->where('asset_tag', $barcode)->orWhere('serial', $barcode)->exists()
+            || DB::table('asset_receipts')->where('asset_tag', $barcode)->orWhere('serial', $barcode)->exists();
+
+        return response()->json(Helper::formatStandardApiResponse('success', ['available' => ! $exists],
+            $exists ? trans('intake.exists', ['barcode' => $barcode]) : trans('intake.barcode_available')));
+    }
+
     public function storeNewBatch(CreateReceivedAssetsRequest $request): JsonResponse
     {
         $payload = CreateReceivedAssetsAction::run($request->user(), $request->validated());
+        DB::table('asset_receiving_drafts')->where('id', strtolower($request->validated('request_key')))->where('user_id', $request->user()->id)->delete();
         $payload['history_url'] = route('hardware.receive.index').'#receipt-batch-'.$payload['batch_id'];
         $payload['view_url'] = route('hardware.receive.show', ['batchId' => $payload['batch_id']]);
         $request->session()->flash('success', trans('presentation.receive_batch_saved', ['count' => $payload['item_count']]));

@@ -1,18 +1,9 @@
 <ul class="treeview-menu asset-nav-groups">
-<li {!! (!request()->query('status_type') && (request()->is('hardware')) ? ' class="active" aria-current="page"' : '') !!}>
-                                        <a href="{{ url('hardware') }}">
-                                            {{ trans('general.all_assets') }}
-                                            <span class="badge">
-                                                {{ (isset($total_assets)) ? $total_assets : '' }}
-                                            </span>
-                                            <span class="asset-nav-chevron" aria-hidden="true">›</span>
-                                        </a>
-                                    </li>
 <li class="asset-nav-group" data-asset-nav-group>
-    <button type="button" class="asset-nav-trigger" aria-expanded="false" aria-controls="asset-nav-status"><span>{{ trans('presentation.asset_nav_status') }}</span><span class="asset-nav-chevron" aria-hidden="true">›</span></button>
+    <a href="{{ url('hardware') }}" class="asset-nav-trigger" aria-expanded="false" aria-controls="asset-nav-status" @if(request()->is('hardware') && !request()->query('status_type')) aria-current="page" @endif><span>{{ trans('general.all_assets') }}</span><span class="badge">{{ $total_assets ?? '' }}</span><span class="asset-nav-chevron" aria-hidden="true">›</span></a>
     <div id="asset-nav-status" class="asset-nav-panel" role="region" aria-labelledby="asset-nav-title-status">
-        <h3 id="asset-nav-title-status" class="asset-nav-title">{{ trans('presentation.asset_nav_status') }}</h3>
-        <ul class="asset-nav-links"><?php $status_navs = \App\Models\Statuslabel::where('show_in_nav', '=', 1)->withCount('assets as asset_count')->get(); ?>
+        <h3 id="asset-nav-title-status" class="asset-nav-title">{{ trans('general.all_assets') }}</h3>
+        <ul class="asset-nav-links"><li @if(request()->is('hardware') && !request()->query('status_type')) class="active" @endif><a href="{{ url('hardware') }}">{{ trans('presentation.chart_details') }}</a></li><?php $status_navs = \App\Models\Statuslabel::where('show_in_nav', '=', 1)->withCount('assets as asset_count')->get(); ?>
                                     @if (count($status_navs) > 0)
                                         @foreach ($status_navs as $status_nav)
                                             <li{!! (request()->is('statuslabels/'.$status_nav->id) ? ' class="active" aria-current="page"' : '') !!}>
@@ -104,7 +95,7 @@
         <ul class="asset-nav-links">@can('audit', \App\Models\Asset::class)
 <li id="audit-due-sidenav-option"{!! (request()->is('hardware/audit/due') ? ' class="active" aria-current="page"' : '') !!}>
                                             <a href="{{ route('assets.audit.due') }}">
-                                                <x-icon type="audit" class="text-yellow fa-fw"/>
+
                                                 {{ trans('general.audit_due') }}
                                                 <span class="badge">{{ (isset($total_due_and_overdue_for_audit)) ? $total_due_and_overdue_for_audit : '' }}</span>
                                             </a>
@@ -113,7 +104,7 @@
 @can('checkin', \App\Models\Asset::class)
 <li id="checkin-due-sidenav-option"{!! (request()->is('hardware/checkins/due') ? ' class="active" aria-current="page"' : '') !!}>
                                         <a href="{{ route('assets.checkins.due') }}">
-                                            <x-icon type="due" class="text-orange fa-fw"/>
+
                                             {{ trans('general.checkin_due') }}
                                             <span class="badge">{{ (isset($total_due_and_overdue_for_checkin)) ? $total_due_and_overdue_for_checkin : '' }}</span>
                                         </a>
@@ -131,7 +122,7 @@
         <ul class="asset-nav-links"><li id="byod-sidenav-option"{!! (request()->query('status_type') == 'byod' ? ' class="active" aria-current="page"' : '') !!}>
                                         <a
                                             href="{{ url('hardware?status_type=byod') }}">
-                                            <x-icon type="x" class="text-red fa-fw" />
+
                                             {{ trans('general.byod') }}
                                             <span class="badge">{{ (isset($total_byod_sidebar)) ? $total_byod_sidebar : '' }}</span>
                                         </a>
@@ -146,7 +137,7 @@
         <ul class="asset-nav-links"><li id="archived-sidenav-option"{!! (request()->query('status_type') == 'Archived' ? ' class="active" aria-current="page"' : '') !!}>
                                         <a
                                             href="{{ url('hardware?status_type=Archived') }}">
-                                            <x-icon type="x" class="text-red fa-fw" />
+
                                             {{ trans('admin/hardware/general.archived') }}
                                             <span class="badge">{{ (isset($total_archived_sidebar)) ? $total_archived_sidebar : '' }}</span>
                                         </a>

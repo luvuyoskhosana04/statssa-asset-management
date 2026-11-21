@@ -2,14 +2,13 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Project;
 use Illuminate\Validation\Rule;
 
 class SaveProjectRequest extends Request
 {
     public function authorize(): bool
     {
-        return $this->user()->can($this->route('project') ? 'update' : 'create', Project::class);
+        return false;
     }
 
     public function rules(): array

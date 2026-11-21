@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Projects;
 
 use App\Actions\Acceptances\CreateCheckoutAcceptanceAction;
+use App\Actions\Projects\SendProjectIssueNoticeAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LookupProjectIssueRequest;
 use App\Http\Requests\ProjectAssetRequest;
 use App\Models\Asset;
 use App\Models\CheckoutAcceptance;
@@ -11,6 +13,7 @@ use App\Models\Project;
 use App\Models\Statuslabel;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -24,8 +27,9 @@ class ProjectIssueController extends Controller
 
         return view('projects.issue-index', [
             'projects' => Project::where('status', 'active')->whereDate('start_date', '<=', today())->whereDate('end_date', '>=', today())->orderBy('name')->get(),
-            'sessions' => DB::table('project_issue_sessions')->where('created_by', auth()->id())
-                ->whereIn('project_id', Project::select('id'))->orderByDesc('created_at')->paginate(20),
+            'sessions' => DB::table('project_issue_sessions as s')->join('projects as p', 'p.id', '=', 's.project_id')
+                ->whereIn('p.id', Project::select('id'))->select('s.*', 'p.name as project_name')->orderByDesc('s.created_at')->paginate(20),
+            'allocations' => DB::table('project_issues as i')->join('project_issue_sessions as s', 's.id', '=', 'i.session_id')->join('projects as p', 'p.id', '=', 's.project_id')->leftJoin('checkout_acceptances as a', 'a.id', '=', 'i.acceptance_id')->whereIn('p.id', Project::select('id'))->select('i.*', 'p.name as project_name', 'a.accepted_at', 'a.declined_at')->orderByDesc('i.id')->paginate(20, ['*'], 'allocation_page'),
         ]);
     }
 
@@ -63,7 +67,7 @@ class ProjectIssueController extends Controller
         $issues = DB::table('project_issues')->where('session_id', $session->id)->orderByDesc('id')->get();
         $acceptances = CheckoutAcceptance::whereIn('id', $issues->pluck('acceptance_id'))->get()->keyBy('id');
 
-        return view('projects.issue-session', compact('project', 'session', 'issues', 'acceptances'));
+        return view('projects.issue-session', compact('project', 'session', 'issues', 'acceptances') + ['employees' => User::where('activated', 1)->orderBy('first_name')->get()->filter(fn ($user) => $project->canCheckoutTo($user))]);
     }
 
     public function store(ProjectAssetRequest $request, string $session): RedirectResponse
@@ -77,19 +81,26 @@ class ProjectIssueController extends Controller
             if (DB::table('project_issues')->where('session_id', $session->id)->whereNull('handed_over_at')->whereNull('cancelled_at')->exists()) {
                 throw ValidationException::withMessages(['asset' => trans('projects.finish_handover')]);
             }
-            $workers = $project->members()->where('activated', 1)
-                ->where(fn ($q) => $q->where('employee_num', $request->input('worker'))->orWhere('username', $request->input('worker')))->get();
-            if ($workers->count() !== 1) {
-                throw ValidationException::withMessages(['worker' => trans('projects.worker_missing')]);
-            }
-            $worker = $workers->first();
-            $matches = $project->assets()->where(fn ($q) => $q->where('asset_tag', $request->input('asset'))->orWhere('serial', $request->input('asset')))->pluck('assets.id');
+            $worker = $this->worker($request->input('worker'), $project);
+            $matches = Asset::where(fn ($q) => $q->where('asset_tag', $request->input('asset'))->orWhere('serial', $request->input('asset')))->pluck('id');
             if ($matches->count() !== 1) {
-                throw ValidationException::withMessages(['asset' => trans('projects.reservation_missing')]);
+                throw ValidationException::withMessages(['asset' => trans('projects.no_unique_asset', ['value' => $request->input('asset')])]);
             }
             $asset = Asset::whereKey($matches->first())->lockForUpdate()->firstOrFail();
             $this->authorize('checkout', $asset);
-            $reservation = DB::table('project_asset')->where('project_id', $project->id)->where('asset_id', $asset->id)->first();
+            $reservation = DB::table('project_asset')->where('asset_id', $asset->id)->first();
+            if ($reservation && (int) $reservation->project_id !== $project->id) {
+                throw ValidationException::withMessages(['asset' => trans('projects.asset_unavailable', ['value' => $asset->asset_tag])]);
+            }
+            if (! $reservation) {
+                if (! $asset->availableForCheckout()) {
+                    throw ValidationException::withMessages(['asset' => trans('projects.asset_unavailable', ['value' => $asset->asset_tag])]);
+                }
+                $project->assets()->attach($asset->id, ['original_status_id' => $asset->status_id, 'reserved_by' => auth()->id()]);
+                $reservation = (object) ['original_status_id' => $asset->status_id];
+            }
+            $snapshot = $this->assetDetails($asset) + ['recipient_employee_number' => $worker->employee_num, 'recipient_email' => $worker->email, 'issuer_name' => $request->user()->display_name];
+            $project->members()->syncWithoutDetaching([$worker->id]);
             if (DB::table('project_issues')->where('asset_id', $asset->id)->whereNull('handed_over_at')->whereNull('cancelled_at')->exists()) {
                 throw ValidationException::withMessages(['asset' => trans('projects.finish_handover')]);
             }
@@ -105,6 +116,9 @@ class ProjectIssueController extends Controller
                 throw ValidationException::withMessages(['expected_checkin' => trans('projects.return_within_project')]);
             }
             $asset->status_id = $status->id;
+            if (! $worker->email) {
+                throw ValidationException::withMessages(['worker' => trans('projects.email_missing')]);
+            }
             $asset->unsetRelation('status');
             if (! $asset->checkOut($worker, $request->user(), now()->toDateTimeString(), $return, trans('projects.reserved_note', ['project' => $project->code]), $asset->name, null, true)) {
                 throw ValidationException::withMessages($asset->getErrors()->toArray());
@@ -112,38 +126,105 @@ class ProjectIssueController extends Controller
             $acceptance = CheckoutAcceptance::where('checkoutable_type', Asset::class)->where('checkoutable_id', $asset->id)
                 ->where('assigned_to_id', $worker->id)->pending()->latest('id')->first()
                 ?? CreateCheckoutAcceptanceAction::run($asset, $worker);
-            DB::table('project_issues')->insert(['session_id' => $session->id, 'asset_id' => $asset->id, 'user_id' => $worker->id,
+            $issueId = DB::table('project_issues')->insertGetId(['session_id' => $session->id, 'asset_id' => $asset->id, 'user_id' => $worker->id,
                 'acceptance_id' => $acceptance->id, 'asset_tag' => $asset->asset_tag, 'recipient_name' => $worker->display_name,
+                'expected_checkin' => $return, 'asset_snapshot' => json_encode($snapshot), 'issue_note' => $request->input('note'),
+                'handover_declared_at' => now(), 'confirmed_by' => auth()->id(), 'notification_status' => 'pending',
                 'created_at' => now(), 'updated_at' => now()]);
             DB::table('project_events')->insert(['project_id' => $project->id, 'actor_id' => auth()->id(), 'action' => 'issued',
                 'description' => $asset->asset_tag.' / '.$worker->display_name, 'created_at' => now(), 'updated_at' => now()]);
 
+            DB::afterCommit(fn () => SendProjectIssueNoticeAction::run($issueId));
+
             return $acceptance;
         }, 3);
 
-        return $this->sign($session, $acceptance);
-    }
-
-    private function sign(string $session, CheckoutAcceptance $acceptance): RedirectResponse
-    {
-        session(['sign_in_place' => true, 'sign_in_place_acceptance_id' => $acceptance->id,
-            'sign_in_place_item_id' => $acceptance->checkoutable_id, 'sign_in_place_resource_type' => 'Assets',
-            'project_issue_return' => $session]);
-
-        return redirect()->route('account.accept.item', $acceptance->id);
+        return redirect()->route('projects.issue.audit', $session)->with('success', trans('projects.request_created'));
     }
 
     public function resume(string $session, int $issue): RedirectResponse
     {
-        $sessionRow = $this->session($session);
-        $issue = DB::table('project_issues')->where('session_id', $session)->where('id', $issue)->first() ?? abort(404);
-        abort_if($sessionRow->closed_at || $issue->handed_over_at || $issue->cancelled_at, 409);
-        $asset = Asset::findOrFail($issue->asset_id);
-        $this->authorize('checkout', $asset);
-        abort_unless($asset->assigned_type === User::class && (int) $asset->assigned_to === (int) $issue->user_id, 409);
-        $acceptance = CheckoutAcceptance::whereKey($issue->acceptance_id)->pending()->firstOrFail();
+        $this->session($session);
+        $record = DB::table('project_issues')->where('session_id', $session)->where('id', $issue)->first() ?? abort(404);
+        abort_if($record->cancelled_at || $record->handed_over_at, 409);
 
-        return $this->sign($session, $acceptance);
+        return redirect()->route('projects.issue.audit', $session);
+    }
+
+    private function worker(string $barcode, Project $project): User
+    {
+        $query = User::where('activated', 1);
+        if (preg_match('/^STATSSA-EMP-(\d+)$/i', $barcode, $match)) {
+            $query->whereKey((int) $match[1]);
+        } else {
+            $query->where(fn ($q) => $q->where('employee_num', $barcode)->orWhere('username', $barcode));
+        }
+        $workers = $query->get();
+        if ($workers->count() !== 1 || ! $project->canCheckoutTo($workers->first())) {
+            throw ValidationException::withMessages(['worker' => trans('projects.worker_missing')]);
+        }
+
+        return $workers->first();
+    }
+
+    public function lookupEmployee(LookupProjectIssueRequest $request, string $session): JsonResponse
+    {
+        $row = $this->session($session);
+        abort_if($row->closed_at, 409);
+        $worker = $this->worker(trim($request->validated('barcode')), Project::findOrFail($row->project_id));
+        if (! $worker->email) {
+            throw ValidationException::withMessages(['worker' => trans('projects.email_missing')]);
+        }
+
+        return response()->json(['name' => $worker->display_name, 'barcode' => 'STATSSA-EMP-'.$worker->id, 'employee_number' => $worker->employee_num, 'email' => $worker->email]);
+    }
+
+    private function assetDetails(Asset $asset): array
+    {
+        return ['id' => $asset->id, 'asset_tag' => $asset->asset_tag, 'serial' => $asset->serial, 'name' => $asset->name,
+            'model' => $asset->model?->name, 'category' => $asset->model?->category?->name,
+            'status' => $asset->status?->name, 'location' => $asset->location?->name,
+            'condition' => DB::table('asset_receipts')->where('asset_id', $asset->id)->orderByDesc('id')->value('condition') ?? 'not_recorded'];
+    }
+
+    public function lookupAsset(LookupProjectIssueRequest $request, string $session): JsonResponse
+    {
+        $row = $this->session($session);
+        abort_if($row->closed_at, 409);
+        $barcode = trim($request->validated('barcode'));
+        $assets = Asset::where(fn ($q) => $q->where('asset_tag', $barcode)->orWhere('serial', $barcode))->get();
+        if ($assets->count() !== 1) {
+            throw ValidationException::withMessages(['asset' => trans('projects.no_unique_asset', ['value' => $barcode])]);
+        }
+        $asset = $assets->first();
+        $this->authorize('checkout', $asset);
+        $reservation = DB::table('project_asset')->where('asset_id', $asset->id)->first();
+        $pending = DB::table('project_issues')->where('asset_id', $asset->id)->whereNull('handed_over_at')->whereNull('cancelled_at')->exists();
+        if ($asset->assigned_to || $pending || ($reservation && (int) $reservation->project_id !== (int) $row->project_id) || (! $reservation && ! $asset->availableForCheckout())) {
+            throw ValidationException::withMessages(['asset' => trans('projects.asset_unavailable', ['value' => $barcode])]);
+        }
+
+        return response()->json($this->assetDetails($asset));
+    }
+
+    public function audit(string $session): View
+    {
+        $this->authorize('issue', Project::class);
+        $session = DB::table('project_issue_sessions')->where('id', $session)->whereIn('project_id', Project::select('id'))->first() ?? abort(404);
+        $project = Project::findOrFail($session->project_id);
+        $issues = DB::table('project_issues as i')->leftJoin('checkout_acceptances as a', 'a.id', '=', 'i.acceptance_id')->where('i.session_id', $session->id)->select('i.*', 'a.accepted_at', 'a.declined_at')->orderByDesc('i.id')->get();
+
+        return view('projects.issue-audit', compact('session', 'project', 'issues'));
+    }
+
+    public function resend(ProjectAssetRequest $request, string $session, int $issue): RedirectResponse
+    {
+        $this->session($session);
+        $record = DB::table('project_issues')->where('session_id', $session)->where('id', $issue)->first() ?? abort(404);
+        abort_if($record->cancelled_at || $record->handed_over_at, 409);
+        SendProjectIssueNoticeAction::run($record->id);
+
+        return redirect()->route('projects.issue.audit', $session);
     }
 
     public function handover(ProjectAssetRequest $request, string $session, int $issue): RedirectResponse
@@ -172,9 +253,6 @@ class ProjectIssueController extends Controller
     {
         DB::transaction(function () use ($session): void {
             $this->session($session, true);
-            if (DB::table('project_issues')->where('session_id', $session)->whereNull('handed_over_at')->whereNull('cancelled_at')->exists()) {
-                throw ValidationException::withMessages(['asset' => trans('projects.finish_handover')]);
-            }
             DB::table('project_issue_sessions')->where('id', $session)->update(['closed_at' => now(), 'updated_at' => now()]);
         });
 

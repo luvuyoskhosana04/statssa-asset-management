@@ -51,9 +51,9 @@
     @endif
 
 
-        <link rel="stylesheet" href="{{ asset('css/interface-refresh.css') }}?v=85">
-        <link rel="stylesheet" href="{{ asset('css/icon-states.css') }}?v=2">
-        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=40">
+        <link rel="stylesheet" href="{{ asset('css/interface-refresh.css') }}?v=92">
+        <link rel="stylesheet" href="{{ asset('css/icon-states.css') }}?v=3">
+        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=43">
 
     <script nonce="{{ csrf_token() }}">
         window.snipeit = {
@@ -342,7 +342,7 @@
                                                 </a>
                                             </li>
                                         @endcan
-                                        
+
                                         <li class="divider"></li>
                                         <li>
                                             <a href="{{ route('logout.get') }}"
@@ -418,7 +418,7 @@
                                         @can('view', \App\Models\Asset::class)
                                             <li{!! (request()->is('maintenances') ? ' class="active" aria-current="page"' : '') !!}>
                                             <a href="{{ route('maintenances.index') }}">
-                                                <x-icon type="circle" class="text-grey fa-fw"/>
+
                                                 {{ trans('general.list_all') }}
                                             </a>
                                         </li>
@@ -426,7 +426,7 @@
                                         @can('index', \App\Models\MaintenanceType::class)
                                             <li{!! (request()->is('maintenance-types*') ? ' class="active" aria-current="page"' : '') !!}>
                                                 <a href="{{ route('maintenance-types.index') }}">
-                                                    <x-icon type="circle" class="text-grey fa-fw"/>
+
                                                     {{ trans('admin/maintenance_types/general.maintenance_types') }}
                                             </a>
                                         </li>
@@ -498,37 +498,37 @@
                                     <ul class="treeview-menu">
                                         <li {!! ((request()->is('users')  && (request()->input() == null)) ? ' class="active" aria-current="page"' : '') !!} id="users-sidenav-list-all">
                                             <a href="{{ route('users.index') }}">
-                                                <x-icon type="circle" class="text-grey fa-fw fa-fw"/>
+
                                                 {{ trans('general.list_all') }}
                                             </a>
                                         </li>
                                         <li class="{{ (request()->is('users') && request()->input('superadmins') == "true") ? 'active' : '' }}" id="users-sidenav-superadmins">
                                             <a href="{{ route('users.index', ['superadmins' => 'true']) }}">
-                                                <x-icon type="superadmin" class="text-danger fa-fw"/>
+
                                                 {{ trans('general.show_superadmins') }}
                                             </a>
                                         </li>
                                         <li class="{{ (request()->is('users') && request()->input('admins') == "true") ? 'active' : '' }}" id="users-sidenav-list-admins">
                                             <a href="{{ route('users.index', ['admins' => 'true']) }}">
-                                                <x-icon type="admin" class="text-warning fa-fw"/>
+
                                                 {{ trans('general.show_admins') }}
                                             </a>
                                         </li>
                                         <li class="{{ (request()->is('users') && request()->input('status') == "deleted") ? 'active' : '' }}" id="users-sidenav-deleted">
                                             <a href="{{ route('users.index', ['status' => 'deleted']) }}">
-                                                <x-icon type="x" class="text-danger fa-fw"/>
+
                                                 {{ trans('general.deleted_users') }}
                                             </a>
                                         </li>
                                         <li class="{{ (request()->is('users') && request()->input('activated') == "1") ? 'active' : '' }}" id="users-sidenav-activated">
                                             <a href="{{ route('users.index', ['activated' => true]) }}">
-                                                <i class="fa-solid fa-person-circle-check text-success fa-fw"></i>
+
                                                 {{ trans('general.login_enabled') }}
                                             </a>
                                         </li>
                                         <li class="{{ (request()->is('users') && request()->input('activated') == "0") ? 'active' : '' }}" id="users-sidenav-not-activated">
                                             <a href="{{ route('users.index', ['activated' => false]) }}">
-                                                <i class="fa-solid fa-person-circle-xmark text-danger fa-fw"></i>
+
                                                 {{ trans('general.login_disabled') }}
                                             </a>
                                         </li>
@@ -1369,7 +1369,7 @@
             window.SnipePresentation.restored_form_input = @json(session()->has('_old_input'));
             window.SnipeTableViews = @json(\App\Presenters\Presenter::tableViews());
         </script>
-        <script defer src="{{ asset('js/interface-presentation.js') }}?v=32" nonce="{{ csrf_token() }}"></script>
+        <script defer src="{{ asset('js/interface-presentation.js') }}?v=33" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/table-column-filters.js') }}?v=7" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/table-pagination.js') }}?v=1" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/interface-motion.js') }}?v=8" nonce="{{ csrf_token() }}"></script>

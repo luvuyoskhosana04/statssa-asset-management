@@ -14,6 +14,101 @@ use Tests\TestCase;
 
 class NewAssetIntakeTest extends TestCase
 {
+    public function test_two_scan_receipt_keeps_original_serial_and_statssa_tag_and_replays_safely(): void
+    {
+        $this->actingAs(User::factory()->superuser()->create());
+        $body = $this->body();
+        $body['intake_mode'] = 'two_scan';
+        $body['items'] = [['serial' => 'MANUFACTURER-001', 'asset_tag' => 'STATSSA-001']];
+        $this->postJson(route('hardware.receive.new-batches.store'), $body)->assertJsonPath('status', 'success');
+        $this->postJson(route('hardware.receive.new-batches.store'), $body)->assertJsonPath('status', 'success');
+        $this->assertDatabaseHas('assets', ['serial' => 'MANUFACTURER-001', 'asset_tag' => 'STATSSA-001']);
+        $this->assertDatabaseHas('asset_receipts', ['serial' => 'MANUFACTURER-001', 'asset_tag' => 'STATSSA-001']);
+        $this->assertDatabaseCount('assets', 1);
+        $this->assertDatabaseCount('asset_receipt_batches', 1);
+    }
+
+    public function test_two_scan_requires_both_codes_and_rejects_cross_item_collisions_atomically(): void
+    {
+        $this->actingAs(User::factory()->superuser()->create());
+        $body = $this->body();
+        $body['intake_mode'] = 'two_scan';
+        foreach ([
+            [['asset_tag' => 'TAG']],
+            [['serial' => 'SAME', 'asset_tag' => 'same']],
+            [['serial' => 'SERIAL-1', 'asset_tag' => 'TAG-1'], ['serial' => 'TAG-1', 'asset_tag' => 'TAG-2']],
+        ] as $items) {
+            $body['items'] = $items;
+            $this->postJson(route('hardware.receive.new-batches.store'), $body)->assertJsonPath('status', 'error');
+            $this->assertDatabaseCount('assets', 0);
+            $this->assertDatabaseCount('asset_receipt_batches', 0);
+        }
+    }
+
+    public function test_final_two_scan_save_rechecks_original_barcode_against_existing_assets(): void
+    {
+        Asset::factory()->create(['asset_tag' => 'EXISTING-ORIGINAL']);
+        $this->actingAs(User::factory()->superuser()->create());
+        $body = $this->body();
+        $body['intake_mode'] = 'two_scan';
+        $body['items'] = [['serial' => 'EXISTING-ORIGINAL', 'asset_tag' => 'NEW-TAG']];
+        $this->postJson(route('hardware.receive.new-batches.store'), $body)->assertJsonPath('status', 'error');
+        $this->assertDatabaseCount('assets', 1);
+        $this->assertDatabaseCount('asset_receipt_batches', 0);
+    }
+
+    public function test_two_scan_draft_preserves_pending_and_received_stages_without_creating_inventory(): void
+    {
+        $this->actingAs(User::factory()->superuser()->create());
+        $data = ['version' => 2, 'request_key' => (string) Str::uuid(), 'items' => [
+            ['id' => (string) Str::uuid(), 'serial' => 'WAITING-001', 'asset_tag' => '', 'model_id' => null, 'stage' => 'pending'],
+            ['id' => (string) Str::uuid(), 'serial' => 'ORIGINAL-002', 'asset_tag' => 'STATSSA-002', 'model_id' => null, 'stage' => 'received'],
+        ]];
+        $this->postJson(route('hardware.receive.drafts.store'), $data)->assertJsonPath('status', 'success');
+        $payload = json_decode(DB::table('asset_receiving_drafts')->where('id', $data['request_key'])->value('payload'), true);
+        $this->assertSame(2, $payload['version']);
+        $this->assertEquals($data['items'], $payload['items']);
+        $this->get(route('hardware.receive.drafts.resume', $data['request_key']))->assertOk()->assertSee('WAITING-001')->assertSee('STATSSA-002');
+        $this->assertDatabaseCount('assets', 0);
+    }
+
+    public function test_two_barcode_receiving_needs_no_model_selection_and_reuses_unclassified_metadata(): void
+    {
+        $this->actingAs(User::factory()->viewAssets()->createAssets()->create());
+        $data = ['request_key' => (string) Str::uuid(), 'intake_mode' => 'two_scan',
+            'status_id' => Statuslabel::factory()->readyToDeploy()->create()->id,
+            'items' => [['serial' => 'ORIGINAL-NO-MODEL-1', 'asset_tag' => 'STATSSA-NO-MODEL-1']]];
+        $this->get(route('hardware.receive.create'))->assertOk()
+            ->assertDontSee('id="receive-manual-model"', false)
+            ->assertDontSee('Choose an asset model')
+            ->assertSee(trans('intake.barcode'))->assertSee(trans('intake.tag_label'));
+        $this->postJson(route('hardware.receive.new-batches.store'), $data)->assertJsonPath('status', 'success');
+        $this->postJson(route('hardware.receive.new-batches.store'), $data)->assertJsonPath('status', 'success');
+        $asset = Asset::where('asset_tag', 'STATSSA-NO-MODEL-1')->firstOrFail();
+        $this->assertSame('ORIGINAL-NO-MODEL-1', $asset->serial);
+        $this->assertSame('Model not specified', $asset->model->name);
+        $this->assertSame('Unclassified received assets', $asset->model->category->name);
+        $data['request_key'] = (string) Str::uuid();
+        $data['items'] = [['serial' => 'ORIGINAL-NO-MODEL-2', 'asset_tag' => 'STATSSA-NO-MODEL-2']];
+        $this->postJson(route('hardware.receive.new-batches.store'), $data)->assertJsonPath('status', 'success');
+        $this->assertDatabaseCount('assets', 2);
+        $this->assertDatabaseCount('models', 1);
+        $this->assertSame(1, DB::table('categories')->where('name', 'Unclassified received assets')->count());
+        $this->assertDatabaseCount('asset_receipt_batches', 2);
+    }
+
+    public function test_failed_model_free_receipt_rolls_back_unclassified_metadata(): void
+    {
+        $this->actingAs(User::factory()->superuser()->create());
+        $data = ['request_key' => (string) Str::uuid(), 'intake_mode' => 'two_scan',
+            'status_id' => Statuslabel::factory()->readyToDeploy()->create()->id,
+            'items' => [['serial' => 'SAME-CODE', 'asset_tag' => 'same-code']]];
+        $this->postJson(route('hardware.receive.new-batches.store'), $data)->assertJsonPath('status', 'error');
+        $this->assertDatabaseCount('assets', 0);
+        $this->assertDatabaseCount('models', 0);
+        $this->assertDatabaseMissing('categories', ['name' => 'Unclassified received assets']);
+    }
+
     private function body(): array
     {
         return ['request_key' => (string) Str::uuid(), 'model_id' => AssetModel::factory()->create()->id,
@@ -33,6 +128,91 @@ class NewAssetIntakeTest extends TestCase
             ->assertDontSee('id="receive-start"', false)->assertDontSee('id="receive-serial-form"', false)->assertDontSee('data-lookup=', false);
         $this->assertDatabaseCount('assets', 0);
         $this->assertDatabaseCount('asset_receipt_batches', 0);
+    }
+
+    public function test_barcode_check_rejects_existing_tags_and_serials_without_exposing_records(): void
+    {
+        $asset = Asset::factory()->create(['asset_tag' => 'KNOWN-TAG', 'serial' => 'KNOWN-SERIAL']);
+        $this->actingAs(User::factory()->viewAssets()->createAssets()->create());
+        foreach (['KNOWN-TAG', 'KNOWN-SERIAL'] as $barcode) {
+            $response = $this->postJson(route('hardware.receive.check-barcode'), ['barcode' => $barcode])
+                ->assertOk()->assertJsonPath('payload.available', false);
+            $this->assertSame(['available' => false], $response->json('payload'));
+        }
+        $asset->delete();
+        $this->postJson(route('hardware.receive.check-barcode'), ['barcode' => 'KNOWN-TAG'])
+            ->assertOk()->assertJsonPath('payload.available', false);
+        $this->postJson(route('hardware.receive.check-barcode'), ['barcode' => 'NEW-BARCODE'])
+            ->assertOk()->assertJsonPath('payload.available', true);
+        $this->assertDatabaseCount('assets', 1);
+        $this->assertDatabaseCount('asset_receipt_batches', 0);
+    }
+
+    public function test_barcode_check_requires_permission_and_valid_input(): void
+    {
+        User::factory()->superuser()->create();
+        $this->postJson(route('hardware.receive.check-barcode'), ['barcode' => 'NEW'])->assertUnauthorized();
+        $this->actingAs(User::factory()->viewAssets()->create());
+        $this->postJson(route('hardware.receive.check-barcode'), ['barcode' => 'NEW'])->assertForbidden();
+        $this->actingAs(User::factory()->superuser()->create());
+        foreach (['', str_repeat('x', 256), "BAD\nCODE"] as $barcode) {
+            $this->postJson(route('hardware.receive.check-barcode'), ['barcode' => $barcode])->assertJsonPath('status', 'error');
+        }
+    }
+
+    public function test_final_save_also_rejects_a_barcode_that_matches_an_existing_serial(): void
+    {
+        Asset::factory()->create(['serial' => 'KNOWN-SERIAL']);
+        $this->actingAs(User::factory()->superuser()->create());
+        $body = $this->body();
+        $body['items'] = [['asset_tag' => 'KNOWN-SERIAL']];
+        $this->postJson(route('hardware.receive.new-batches.store'), $body)->assertJsonPath('status', 'error');
+        $this->assertDatabaseCount('assets', 1);
+        $this->assertDatabaseCount('asset_receipt_batches', 0);
+    }
+
+    public function test_drafts_are_saved_listed_and_resumed_for_their_owner_only(): void
+    {
+        $owner = User::factory()->superuser()->create();
+        $this->actingAs($owner);
+        $data = ['request_key' => (string) Str::uuid(), 'items' => [['asset_tag' => 'DRAFT-ONLY', 'model_id' => null]]];
+        $this->postJson(route('hardware.receive.drafts.store'), $data)->assertOk()->assertJsonPath('status', 'success');
+        $this->get(route('hardware.receive.index', ['tab' => 'drafts']))->assertOk()->assertSee('Resume draft');
+        $this->get(route('hardware.receive.drafts.resume', $data['request_key']))->assertOk()->assertSee('DRAFT-ONLY');
+        $this->assertDatabaseCount('assets', 0);
+        $this->assertDatabaseCount('asset_receipt_batches', 0);
+        $this->actingAs(User::factory()->superuser()->create());
+        $this->get(route('hardware.receive.index', ['tab' => 'drafts']))->assertOk()->assertDontSee(strtoupper(substr($data['request_key'], 0, 8)));
+        $this->get(route('hardware.receive.drafts.resume', $data['request_key']))->assertNotFound();
+        $this->postJson(route('hardware.receive.drafts.store'), $data)->assertForbidden();
+        $this->deleteJson(route('hardware.receive.drafts.discard', $data['request_key']))->assertOk();
+        $this->assertDatabaseHas('asset_receiving_drafts', ['id' => $data['request_key'], 'user_id' => $owner->id]);
+    }
+
+    public function test_saving_a_draft_again_updates_it_without_creating_another_session(): void
+    {
+        $this->actingAs(User::factory()->superuser()->create());
+        $data = ['request_key' => (string) Str::uuid(), 'items' => [['asset_tag' => 'DRAFT-ONLY']]];
+        $this->postJson(route('hardware.receive.drafts.store'), $data)->assertOk();
+        $data['items'][] = ['asset_tag' => 'SECOND'];
+        $this->postJson(route('hardware.receive.drafts.store'), $data)->assertOk();
+        $this->assertDatabaseCount('asset_receiving_drafts', 1);
+        $this->assertDatabaseHas('asset_receiving_drafts', ['id' => $data['request_key'], 'item_count' => 2]);
+        $this->deleteJson(route('hardware.receive.drafts.discard', $data['request_key']))->assertOk();
+        $this->assertDatabaseCount('asset_receiving_drafts', 0);
+    }
+
+    public function test_draft_permissions_and_final_receipt_remove_the_saved_draft(): void
+    {
+        $this->actingAs(User::factory()->viewAssets()->create());
+        $this->postJson(route('hardware.receive.drafts.store'), [])->assertForbidden();
+        $this->get(route('hardware.receive.drafts.resume', (string) Str::uuid()))->assertForbidden();
+        $this->actingAs(User::factory()->superuser()->create());
+        $body = $this->body();
+        $this->postJson(route('hardware.receive.drafts.store'), $body)->assertOk();
+        $this->postJson(route('hardware.receive.new-batches.store'), $body)->assertJsonPath('status', 'success');
+        $this->assertDatabaseCount('asset_receiving_drafts', 0);
+        $this->postJson(route('hardware.receive.drafts.store'), $body)->assertStatus(409);
     }
 
     public function test_operator_signin_and_asset_creation_permission_are_still_required(): void

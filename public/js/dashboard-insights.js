@@ -22,9 +22,36 @@
         if (label === root.dataset.pending) return 'var(--ui-status-pending)';
         return 'var(--ui-chart-series-3, var(--ui-muted))';
     }
+    function statusMeters(card, rows) {
+        var body = card.querySelector('.insight-bars'), button = card.querySelector('.insight-expand');
+        body.classList.add('insight-status-meters');
+        var total = payload.assets.total, expanded = false;
+        rows = rows.slice().sort(function (a, b) { return b.count - a.count || a.label.localeCompare(b.label); });
+        function draw() {
+            body.replaceChildren();
+            if (!rows.length) { var empty = document.createElement('p'); empty.className = 'help-block'; empty.textContent = copy.chart_empty; body.appendChild(empty); button.hidden = true; return; }
+            var list = document.createElement('ul'); list.className = 'insight-status-list';
+            (expanded ? rows : rows.slice(0, 6)).forEach(function (row) {
+                var share = total ? row.count / total * 100 : 0;
+                var item = document.createElement('li'), label = document.createElement('span'), percent = document.createElement('strong');
+                label.className = 'status-meter-label'; label.textContent = row.label;
+                percent.className = 'status-meter-percent'; percent.textContent = decimals.format(share) + '%';
+                var track = document.createElement('span'), fill = document.createElement('span');
+                track.className = 'status-meter-track'; track.setAttribute('aria-hidden', 'true');
+                fill.className = 'insight-bar-fill'; fill.style.width = Math.max(0, Math.min(100, share)) + '%'; fill.style.backgroundColor = barColor('statuses', row.label); track.appendChild(fill);
+                var context = document.createElement('span'); context.className = 'status-meter-context'; context.textContent = interpolate(copy.chart_status_total, {count: numbers.format(row.count), total: numbers.format(total)});
+                item.append(label, percent, track, context); list.appendChild(item);
+            });
+            body.appendChild(list); revealBars(body);
+            button.hidden = rows.length <= 6; button.textContent = expanded ? copy.chart_show_less : interpolate(copy.chart_show_all, {count: numbers.format(rows.length)}); button.setAttribute('aria-expanded', String(expanded));
+        }
+        button.onclick = function () { expanded = !expanded; draw(); }; draw();
+    }
     function chart(name, rows, financial) {
         var card = document.querySelector('[data-insight-chart="' + name + '"]');
         if (!card) return;
+        if (name === 'statuses') { statusMeters(card, rows); return; }
+        if (window.StatsDashboardCharts && window.StatsDashboardCharts.render(name, rows, financial, copy)) return;
         var body = card.querySelector('.insight-bars'), button = card.querySelector('.insight-expand');
         rows = rows.slice().sort(function (a, b) { return (financial ? b.amount - a.amount : b.count - a.count) || a.label.localeCompare(b.label); });
         var max = Math.max.apply(null, rows.map(function (row) { return financial ? row.amount : row.count; }).concat([0]));
@@ -60,10 +87,10 @@
         if (!payload.assets) return;
         var costs = payload.assets.costs, selector = document.getElementById('insight-currency');
         var total = costs.totals.find(function (row) { return row.currency === selector.value; });
-        if (window.StatsPurchaseCost) window.StatsPurchaseCost.render(costs.timeline || [], selector.value);
+        var priced = costs.totals.reduce(function (sum, row) { return sum + row.priced; }, 0);
+        if (window.StatsPurchaseCost) window.StatsPurchaseCost.render(costs.timeline || [], selector.value, {pricedTotal: priced, assetTotal: payload.assets.total});
         text('insight-cost-total', total ? total.currency + ' ' + money.format(total.amount) : copy.chart_empty);
         text('insight-priced-count', total ? interpolate(copy.chart_priced, {count: numbers.format(total.priced)}) : '');
-        var priced = costs.totals.reduce(function (sum, row) { return sum + row.priced; }, 0);
         text('insight-unknown-costs', interpolate(copy.chart_unknown_costs, {count: numbers.format(Math.max(0, payload.assets.total - priced))}));
         ['location', 'manufacturer', 'department'].forEach(function (group) {
             chart('cost_' + group, (costs[group] || []).filter(function (row) { return row.currency === selector.value; }), true);

@@ -665,3 +665,25 @@ body.ui-refresh{--ui-delete-ink:#b4232a;--ui-delete-bg:#fbe4e5;--ui-delete-hover
 .ui-refresh .btn-danger{background:var(--ui-delete-bg)!important;color:var(--ui-delete-ink)!important}
 .ui-refresh .btn-danger:not(:disabled):not(.disabled):is(:hover,:focus){background:var(--ui-delete-hover)!important;color:var(--ui-delete-ink)!important}
 .ui-refresh .btn-danger:not(:disabled):not(.disabled):active{background:var(--ui-delete-pressed)!important}
+
+/* A lighter selection tint identifies the row under the pointer at every nav level. */
+body.ui-refresh {--ui-nav-hover-bg:color-mix(in srgb,var(--ui-brand-green-soft) 75%,var(--ui-surface));}
+.ui-refresh .main-sidebar .sidebar-menu>li:not(.active)>a:is(:hover,:focus-visible),
+.ui-refresh .main-sidebar .sidebar-menu>li.menu-open:not(.active)>a,
+.ui-refresh .main-sidebar .sidebar-menu .treeview-menu>li:not(.active)>:is(a,button):is(:hover,:focus-visible),
+.ui-refresh .main-sidebar .sidebar-menu .treeview-menu>li:not(.active)>.asset-nav-trigger[aria-expanded=true],
+.ui-refresh .asset-nav-panel .asset-nav-links>li:not(.active)>a:is(:hover,:focus-visible) {
+    background:var(--ui-nav-hover-bg,var(--stats-sage-50))!important;
+    color:var(--ui-brand-green)!important;
+}
+.ui-refresh .asset-nav-panel .asset-nav-links>li.active>a,
+.ui-refresh .main-sidebar .sidebar-menu .asset-nav-group.active>.asset-nav-trigger {
+    background:var(--ui-brand-green-soft)!important;color:var(--ui-brand-green)!important;
+}
+
+/* Submenus use text labels and counts; only disclosure chevrons remain. */
+.ui-refresh .main-sidebar .treeview-menu :is(a,button)>:is(i,svg,span[class*="fa-"]):not(.pull-right):not(.fa-angle-left):not(.fa-angle-right):not(.fa-chevron-left):not(.fa-chevron-right):not(.fa-caret-left):not(.fa-caret-right),
+.ui-refresh .asset-nav-panel .asset-nav-links :is(a,button)>:is(i,svg,span[class*="fa-"]):not(.pull-right):not(.fa-angle-left):not(.fa-angle-right):not(.fa-chevron-left):not(.fa-chevron-right):not(.fa-caret-left):not(.fa-caret-right) {display:none!important;}
+
+/* Emphasise the total asset count with the brand sand accent. */
+.ui-refresh .sidebar-menu .asset-nav-groups>li>a.asset-nav-trigger[aria-controls="asset-nav-status"]>.badge{background:var(--stats-sand-700,#7d6d4f)!important;color:#fff!important;font-weight:700}

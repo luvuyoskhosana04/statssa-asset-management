@@ -17,6 +17,11 @@ Route::middleware('auth')->prefix('projects')->name('projects.')->group(function
     Route::post('asset-issue', [ProjectIssueController::class, 'start'])->name('issue.start');
     Route::get('asset-issue/{session}', [ProjectIssueController::class, 'show'])->whereUuid('session')->name('issue.show')
         ->breadcrumbs(fn (Trail $trail, string $session) => $trail->parent('projects.issue.index')->push(trans('projects.session'), route('projects.issue.show', $session)));
+    Route::post('asset-issue/{session}/lookup-employee', [ProjectIssueController::class, 'lookupEmployee'])->whereUuid('session')->name('issue.lookup-employee');
+    Route::post('asset-issue/{session}/lookup-asset', [ProjectIssueController::class, 'lookupAsset'])->whereUuid('session')->name('issue.lookup-asset');
+    Route::get('asset-issue/{session}/audit', [ProjectIssueController::class, 'audit'])->whereUuid('session')->name('issue.audit')
+        ->breadcrumbs(fn (Trail $trail, string $session) => $trail->parent('projects.issue.index')->push(trans('projects.audit'), route('projects.issue.audit', $session)));
+    Route::post('asset-issue/{session}/{issue}/resend', [ProjectIssueController::class, 'resend'])->whereUuid('session')->whereNumber('issue')->name('issue.resend');
     Route::post('asset-issue/{session}/issue', [ProjectIssueController::class, 'store'])->whereUuid('session')->name('issue.store');
     Route::post('asset-issue/{session}/close', [ProjectIssueController::class, 'close'])->whereUuid('session')->name('issue.close');
     Route::get('asset-issue/{session}/{issue}/sign', [ProjectIssueController::class, 'resume'])->whereUuid('session')->whereNumber('issue')->name('issue.sign')

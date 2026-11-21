@@ -6,13 +6,12 @@
         <h2 class="box-title">{{ trans('projects.all') }}</h2>
         <div class="project-actions">
             @can('issue', \App\Models\Project::class)<a class="btn btn-default" href="{{ route('projects.issue.index') }}">{{ trans('projects.issue') }}</a>@endcan
-            @can('create', \App\Models\Project::class)<a class="btn btn-primary" href="{{ route('projects.create') }}"><x-icon type="plus" /> {{ trans('projects.create') }}</a>@endcan
         </div>
     </div>
     <div class="box-body">
         <p class="help-block">{{ trans('projects.local_source') }}</p>
         <form method="get" action="{{ route('projects.index') }}" class="project-filters">
-            <div><label for="project-status">{{ trans('general.status') }}</label><select id="project-status" name="status" class="form-control">
+            <div class="project-search"><label for="project-directory">{{ trans('projects.choose_project') }}</label><select id="project-directory" name="project_id" class="form-control"><option value="">{{ trans('projects.all') }}</option>@foreach($projectOptions as $option)<option value="{{ $option->id }}" @selected((int)request('project_id') === $option->id)>{{ $option->name }} ({{ $option->code }})</option>@endforeach</select></div><div><label for="project-status">{{ trans('general.status') }}</label><select id="project-status" name="status" class="form-control">
                 @foreach (['active', 'planned', 'suspended', 'ended', 'all'] as $status)<option value="{{ $status }}" @selected(request('status', 'active') === $status)>{{ trans('projects.'.$status) }}</option>@endforeach
             </select></div>
             <div class="project-search"><label for="project-search">{{ trans('general.search') }}</label><input class="form-control" id="project-search" type="search" name="search" maxlength="255" placeholder="{{ trans('projects.search') }}" value="{{ request('search') }}"></div>

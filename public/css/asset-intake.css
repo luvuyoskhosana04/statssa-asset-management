@@ -46,3 +46,44 @@
 .barcode-intake .intake-scan-card:focus-within{box-shadow:0 0 0 2px var(--ui-focus,#e4d8c1)}
 
 .barcode-intake .intake-guide:before,.barcode-intake .intake-guide:after,.barcode-intake .intake-draft-footer:before,.barcode-intake .intake-draft-footer:after{display:none}
+.ui-refresh #receive-message.alert-danger,.ui-refresh #receive-manual-error.alert-danger,.ui-refresh #receive-draft-save-error.alert-danger{background:#fff0ee!important;color:#a12622!important;border:1px solid #e5a39e!important;border-left:4px solid #c63730!important;font-weight:600}
+.ui-refresh #receive-message.alert-danger *,.ui-refresh #receive-manual-error.alert-danger *,.ui-refresh #receive-draft-save-error.alert-danger *{color:#a12622!important}
+[data-theme=dark] .ui-refresh #receive-message.alert-danger,[data-theme=dark] .ui-refresh #receive-manual-error.alert-danger,[data-theme=dark] .ui-refresh #receive-draft-save-error.alert-danger{background:#41221f!important;color:#ffc3be!important;border-color:#b65d56!important}
+[data-theme=dark] .ui-refresh #receive-message.alert-danger *,[data-theme=dark] .ui-refresh #receive-manual-error.alert-danger *,[data-theme=dark] .ui-refresh #receive-draft-save-error.alert-danger *{color:#ffc3be!important}
+.receiving-tabs{display:flex;gap:8px;border-bottom:1px solid var(--ui-line,#e4e1dc);margin-bottom:20px;padding-bottom:8px}
+.receiving-tabs a{display:inline-flex;align-items:center;gap:8px;padding:12px 16px;min-height:44px;border-radius:7px;color:var(--ui-ink,#30322f)}
+.receiving-tabs [aria-current=page]{background:var(--ui-alt,#f5f4f0);box-shadow:inset 0 -3px var(--ui-primary-button,#996735);font-weight:600}
+.receiving-tabs a span{font-size:12px;padding:2px 7px;border-radius:5px;background:var(--ui-selection,#eee6d7)}
+#receiving-recovery[hidden]{display:none!important}
+
+.ui-refresh .receipt-history-panel .receipt-history-toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.ui-refresh .receipt-history-panel .receipt-history-toolbar:before,.ui-refresh .receipt-history-panel .receipt-history-toolbar:after{display:none}
+.barcode-intake .intake-scanner-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.barcode-intake .intake-scanner-status{display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:7px 12px;border-radius:7px;font-size:12px;font-weight:600;background:var(--ui-alt,#f5f4f0);color:var(--ui-muted,#615b51)}
+.barcode-intake .intake-scanner-status:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
+.ui-refresh .barcode-intake .intake-scanner-status[data-state=ready]{background:var(--ui-success-soft,#e9f0eb);color:var(--ui-success,#496358)}
+.ui-refresh .barcode-intake .intake-scanner-status[data-state=error]{background:#fff0ee;color:#a12622}
+.ui-refresh .barcode-intake .intake-scanner-status[data-state=paused]{background:var(--ui-warning-soft,#f4ead5);color:var(--ui-warning,#745f30)}
+.barcode-intake .intake-scanner-help{padding:0 24px 18px;margin:0;font-size:12px}
+.barcode-intake .intake-scanner-controls .btn{min-height:36px;font-size:12px}
+@media(max-width:767px){.barcode-intake .intake-scanner-controls{width:100%;justify-content:flex-start}.barcode-intake .intake-scanner-help{padding:0 16px 16px}}
+
+.receipt-history-toolbar .receiving-tabs{border-bottom:0;margin:0;padding:0;flex-shrink:0}
+.receipt-history-toolbar .receiving-tabs a{padding:10px 14px;white-space:nowrap}
+@media(max-width:767px){.receipt-history-toolbar .receiving-tabs{width:100%;overflow-x:auto}}
+
+#receiving-delete-error[hidden]{display:none!important}
+.receiving-delete-draft{margin:4px 0 4px 6px}
+
+/* The next Stats SA scan is captured directly in its asset row. */
+.barcode-intake .intake-active-item {background:var(--ui-selection,#f7f3e9); border-left:3px solid var(--ui-primary-button,#996633);}
+.barcode-intake .intake-pending-table th {min-width:190px;}
+.barcode-intake [data-item-action] {margin:3px 6px 3px 0; white-space:normal;}
+.barcode-intake .intake-pending-table .help-block {max-width:330px; font-weight:400; font-size:12px;}
+.barcode-intake .intake-tagging-panel {margin-bottom:22px;}
+.barcode-intake .intake-draft-table th:first-child {width:auto;}
+
+.barcode-intake .intake-scanner-dock{position:relative;display:block;height:0;}
+.barcode-intake .intake-pending-table .intake-row-tag{min-width:240px;font-weight:400;}
+.barcode-intake .intake-row-tag[readonly]{cursor:pointer;background:var(--ui-surface,#fff);}
+.barcode-intake .intake-pending-table :is(th,td){vertical-align:middle;}

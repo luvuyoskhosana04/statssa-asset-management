@@ -1,6 +1,23 @@
 <?php
 
 return [
+    'chart_cost_recorded_value' => 'Recorded acquisition value · All years',
+    'chart_cost_latest_month' => 'Latest purchase month',
+    'chart_cost_coverage' => 'cost coverage',
+    'chart_cost_coverage_count' => ':count of :total active assets have a recorded cost',
+    'chart_cost_all_currencies' => 'Across all currencies',
+    'chart_cost_ledger' => 'The purchases behind the total',
+    'chart_cost_ledger_help' => 'Recorded acquisitions, grouped by purchase month. Most recent first.',
+    'chart_cost_all_years' => 'All years',
+    'chart_active_assets' => 'active assets',
+    'chart_cost_composition' => 'Share of recorded purchase cost in the selected currency',
+    'chart_status_total' => ':count / :total active assets',
+    'chart_cost_calendar_context' => ':year · Months with purchases: :count',
+    'chart_cost_all_records' => 'Total recorded purchase cost',
+    'chart_cost_average' => 'Average per priced asset',
+    'chart_cost_calendar' => 'Purchase calendar',
+    'chart_cost_select_month' => 'Select a month to see its recorded cost.',
+    'chart_cost_year' => 'Purchase year',
     'chart_cost_timeline' => 'Recorded cost by purchase date',
     'chart_cost_monthly' => 'Monthly recorded cost',
     'chart_cost_quarterly' => 'Quarterly recorded cost',

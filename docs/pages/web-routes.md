@@ -458,6 +458,13 @@ Verified on 20 November 2026. Local project management and issue sessions use th
 
 | Method | Path | Route name | Handler |
 | --- | --- | --- | --- |
+| `POST` | `/hardware/receive-tag/check-barcode` | `hardware.receive.check-barcode` | [AssetReceivingController@checkBarcode](../../app/Http/Controllers/Assets/AssetReceivingController.php) |
+| `POST` | `/hardware/receive-tag/drafts` | `hardware.receive.drafts.store` | AssetReceivingController@saveDraft |
+| `GET` | `/hardware/receive-tag/drafts/{draft}` | `hardware.receive.drafts.resume` | AssetReceivingController@create |
+| `DELETE` | `/hardware/receive-tag/drafts/{draft}` | `hardware.receive.drafts.discard` | AssetReceivingController@discardDraft |
 | `POST` | `/hardware/receive-tag/new-batches` | `hardware.receive.new-batches.store` | [AssetReceivingController@storeNewBatch](../../app/Http/Controllers/Assets/AssetReceivingController.php) |
 
 The web authentication and CSRF middleware remain enabled. Asset creation and viewing permissions are required. Scanning drafts does not create records; the final request creates the full batch atomically.
+
+
+Drafts are stored per signed-in user and do not create inventory records. The final receipt save removes its corresponding draft.

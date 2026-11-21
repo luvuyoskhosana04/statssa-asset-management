@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ProjectAssetRequest;
 use App\Http\Requests\SaveProjectRequest;
 use App\Models\Asset;
-use App\Models\Company;
-use App\Models\Location;
 use App\Models\Project;
 use App\Models\Statuslabel;
 use App\Models\User;
@@ -23,7 +21,11 @@ class ProjectsController extends Controller
     public function index(Request $request): View
     {
         $this->authorize('view', Project::class);
+        $options = Project::orderBy('name')->get(['id', 'name', 'code']);
         $query = Project::query()->with('location')->withCount('assets');
+        if ($request->filled('project_id')) {
+            $query->whereKey($request->integer('project_id'));
+        }
         if (Gate::allows('view', User::class)) {
             $query->withCount('members');
         }
@@ -34,74 +36,27 @@ class ProjectsController extends Controller
             $query->where(fn ($q) => $q->where('name', 'like', '%'.$search.'%')->orWhere('code', 'like', '%'.$search.'%'));
         }
 
-        return view('projects.index', ['projects' => $query->orderBy('name')->paginate(20)->withQueryString()]);
+        return view('projects.index', ['projects' => $query->orderBy('name')->paginate(20)->withQueryString(), 'projectOptions' => $options]);
     }
 
     public function create(): View
     {
-        $this->authorize('create', Project::class);
-
-        return $this->form(new Project(['status' => 'planned']));
+        abort(403, trans('projects.directory_readonly'));
     }
 
     public function edit(Project $project): View
     {
-        $this->authorize('update', $project);
-
-        return $this->form($project);
-    }
-
-    private function form(Project $project): View
-    {
-        return view('projects.edit', [
-            'project' => $project,
-            'companies' => Company::orderBy('name')->get(),
-            'locations' => Location::orderBy('name')->get(),
-        ]);
+        abort(403, trans('projects.directory_readonly'));
     }
 
     public function store(SaveProjectRequest $request): RedirectResponse
     {
-        return $this->save($request, new Project);
+        abort(403, trans('projects.directory_readonly'));
     }
 
     public function update(SaveProjectRequest $request, Project $project): RedirectResponse
     {
-        $this->authorize('update', $project);
-
-        return $this->save($request, $project);
-    }
-
-    private function save(SaveProjectRequest $request, Project $project): RedirectResponse
-    {
-        $data = $request->validated();
-        $company = ! empty($data['company_id']) ? Company::findOrFail($data['company_id']) : null;
-        $location = ! empty($data['location_id']) ? Location::findOrFail($data['location_id']) : null;
-        if (! $request->user()->hasAccess('superuser') && \App\Models\Setting::getSettings()->full_multiple_companies_support && ! $company) {
-            throw ValidationException::withMessages(['company_id' => trans('projects.company_required')]);
-        }
-        if ($location && $company && $location->effectiveFmcsCompanyId() && $location->effectiveFmcsCompanyId() !== $company->id) {
-            throw ValidationException::withMessages(['location_id' => trans('projects.company_mismatch')]);
-        }
-        DB::transaction(function () use ($project, $data, $request): void {
-            if ($project->exists) {
-                $project = Project::whereKey($project->id)->lockForUpdate()->firstOrFail();
-                if (in_array($data['status'], ['ended', 'planned']) && $project->assets()->whereNotNull('assigned_to')->exists()) {
-                    throw ValidationException::withMessages(['status' => trans('projects.return_first')]);
-                }
-                if (($project->assets()->exists() || $project->members()->exists()) && (int) $project->company_id !== (int) ($data['company_id'] ?? 0)) {
-                    throw ValidationException::withMessages(['company_id' => trans('projects.company_locked')]);
-                }
-            }
-            $project->fill($data);
-            $project->created_by ??= $request->user()->id;
-            if (! $project->save()) {
-                throw ValidationException::withMessages($project->getErrors()->toArray());
-            }
-            $this->event($project, 'saved', $project->code);
-        });
-
-        return redirect()->route('projects.show', $project)->with('success', trans('projects.saved'));
+        abort(403, trans('projects.directory_readonly'));
     }
 
     public function show(Request $request, Project $project): View
@@ -121,32 +76,12 @@ class ProjectsController extends Controller
 
     public function member(ProjectAssetRequest $request, Project $project): RedirectResponse
     {
-        $this->authorize('view', User::class);
-        $user = User::findOrFail($request->integer('user_id'));
-        abort_unless($user->activated && $project->canCheckoutTo($user), 422, trans('projects.company_mismatch'));
-        DB::transaction(function () use ($project, $user): void {
-            Project::whereKey($project->id)->lockForUpdate()->firstOrFail();
-            $project->members()->syncWithoutDetaching([$user->id]);
-            $this->event($project, 'member_added', $user->display_name);
-        });
-
-        return redirect()->route('projects.show', [$project, 'tab' => 'people'])->with('success', trans('projects.saved'));
+        abort(403, trans('projects.directory_readonly'));
     }
 
     public function removeMember(ProjectAssetRequest $request, Project $project, int $user): RedirectResponse
     {
-        $this->authorize('view', User::class);
-        DB::transaction(function () use ($project, $user): void {
-            Project::whereKey($project->id)->lockForUpdate()->firstOrFail();
-            $member = $project->members()->whereKey($user)->firstOrFail();
-            if ($project->assets()->where('assigned_type', User::class)->where('assigned_to', $user)->exists()) {
-                throw ValidationException::withMessages(['user_id' => trans('projects.return_first')]);
-            }
-            $project->members()->detach($user);
-            $this->event($project, 'member_removed', $member->display_name);
-        });
-
-        return redirect()->route('projects.show', [$project, 'tab' => 'people']);
+        abort(403, trans('projects.directory_readonly'));
     }
 
     public function reserve(ProjectAssetRequest $request, Project $project): RedirectResponse

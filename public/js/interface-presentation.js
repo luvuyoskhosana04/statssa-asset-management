@@ -1056,6 +1056,7 @@
         }
         entries.forEach(entry => {
             entry.trigger.addEventListener('click', event => {
+                if (entry.trigger.tagName === 'A' && desktop.matches) { close(false); return; }
                 event.preventDefault(); event.stopPropagation();
                 current === entry ? close(false) : open(entry, false);
             });
