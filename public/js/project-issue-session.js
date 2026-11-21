@@ -94,7 +94,13 @@
         if (index !== 0) closeEmployeePicker();
         step = index; errors([]); values(); status.textContent = index === 1 ? (equipment ? copy.asset_identified : copy.employee_identified) : '';
         panels.forEach(function (panel, i) { panel.hidden = i !== step; });
-        markers.forEach(function (marker, i) { marker.classList.toggle('is-current', i === step); marker.classList.toggle('is-complete', i < step); if (i === step) marker.setAttribute('aria-current', 'step'); else marker.removeAttribute('aria-current'); });
+        markers.forEach(function (marker, i) {
+            marker.classList.toggle('is-current', i === step); marker.classList.toggle('is-complete', i < step);
+            var indicator = marker.querySelector('.stepper-marker');
+            indicator.textContent = i < step ? '✓' : String(i + 1);
+            if (i < step) indicator.setAttribute('aria-label', copy.step_completed); else indicator.removeAttribute('aria-label');
+            if (i === step) marker.setAttribute('aria-current', 'step'); else marker.removeAttribute('aria-current');
+        });
         back.hidden = step === 0; cancel.hidden = step !== 0; next.textContent = step === 3 ? next.dataset.finish : next.dataset.next;
         if (step === 0) worker.focus(); else if (step === 1) asset.focus(); else panels[step].querySelector('h3').focus();
     }

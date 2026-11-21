@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'step_completed' => 'Completed',
     'employee_picker_label' => 'Employee ID or name',
     'employee_picker_placeholder' => 'Scan employee barcode or search by ID or name',
     'employee_picker_toggle' => 'Show employee options',

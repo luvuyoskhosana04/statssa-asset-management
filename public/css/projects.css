@@ -50,3 +50,4 @@
 @media(max-width:600px){.employee-picker-menu li{align-items:flex-start;flex-direction:column;gap:3px}}
 
 .employee-picker-chevron{width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-2px) rotate(45deg)}
+

@@ -271,21 +271,6 @@
                                 @unless ($reachable) aria-describedby="wizard-locked-note" @endunless
                             >
                                 <span aria-hidden="true">
-                                    @if ($state === 'complete')
-                                        {{-- Two icons stacked in a fixed-width
-                                             wrapper. Default paint: star hidden,
-                                             check visible. When this step number
-                                             matches $justCompletedStep (set by
-                                             persistAndAdvance right before the
-                                             step advance), the .step-just-completed
-                                             class kicks in and the CSS keyframes
-                                             below spin the yellow star into a
-                                             green checkmark. --}}
-                                        <span class="stepper-icon-wrapper @if ($justCompletedStep === $stepNum) step-just-completed @endif">
-                                            <x-icon type="star" class="stepper-star"/>
-                                            <x-icon type="checkmark" class="text-success stepper-check"/>
-                                        </span>
-                                    @endif
                                     {{ $stepNum }}<span class="hidden-xs">. {{ $stepTitle }}</span>
                                 </span>
                                 <span class="sr-only">
@@ -310,7 +295,7 @@
                             tabindex="-1"
                             aria-hidden="true"
                             class="bs-wizard-dot"
-                            style="padding: 0; border: 0;"></button>
+                            style="padding: 0; border: 0;"><span>{{ $state === 'complete' ? '✓' : $stepNum }}</span></button>
                     </div>
                 @endforeach
             </div>

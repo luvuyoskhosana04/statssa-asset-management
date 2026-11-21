@@ -3,7 +3,7 @@
 @section('content')
 @php $pending = $issues->whereNull('handed_over_at')->whereNull('cancelled_at'); @endphp
 @if (!$session->closed_at && $pending->isEmpty())
-<section class="box box-default project-edit" id="project-issue-preview" data-worker-url="{{ route('projects.issue.lookup-employee', $session->id) }}" data-asset-url="{{ route('projects.issue.lookup-asset', $session->id) }}" data-copy="{{ json_encode(collect(trans('projects'))->only(['worker_required','asset_required','return_required','return_within_project','acceptance_required','handover_required','lookup_busy','lookup_failed','employee_identified','asset_identified','not_recorded','employee_picker_empty','employee_picker_count'])) }}">
+<section class="box box-default project-edit" id="project-issue-preview" data-worker-url="{{ route('projects.issue.lookup-employee', $session->id) }}" data-asset-url="{{ route('projects.issue.lookup-asset', $session->id) }}" data-copy="{{ json_encode(collect(trans('projects'))->only(['worker_required','asset_required','return_required','return_within_project','acceptance_required','handover_required','lookup_busy','lookup_failed','employee_identified','asset_identified','not_recorded','employee_picker_empty','employee_picker_count','step_completed'])) }}">
 <div class="box-body">
 <p class="help-block">{{ trans('projects.directory_help') }}</p>
 <nav class="form-stepper" aria-label="{{ trans('projects.issue') }}"><ol class="stepper-list">@foreach (['employee_step','asset_step','acceptance_step','handover_step'] as $step)<li class="stepper-item {{ $loop->first ? 'is-current' : '' }}" @if($loop->first) aria-current="step" @endif><span class="stepper-button"><span class="stepper-marker">{{ $loop->iteration }}</span><span class="stepper-label">{{ trans('projects.'.$step) }}</span></span></li>@endforeach</ol></nav>
@@ -35,4 +35,4 @@
 <section class="box box-default"><div class="box-body"><p>{{ trans($session->closed_at ? 'projects.session_closed' : 'projects.pending_acceptance') }}</p><a class="btn btn-primary" href="{{ route('projects.issue.audit', $session->id) }}">{{ trans('projects.investigate') }}</a></div></section>
 @endif
 @stop
-@push('js')<script src="{{ asset('js/project-issue-session.js') }}?v=4" nonce="{{ csrf_token() }}"></script>@endpush
+@push('js')<script src="{{ asset('js/project-issue-session.js') }}?v=5" nonce="{{ csrf_token() }}"></script>@endpush

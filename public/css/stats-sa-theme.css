@@ -687,3 +687,19 @@ body.ui-refresh {--ui-nav-hover-bg:color-mix(in srgb,var(--ui-brand-green-soft) 
 
 /* Emphasise the total asset count with the brand sand accent. */
 .ui-refresh .sidebar-menu .asset-nav-groups>li>a.asset-nav-trigger[aria-controls="asset-nav-status"]>.badge{background:var(--stats-sand-700,#7d6d4f)!important;color:#fff!important;font-weight:700}
+
+/* Shared workflow progress: muted completed ticks, prominent current step. */
+.ui-refresh .form-stepper:not(.form-section-nav) .stepper-item.is-current .stepper-marker{background:var(--ui-primary-button,#996735);border-color:var(--ui-primary-button,#996735);color:#fff;box-shadow:0 0 0 4px var(--ui-focus)}
+.ui-refresh .form-stepper:not(.form-section-nav) .stepper-item.is-current .stepper-label{color:var(--ui-primary-button,#996735);font-weight:700}
+.ui-refresh .form-stepper:not(.form-section-nav) .stepper-item.is-complete .stepper-marker{background:var(--stats-sage-100);border-color:var(--stats-sage-200);color:var(--stats-sage-700);box-shadow:none;font-size:17px}
+.ui-refresh .form-stepper:not(.form-section-nav) .stepper-item.is-complete .stepper-label{color:var(--ui-muted);font-weight:400}
+.ui-refresh .form-stepper:not(.form-section-nav) .stepper-item.is-complete::before,.ui-refresh .form-stepper:not(.form-section-nav) .stepper-item.is-complete::after{background:var(--stats-sage-200)}
+.bs-wizard>.bs-wizard-step>.bs-wizard-dot{display:flex;align-items:center;justify-content:center;width:36px;height:36px;margin-top:-18px;margin-left:-18px;background:var(--ui-surface,#fff);color:var(--ui-muted,#5c5952);border:1.5px solid var(--ui-line,#e7e5df)!important;font-size:13px;font-weight:600;line-height:1}
+.bs-wizard>.bs-wizard-step>.bs-wizard-dot::after{display:none}
+.bs-wizard>.bs-wizard-step.active>.bs-wizard-dot{background:var(--ui-primary-button,#996735);border-color:var(--ui-primary-button,#996735)!important;color:#fff;box-shadow:0 0 0 4px var(--ui-focus,rgba(125,109,79,.14))}
+.bs-wizard>.bs-wizard-step.active .bs-wizard-stepnum{color:var(--ui-primary-button,#996735);font-weight:700}
+.bs-wizard>.bs-wizard-step.complete>.bs-wizard-dot{background:var(--stats-sage-100);border-color:var(--stats-sage-200)!important;color:var(--stats-sage-700);font-size:17px}
+.bs-wizard>.bs-wizard-step.complete .bs-wizard-stepnum{color:var(--ui-muted,#5c5952)}
+.bs-wizard>.bs-wizard-step>.progress,.bs-wizard>.bs-wizard-step.disabled>.bs-wizard-dot{background:var(--ui-line,#e7e5df)}
+.bs-wizard>.bs-wizard-step>.progress>.progress-bar{background:var(--stats-sage-200)}
+.bs-wizard>.bs-wizard-step.disabled>.bs-wizard-dot{background:var(--ui-surface,#fff)}
