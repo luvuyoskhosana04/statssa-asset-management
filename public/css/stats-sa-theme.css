@@ -781,3 +781,47 @@ body .ui-field-shell .select2-container{background:transparent!important;border-
 
 body .ui-field-shell.is-field-valid .select2-container--default .select2-selection--single .select2-selection__clear{right:65px!important}
 body.ui-refresh .ui-field-shell.is-field-valid .select2-container--default .select2-selection--single .select2-selection__rendered{padding-right:100px!important}
+
+/* User-selected success confetti, with its original green check held after playback. */
+.ui-field-check.has-success-animation{background:transparent;color:transparent;overflow:visible}
+.ui-field-success-motion{position:absolute;width:64px;height:64px;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none}
+.ui-field-success-motion>svg{display:block;width:100%;height:100%}
+
+/* Keep field actions on one value baseline, in evenly spaced icon slots. */
+.ui-field-shell{--ui-field-icon-y:42px}
+.ui-field-shell:not(.is-textarea-field):not(.is-file-field)>.ui-field-check{top:var(--ui-field-icon-y);bottom:auto;transform:translateY(-50%)}
+body .ui-field-shell .select2-container--default .select2-selection--single .select2-selection__clear{top:var(--ui-field-icon-y)!important;bottom:auto!important;right:34px!important;width:28px;height:28px;font-size:18px;line-height:1;transform:translateY(-50%);border-radius:5px;cursor:pointer}
+body .ui-field-shell.is-field-valid .select2-container--default .select2-selection--single .select2-selection__clear{right:64px!important}
+body.ui-refresh .ui-field-shell .select2-container--default .select2-selection--single .select2-selection__arrow{top:var(--ui-field-icon-y)!important;bottom:auto!important;right:4px;width:28px;height:28px!important;transform:translateY(-50%)}
+body .ui-field-shell .select2-selection--single .select2-selection__clear:hover{background:var(--ui-soft,#f5f4f0);color:var(--ui-ink,#30312e)}
+.ui-field-shell:has(>select.ui-field-control:not([multiple]):not(.select2-hidden-accessible))::after{content:"";position:absolute;right:14px;top:var(--ui-field-icon-y);width:8px;height:5px;transform:translateY(-50%);background:var(--ui-placeholder,#767268);clip-path:polygon(0 0,100% 0,50% 100%);pointer-events:none}
+body .ui-field-shell>select.ui-field-control:not([multiple]):not(.select2-hidden-accessible){appearance:none;-webkit-appearance:none;padding-right:70px!important}
+body.ui-refresh .ui-field-shell .employee-picker-toggle{top:var(--ui-field-icon-y);bottom:auto;inset-inline-end:4px;width:28px;min-width:28px;height:28px!important;min-height:28px!important;padding:0!important;transform:translateY(-50%)}
+
+/* Related creation actions belong inside their field, with one quiet treatment. */
+body.ui-refresh .form-ui-ready.form-horizontal .form-ui-row.has-inline-field-action>.form-ui-input{grid-column:1/-1}
+.ui-field-shell.has-inline-add{--ui-inline-action-space:68px}
+body.ui-refresh .ui-field-shell .ui-field-inline-action{position:absolute;right:8px;top:10px;width:56px!important;height:44px;margin:0!important;padding:0!important;z-index:4}
+body.ui-refresh form .ui-field-shell .ui-field-inline-action>.ui-field-add-button{box-sizing:border-box;width:56px;min-width:56px;min-height:44px!important;height:44px!important;margin:0;padding:0!important;border:1px solid #deded8!important;border-radius:7px!important;background:#fafaf8!important;color:var(--ui-ink,#30312e)!important;box-shadow:none!important;font-size:13px;font-weight:500;line-height:1}
+body.ui-refresh form .ui-field-shell .ui-field-inline-action>.ui-field-add-button:hover{background:#f0f0ec!important;border-color:#b5b5ae!important}
+body.ui-refresh form .ui-field-shell .ui-field-inline-action>.ui-field-add-button:focus-visible{outline:2px solid var(--ui-primary-button,#996735);outline-offset:2px}
+.ui-field-inline-action .mac_spinner{position:absolute;right:4px;top:14px;pointer-events:none}
+.ui-field-shell.has-inline-add>.ui-field-check{right:81px}
+.ui-field-shell.has-inline-add.is-select-field>.ui-field-check{right:106px}
+body.ui-refresh .ui-field-shell.has-inline-add .select2-selection--single .select2-selection__arrow{right:72px}
+body .ui-field-shell.has-inline-add .select2-selection--single .select2-selection__clear{right:102px!important}
+body .ui-field-shell.has-inline-add.is-field-valid .select2-selection--single .select2-selection__clear{right:132px!important}
+body.ui-refresh .ui-field-shell.has-inline-add .select2-selection--single .select2-selection__rendered{padding-right:132px!important}
+body.ui-refresh .ui-field-shell.has-inline-add.is-field-valid .select2-selection--single .select2-selection__rendered{padding-right:168px!important}
+body .ui-field-shell.has-inline-add input.ui-field-control{padding-right:112px!important}
+.ui-field-shell.has-inline-add .ui-field-inset-label{right:78px}
+body.ui-refresh .form-ui-ready.form-horizontal .form-ui-row:not(:has(>.form-ui-aside))>.form-ui-input{grid-column:1/-1}
+
+/* Empty required fields communicate the issue beside their inset label. */
+.ui-field-inset-label{display:flex;align-items:center;gap:7px}
+.ui-field-label-copy{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ui-field-required-chip{display:inline-flex;align-items:center;flex:none;padding:1px 6px;border-radius:4px;background:#fcebea;color:#a33129;font-size:10px;font-weight:600;line-height:14px}
+.ui-field-required-chip[hidden]{display:none!important}
+.ui-required-message-replaced{display:none!important}
+.ui-field-shell.is-field-invalid,.ui-field-shell.is-required-missing{border-color:#b54735!important}
+.ui-field-shell.is-field-invalid:focus-within{box-shadow:0 0 0 2px rgba(181,71,53,.12)}

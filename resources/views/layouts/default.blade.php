@@ -53,7 +53,7 @@
 
         <link rel="stylesheet" href="{{ asset('css/interface-refresh.css') }}?v=92">
         <link rel="stylesheet" href="{{ asset('css/icon-states.css') }}?v=3">
-        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=55">
+        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=61">
 
     <script nonce="{{ csrf_token() }}">
         window.snipeit = {
@@ -1374,7 +1374,8 @@
         <script defer src="{{ asset('js/table-pagination.js') }}?v=1" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/interface-motion.js') }}?v=8" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/form-stepper.js') }}?v=19" nonce="{{ csrf_token() }}"></script>
-        <script defer src="{{ asset('js/form-field-experience.js') }}?v=5" nonce="{{ csrf_token() }}"></script>
+        <script defer src="{{ asset('js/vendor/lottie-light-5.13.0.min.js') }}" nonce="{{ csrf_token() }}"></script>
+        <script defer src="{{ asset('js/form-field-experience.js') }}?v=9" data-success-animation="{{ asset('animations/validation-success.json') }}" nonce="{{ csrf_token() }}"></script>
         @if (request()->routeIs('settings.*') && ! request()->routeIs('settings.index', 'settings.ldap.wizard'))
             <script defer src="{{ asset('js/settings-tabs.js') }}?v=1" nonce="{{ csrf_token() }}"></script>
         @endif

@@ -3,6 +3,7 @@
 return [
     'field_import_time' => 'Estimated time: about 2 to 5 minutes to prepare this import.',
     'field_signin_time' => 'Estimated time: under 1 minute.',
+    'field_add' => 'Add',
     'field_optional' => '(Optional)',
     'field_checked' => 'Field checks passed',
     'field_enter_hint' => 'Enter :label',
