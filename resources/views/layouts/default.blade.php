@@ -53,7 +53,7 @@
 
         <link rel="stylesheet" href="{{ asset('css/interface-refresh.css') }}?v=92">
         <link rel="stylesheet" href="{{ asset('css/icon-states.css') }}?v=3">
-        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=64">
+        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=66">
 
     <script nonce="{{ csrf_token() }}">
         window.snipeit = {
