@@ -1,6 +1,19 @@
 <?php
 
 return [
+    'field_import_time' => 'Estimated time: about 2 to 5 minutes to prepare this import.',
+    'field_signin_time' => 'Estimated time: under 1 minute.',
+    'field_optional' => '(Optional)',
+    'field_checked' => 'Field checks passed',
+    'field_enter_hint' => 'Enter :label',
+    'field_choose_hint' => 'Choose :label',
+    'field_password_example' => 'Use at least :min characters',
+    'field_date_example' => '21 November 2026',
+    'field_datetime_example' => '21 November 2026, 09:00',
+    'field_estimated_time' => 'Estimated time: about :min to :max minutes.',
+    'field_issue_time' => 'Estimated time: about 2 to 4 minutes per employee.',
+    'field_receiving_time' => 'Estimated time: about 1 minute per asset.',
+
     'chart_cost_recorded_value' => 'Recorded acquisition value · All years',
     'chart_cost_latest_month' => 'Latest purchase month',
     'chart_cost_coverage' => 'cost coverage',
@@ -307,7 +320,7 @@ return [
 
     'form_required' => 'Required',
     'form_optional' => 'Optional',
-    'form_guidance' => 'Fields marked Required must be completed.',
+    'form_guidance' => 'Fields marked (Optional) can be left blank.',
     'form_errors_title' => 'Check the highlighted fields',
     'form_date_format' => 'Use YYYY-MM-DD, for example 2026-11-03.',
     'form_save' => 'Save',

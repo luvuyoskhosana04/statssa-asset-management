@@ -8,7 +8,7 @@
         @show
       </title>
         <link rel="stylesheet" href="{{ url(mix('css/dist/all.css')) }}">
-        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=44">
+        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=55">
 
 
 
@@ -77,7 +77,7 @@
         </style>
 
     </head>
-    <body>
+    <body class="setup-controls">
           <main id="main" class="container">
               <div class="row">
                   <div class="col-lg-10 col-lg-offset-1">
@@ -157,5 +157,7 @@
           @section('moar_scripts')
           @show
 
-    </body>
+    <script nonce="{{ csrf_token() }}">window.SnipePresentation = @json(trans('presentation'));</script>
+<script defer src="{{ asset('js/form-field-experience.js') }}?v=5" nonce="{{ csrf_token() }}"></script>
+</body>
 </html>

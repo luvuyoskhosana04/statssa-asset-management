@@ -76,7 +76,8 @@
 .receiving-delete-draft{margin:4px 0 4px 6px}
 
 /* The next Stats SA scan is captured directly in its asset row. */
-.barcode-intake .intake-active-item {background:var(--ui-selection,#f7f3e9); border-left:3px solid var(--ui-primary-button,#996633);}
+.barcode-intake .intake-active-item{border-left:0;box-shadow:none}
+.barcode-intake .intake-active-item,.barcode-intake .intake-active-item>th,.barcode-intake .intake-active-item>td{background:var(--ui-surface,#fff)!important}
 .barcode-intake .intake-pending-table th {min-width:190px;}
 .barcode-intake [data-item-action] {margin:3px 6px 3px 0; white-space:normal;}
 .barcode-intake .intake-pending-table .help-block {max-width:330px; font-weight:400; font-size:12px;}

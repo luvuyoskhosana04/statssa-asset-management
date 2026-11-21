@@ -468,3 +468,5 @@ The web authentication and CSRF middleware remain enabled. Asset creation and vi
 
 
 Drafts are stored per signed-in user and do not create inventory records. The final receipt save removes its corresponding draft.
+
+| `GET / HEAD` | `/projects/asset-issue/{session}/search-assets` | `projects.issue.search-assets` | [ProjectIssueController@searchAssets](../../app/Http/Controllers/Projects/ProjectIssueController.php) |

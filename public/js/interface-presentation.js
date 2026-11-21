@@ -689,7 +689,7 @@
                 summary.focus({preventScroll: true}); summary.scrollIntoView({block: 'start', behavior: 'auto'});
             }
         }
-        window.InterfaceForms = Object.assign(window.InterfaceForms || {}, {reportErrors});
+        window.InterfaceForms = Object.assign(window.InterfaceForms || {}, {reportErrors, guideControl});
         function describe(control, node) {
             if (!node.id) node.id = 'form-help-' + (++generatedId);
             const ids = new Set((control.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean));

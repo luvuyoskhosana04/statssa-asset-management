@@ -17,11 +17,14 @@
     function draft() { return {version: 2, request_key: key, company_id: el('company').value, items: items}; }
     function dirty() { return !!el('barcode').value.trim() || (items.length > 0 && JSON.stringify(draft()) !== savedSnapshot); }
     function sync() {
+        el('session-actions').hidden = items.length === 0;
         root.querySelectorAll('.receive-save-batch').forEach(function (button) { button.disabled = busy || pending > 0 || !items.length; button.textContent = copy.save; });
         document.querySelectorAll('.receive-save-later').forEach(function (button) { button.disabled = busy || pending > 0 || (!items.length && !el('barcode').value.trim()); });
         root.querySelectorAll('[data-item-action], #receive-manual-open, #receive-pending-log select, #receive-pending-log input:not(#receive-barcode)').forEach(function (node) { node.disabled = busy || pending > 0; });
         el('count').textContent = replace(copy.received_count, {count: items.filter(function (item) { return item.stage === 'received'; }).length});
         el('pending-count').textContent = replace(copy.pending_count, {count: items.filter(function (item) { return item.stage === 'pending'; }).length});
+        var guidance = active() ? replace(copy.pending_help_tag, {barcode: active().serial}) : copy.pending_help;
+        if (el('pending-help').textContent !== guidance) el('pending-help').textContent = guidance;
         el('scan-label').textContent = active() ? replace(copy.tag_prompt, {barcode: active().serial}) : copy.original_prompt;
         scannerInput.placeholder = active() ? copy.tag_scan_placeholder : '';
         scannerInput.setAttribute('aria-label', active() ? replace(copy.tag_prompt, {barcode: active().serial}) : copy.original_prompt);

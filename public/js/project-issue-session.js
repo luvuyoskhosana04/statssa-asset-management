@@ -63,7 +63,7 @@
         }
     });
     worker.addEventListener('input',function () {
-        clearTimeout(timers.worker); person = null; workerValue.value = ''; errors([]);
+        clearTimeout(timers.worker); person = null; workerValue.value = ''; worker.dataset.fieldVerification = 'pending'; errors([]);
         document.getElementById('issue-accepted').checked = false; document.getElementById('issue-handed-over').checked = false;
         openEmployeePicker();
         timers.worker = setTimeout(function () { if (exactEmployees(worker.value).length === 1) lookup('worker'); },350);
@@ -92,6 +92,7 @@
     }
     function display(index) {
         if (index !== 0) closeEmployeePicker();
+        if (index !== 1) closeAssetPicker();
         step = index; errors([]); values(); status.textContent = index === 1 ? (equipment ? copy.asset_identified : copy.employee_identified) : '';
         panels.forEach(function (panel, i) { panel.hidden = i !== step; });
         markers.forEach(function (marker, i) {
@@ -111,7 +112,8 @@
         if (!barcode) { errors([{id: input.id, text: copy[kind === 'worker' ? 'worker_required' : 'asset_required']}]); return false; }
         if (kind === 'worker' && person && checkedWorker === barcode) return true;
         if (kind === 'asset' && equipment && checkedAsset === barcode) return true;
-        busy = true; next.disabled = true; back.disabled = true; employeeToggle.disabled = true; worker.readOnly = true;
+        if (kind === 'asset') closeAssetPicker();
+        busy = true; next.disabled = true; back.disabled = true; employeeToggle.disabled = true; worker.readOnly = true; assetToggle.disabled = true; asset.readOnly = true;
         status.textContent = copy.lookup_busy; errors([]);
         try {
             var response = await fetch(kind === 'worker' ? root.dataset.workerUrl : root.dataset.assetUrl, {method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json', Accept:'application/json', 'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content}, body:JSON.stringify({barcode:barcode})});
@@ -123,21 +125,75 @@
             if (input.value.trim() !== barcode) { status.textContent = ''; return false; }
             if (kind === 'worker') { person = body; workerValue.value = body.barcode; worker.value = body.name + ' · ' + (body.employee_number || body.barcode); checkedWorker = worker.value.trim(); status.textContent = copy.employee_identified; display(1); }
             else { equipment = body; checkedAsset = barcode; document.getElementById('issue-scan-result').hidden = false; values(); status.textContent = copy.asset_identified; date.focus(); }
+            input.dataset.fieldVerification = 'valid'; input.dispatchEvent(new CustomEvent('field:verified',{bubbles:true}));
             return true;
-        } catch (error) { errors([{id: input.id, text: error.message || copy.lookup_failed}]); status.textContent = ''; return false; }
-        finally { busy = false; next.disabled = false; back.disabled = false; employeeToggle.disabled = false; worker.readOnly = false; }
+        } catch (error) { input.dataset.fieldVerification = 'invalid'; errors([{id: input.id, text: error.message || copy.lookup_failed}]); status.textContent = ''; return false; }
+        finally { busy = false; next.disabled = false; back.disabled = false; employeeToggle.disabled = false; worker.readOnly = false; assetToggle.disabled = false; asset.readOnly = false; if (kind === 'worker' && step === 1 && !equipment) searchAssets(); }
     }
-    [asset].forEach(function (input) {
-        var kind = input === worker ? 'worker' : 'asset', previous = 0, burst = 0;
-        input.addEventListener('keydown', function (event) { if (event.key === 'Enter' || (event.key === 'Tab' && input.value.trim())) { event.preventDefault(); lookup(kind); } });
-        input.addEventListener('input', function (event) {
-            clearTimeout(timers[kind]);
-            document.getElementById('issue-accepted').checked = false; document.getElementById('issue-handed-over').checked = false;
-            if (kind === 'worker') person = null; else { equipment = null; document.getElementById('issue-scan-result').hidden = true; }
-            var now = performance.now(); burst = now - previous < 100 ? burst + 1 : 1; previous = now;
-            if (burst >= 3 || (event.data && event.data.length > 1) || event.inputType === 'insertFromPaste') timers[kind] = setTimeout(function () { lookup(kind); },350);
-        });
+    var assetPicker = document.getElementById('issue-asset-picker'), assetMenu = document.getElementById('issue-asset-menu');
+    var assetList = document.getElementById('issue-asset-list'), assetToggle = document.getElementById('issue-asset-toggle');
+    var assetMatches = [], assetIndex = -1, searchSequence = 0, searchTimer;
+    function closeAssetPicker() {
+        assetMenu.hidden = true; asset.setAttribute('aria-expanded','false'); assetToggle.setAttribute('aria-expanded','false');
+        asset.removeAttribute('aria-activedescendant'); assetIndex = -1; searchSequence++; clearTimeout(searchTimer);
+    }
+    function highlightAsset(index) {
+        assetIndex = index;
+        Array.from(assetList.children).forEach(function (node,i) { node.setAttribute('aria-selected',String(i === index)); });
+        if (index >= 0 && assetList.children[index]) {
+            asset.setAttribute('aria-activedescendant',assetList.children[index].id); assetList.children[index].scrollIntoView({block:'nearest'});
+        }
+    }
+    function chooseAsset(item) { if (!item || busy) return; asset.value = item.asset_tag; closeAssetPicker(); lookup('asset'); }
+    async function searchAssets() {
+        if (busy || step !== 1) return;
+        var sequence = ++searchSequence, query = asset.value.trim();
+        assetMenu.hidden = false; asset.setAttribute('aria-expanded','true'); assetToggle.setAttribute('aria-expanded','true');
+        assetList.replaceChildren(); assetMatches = []; assetIndex = -1; asset.removeAttribute('aria-activedescendant');
+        var resultStatus = document.getElementById('issue-asset-results'); resultStatus.textContent = copy.asset_picker_loading;
+        try {
+            var url = new URL(root.dataset.assetSearchUrl); url.searchParams.set('q', query);
+            var response = await fetch(url, {credentials:'same-origin',headers:{Accept:'application/json'}});
+            if (!response.ok) throw new Error(copy.lookup_failed);
+            var body = await response.json();
+            if (body.status === 'error') throw new Error(copy.lookup_failed);
+            if (sequence !== searchSequence || step !== 1 || busy || asset.value.trim() !== query) return;
+            assetMatches = body.results || [];
+            assetMatches.forEach(function (item,index) {
+                var option = document.createElement('li'); option.id = 'issue-asset-option-'+index; option.role = 'option'; option.setAttribute('aria-selected','false'); option.dataset.assetIndex = index;
+                var name = document.createElement('span'); name.textContent = item.name || item.model || item.asset_tag;
+                var identity = document.createElement('small'); identity.textContent = item.asset_tag + (item.serial ? ' · '+item.serial : '');
+                option.append(name,identity); assetList.appendChild(option);
+            });
+            resultStatus.textContent = assetMatches.length ? copy.asset_picker_results : copy.asset_picker_empty;
+            var exact = assetMatches.filter(function (item) { return [item.asset_tag,item.serial].some(function (value) { return value && normal(value) === normal(query); }); });
+            if (query && exact.length === 1 && !equipment) chooseAsset(exact[0]);
+        } catch (error) { if (sequence === searchSequence) resultStatus.textContent = copy.lookup_failed; }
+    }
+    asset.addEventListener('focus',searchAssets);
+    asset.addEventListener('input',function () {
+        equipment = null; asset.dataset.fieldVerification = 'pending'; document.getElementById('issue-scan-result').hidden = true; errors([]); status.textContent = '';
+        document.getElementById('issue-accepted').checked = false; document.getElementById('issue-handed-over').checked = false;
+        clearTimeout(searchTimer); searchSequence++; assetMatches = []; assetIndex = -1; assetList.replaceChildren();
+        assetMenu.hidden = false; asset.setAttribute('aria-expanded','true'); assetToggle.setAttribute('aria-expanded','true');
+        document.getElementById('issue-asset-results').textContent = copy.asset_picker_loading;
+        searchTimer = setTimeout(searchAssets,200);
     });
+    asset.addEventListener('keydown',function (event) {
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault(); if (assetMenu.hidden) { searchAssets(); return; }
+            if (assetMatches.length) highlightAsset(event.key === 'ArrowDown' ? (assetIndex+1)%assetMatches.length : (assetIndex <= 0 ? assetMatches.length-1 : assetIndex-1));
+        } else if (event.key === 'Escape') { event.preventDefault(); closeAssetPicker(); }
+        else if (event.key === 'Enter' || (event.key === 'Tab' && assetIndex >= 0)) {
+            event.preventDefault(); if (assetIndex >= 0) chooseAsset(assetMatches[assetIndex]); else { closeAssetPicker(); lookup('asset'); }
+        }
+    });
+    assetToggle.addEventListener('mousedown',function (event) { event.preventDefault(); });
+    assetToggle.addEventListener('click',function () { if (assetMenu.hidden) { asset.focus(); searchAssets(); } else closeAssetPicker(); });
+    assetList.addEventListener('mousedown',function (event) { event.preventDefault(); });
+    assetList.addEventListener('click',function (event) { var option = event.target.closest('[data-asset-index]'); if (option) chooseAsset(assetMatches[Number(option.dataset.assetIndex)]); });
+    document.addEventListener('pointerdown',function (event) { if (!assetPicker.contains(event.target)) closeAssetPicker(); });
+    assetPicker.addEventListener('focusout',function (event) { if (!assetPicker.contains(event.relatedTarget)) closeAssetPicker(); });
     date.addEventListener('input', function () { document.getElementById('issue-accepted').checked = false; document.getElementById('issue-handed-over').checked = false; });
     form.addEventListener('submit', async function (event) {
         event.preventDefault(); if (busy) return;

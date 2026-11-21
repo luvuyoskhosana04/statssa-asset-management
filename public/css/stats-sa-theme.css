@@ -685,8 +685,8 @@ body.ui-refresh {--ui-nav-hover-bg:color-mix(in srgb,var(--ui-brand-green-soft) 
 .ui-refresh .main-sidebar .treeview-menu :is(a,button)>:is(i,svg,span[class*="fa-"]):not(.pull-right):not(.fa-angle-left):not(.fa-angle-right):not(.fa-chevron-left):not(.fa-chevron-right):not(.fa-caret-left):not(.fa-caret-right),
 .ui-refresh .asset-nav-panel .asset-nav-links :is(a,button)>:is(i,svg,span[class*="fa-"]):not(.pull-right):not(.fa-angle-left):not(.fa-angle-right):not(.fa-chevron-left):not(.fa-chevron-right):not(.fa-caret-left):not(.fa-caret-right) {display:none!important;}
 
-/* Emphasise the total asset count with the brand sand accent. */
-.ui-refresh .sidebar-menu .asset-nav-groups>li>a.asset-nav-trigger[aria-controls="asset-nav-status"]>.badge{background:var(--stats-sand-700,#7d6d4f)!important;color:#fff!important;font-weight:700}
+/* Emphasise the total asset count with a vivid brand gold accent. */
+.ui-refresh .sidebar-menu .asset-nav-groups>li>a.asset-nav-trigger[aria-controls="asset-nav-status"]>.badge{background:#a95310!important;color:#fff!important;font-size:13px!important;font-weight:700!important;line-height:1.3!important;padding:4px 8px!important;min-width:42px;font-variant-numeric:tabular-nums;letter-spacing:.2px;opacity:1!important;filter:none!important}
 
 /* Shared workflow progress: muted completed ticks, prominent current step. */
 .ui-refresh .form-stepper:not(.form-section-nav) .stepper-item.is-current .stepper-marker{background:var(--ui-primary-button,#996735);border-color:var(--ui-primary-button,#996735);color:#fff;box-shadow:0 0 0 4px var(--ui-focus)}
@@ -703,3 +703,81 @@ body.ui-refresh {--ui-nav-hover-bg:color-mix(in srgb,var(--ui-brand-green-soft) 
 .bs-wizard>.bs-wizard-step>.progress,.bs-wizard>.bs-wizard-step.disabled>.bs-wizard-dot{background:var(--ui-line,#e7e5df)}
 .bs-wizard>.bs-wizard-step>.progress>.progress-bar{background:var(--stats-sage-200)}
 .bs-wizard>.bs-wizard-step.disabled>.bs-wizard-dot{background:var(--ui-surface,#fff)}
+
+/* Quiet, consistent tabs: neutral labels and a single thin active underline. */
+.ui-refresh .content :is(.project-tabs,.receiving-tabs) a{background:transparent!important;box-shadow:none!important;border:0;border-bottom:2px solid transparent;border-radius:0;color:var(--ui-muted)!important;text-decoration:none!important;font-weight:400;padding:12px 14px;min-height:44px}
+.ui-refresh .content :is(.project-tabs,.receiving-tabs) a[aria-current=page]{background:transparent!important;box-shadow:none!important;border-bottom-color:var(--ui-primary-button,#996735);color:var(--ui-ink)!important;font-weight:600}
+.ui-refresh .content :is(.project-tabs,.receiving-tabs) a:hover{background:transparent!important;color:var(--ui-ink)!important;text-decoration:none!important}
+.ui-refresh .content :is(.project-tabs,.receiving-tabs) a:focus-visible{outline:2px solid var(--ui-focus-ring);outline-offset:-3px}
+.ui-refresh .content .receiving-tabs a span{background:var(--ui-alt);color:var(--ui-muted);font-weight:400;border-radius:4px}
+.ui-refresh .content .settings-section-tabs [role=tab]{border-bottom-width:2px;background:transparent;box-shadow:none}
+.ui-refresh .content .settings-section-tabs [role=tab]:hover{background:transparent;color:var(--ui-ink)}
+.ui-refresh .content .settings-section-tabs [role=tab][aria-selected=true]{color:var(--ui-ink);border-bottom-color:var(--ui-primary-button,#996735)}
+.ui-refresh .content .nav-tabs>li{border-top:0!important}
+.ui-refresh .content .nav-tabs>li>a{background:transparent!important;border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;box-shadow:none!important;color:var(--ui-muted)!important;font-weight:400;text-decoration:none!important;min-height:44px}
+.ui-refresh .content .nav-tabs>li.active>a{background:transparent!important;border-bottom-color:var(--ui-primary-button,#996735)!important;color:var(--ui-ink)!important;font-weight:600}
+.ui-refresh .content .nav-tabs>li>a:hover{color:var(--ui-ink)!important;text-decoration:none!important}
+
+/* Shared control sizing keeps fields and their actions aligned. */
+:root{--ui-control-height:44px}
+body.ui-refresh input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]):not(.select2-search__field):not(.sr-only):not(.ui-field-control),body.ui-refresh select:not([multiple]):not(.select2-hidden-accessible):not(.ui-field-control){box-sizing:border-box;height:var(--ui-control-height)!important;min-height:var(--ui-control-height)!important;padding-top:10px;padding-bottom:10px}
+body.ui-refresh textarea.form-control{min-height:104px;padding-top:10px;padding-bottom:10px}
+body.ui-refresh .btn{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:auto!important;min-height:var(--ui-control-height)!important;min-width:var(--ui-control-height);padding-top:10px!important;padding-bottom:10px!important;line-height:1.3;vertical-align:middle}
+body.ui-refresh .select2-container--default .select2-selection--single{box-sizing:border-box;height:var(--ui-control-height)!important;min-height:var(--ui-control-height)!important;display:flex;align-items:center}
+body.ui-refresh .select2-container--default .select2-selection--single .select2-selection__rendered{line-height:42px!important}
+body.ui-refresh .select2-container--default .select2-selection--single .select2-selection__arrow{height:42px!important;top:0}
+body.ui-refresh .select2-container--default .select2-selection--multiple{box-sizing:border-box;min-height:var(--ui-control-height)!important;height:auto!important;display:flex;align-items:center}
+body.ui-refresh .select2-search--dropdown .select2-search__field{height:var(--ui-control-height)!important;padding:10px}
+body.ui-refresh .input-group-addon{height:var(--ui-control-height);min-width:var(--ui-control-height);vertical-align:middle}
+body.ui-refresh .project-start-controls .project-actions{min-height:var(--ui-control-height)}
+body.ui-refresh .main-header .navbar-form .header-asset-search{height:var(--ui-control-height)!important;min-height:var(--ui-control-height)}
+body.ui-refresh .main-header .navbar-form .header-asset-search>.form-control,body.ui-refresh .main-header .header-asset-search .btn{height:42px!important;min-height:42px!important}
+body.ui-refresh .main-header .header-asset-search>.form-control{padding-top:8px;padding-bottom:8px}
+.stats-sa-welcome :is(input:not([type=hidden]),select,.sign-in-button){min-height:var(--ui-control-height)}
+
+body.ui-refresh .main-header .header-asset-search>#tagSearch{height:42px!important;min-height:42px!important}
+body.setup-controls :is(input.form-control,select.form-control,.btn){box-sizing:border-box;min-height:var(--ui-control-height);height:auto;padding-top:10px;padding-bottom:10px}
+
+/* Inset labels and examples keep form expectations visible before typing. */
+.ui-field-original-label{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.ui-field-shell{position:relative;min-width:0;box-sizing:border-box;border:1px solid var(--ui-field-edge,#b5b1a6);border-radius:10px;background:var(--ui-alt,#fafaf8);transition:border-color .15s,box-shadow .15s}
+.ui-field-shell:focus-within{border-color:var(--ui-primary-button,#996735);box-shadow:0 0 0 2px var(--ui-focus,rgba(125,109,79,.14))}
+.ui-field-inset-label{position:absolute;top:8px;left:14px;right:12px;z-index:2;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:12px;line-height:17px;font-weight:600;color:var(--ui-muted,#5c5952);pointer-events:none}
+body :is(.ui-field-shell input.ui-field-control:not([type=file]):not([type=range]):not([type=color]),.ui-field-shell select.ui-field-control){box-sizing:border-box;width:100%;height:64px!important;min-height:64px!important;margin:0!important;padding:27px 44px 9px 14px!important;border:0!important;border-radius:10px!important;background:transparent!important;box-shadow:none!important;line-height:22px;font-size:14px;color:var(--ui-ink,#30312e)}
+body .ui-field-shell textarea.ui-field-control{box-sizing:border-box;width:100%;min-height:120px!important;padding:29px 44px 12px 14px!important;border:0!important;border-radius:10px;background:transparent!important;box-shadow:none!important;font-size:14px;line-height:1.5}
+.ui-field-shell .ui-field-control::placeholder{color:var(--ui-placeholder,#767268)!important;opacity:1}
+body .ui-field-shell .select2-container{display:block;width:100%!important;min-width:0;max-width:100%}
+body .ui-field-shell .select2-container--default .select2-selection--single,body .ui-field-shell .select2-container--default .select2-selection--multiple{height:64px!important;min-height:64px!important;border:0!important;border-radius:10px;background:transparent!important;box-shadow:none!important}
+body.ui-refresh .ui-field-shell .select2-container--default .select2-selection--single .select2-selection__rendered{box-sizing:border-box;width:100%;padding:26px 64px 10px 14px!important;line-height:22px!important}
+body.ui-refresh .ui-field-shell .select2-container--default .select2-selection--single .select2-selection__arrow{height:32px!important;top:26px!important;right:8px}
+body.ui-refresh .ui-field-shell .select2-container--default .select2-selection--multiple{height:auto!important;padding:27px 44px 9px 14px!important}
+body.ui-refresh .ui-field-shell .select2-container--default .select2-selection--multiple .select2-search__field{height:26px!important;min-height:26px!important;padding:0!important}
+.ui-field-shell.is-field-empty select.ui-field-control,.ui-field-shell .select2-selection__placeholder{color:var(--ui-placeholder,#767268)!important}
+.ui-field-check{position:absolute;right:13px;bottom:12px;z-index:3;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:#2f7d50;color:#fff;font:700 13px/1 Arial,sans-serif;pointer-events:none}
+.ui-field-check[hidden]{display:none!important}.ui-field-shell.is-select-field>.ui-field-check{right:38px}
+.ui-field-shell .employee-picker-toggle{top:25px}.ui-field-shell .employee-picker-menu{box-shadow:var(--ui-float-shadow);background:var(--ui-surface,#fff)}
+.ui-field-shell.is-field-invalid{border-color:var(--ui-danger,#b54735)}
+.ui-field-shell.is-field-disabled{background:var(--ui-soft,#f5f4f0)}
+.ui-field-date-example{display:none;position:absolute;left:14px;bottom:12px;font-size:14px;color:var(--ui-placeholder,#767268);pointer-events:none}
+.ui-field-shell.is-field-empty:not(:focus-within) .ui-field-date-example{display:block}
+.ui-field-shell.is-field-empty:not(:focus-within) input:is([type=date],[type=datetime-local])::-webkit-datetime-edit{opacity:0}
+.ui-field-shell.is-file-field{padding:28px 44px 12px 14px}.ui-field-shell.is-file-field .btn{min-height:44px!important}
+body .ui-field-shell.is-special-field input.ui-field-control{height:34px!important;min-height:34px!important;padding:0!important;margin-top:28px!important}
+body .input-group>.ui-field-shell{display:table-cell;width:100%;float:none;vertical-align:middle;border-radius:10px}
+body .input-group:has(>.ui-field-shell)>.input-group-addon,body .input-group:has(>.ui-field-shell)>.input-group-btn>.btn{height:66px!important;min-height:66px!important}
+.ui-choice-field{position:relative;padding-right:34px!important}.ui-choice-field>.ui-field-check{bottom:auto;top:50%;transform:translateY(-50%)}
+.ui-form-estimate{font-size:12px;line-height:1.6;color:var(--ui-muted,#5c5952);margin:0 0 18px}
+body.ui-refresh :is(.project-start-controls,.form-ui-aside):has(.ui-field-shell) .btn,body.ui-refresh .form-ui-aside>.btn{min-height:66px!important}
+body.ui-refresh .project-start-controls:has(.ui-field-shell) .project-actions>.btn{min-height:66px!important}
+body.ui-refresh .form-ui-ready .form-ui-row:has(>.ui-field-original-label){row-gap:0}
+@media(prefers-reduced-motion:reduce){.ui-field-shell{transition:none}}
+
+.stats-sa-welcome .role-form:has(.ui-field-shell) .sign-in-button{min-height:66px}.stats-sa-welcome .select-wrap:has(.ui-field-shell)::after{top:40px}
+
+body.ui-refresh form:has(.ui-field-shell) .btn:not(.btn-box-tool){min-height:66px!important}
+.ui-field-feedback{color:var(--ui-danger,#b54735);font-size:12px;line-height:1.5;margin:5px 0 0}
+
+body .ui-field-shell .select2-container{background:transparent!important;border-radius:inherit}
+
+body .ui-field-shell.is-field-valid .select2-container--default .select2-selection--single .select2-selection__clear{right:65px!important}
+body.ui-refresh .ui-field-shell.is-field-valid .select2-container--default .select2-selection--single .select2-selection__rendered{padding-right:100px!important}

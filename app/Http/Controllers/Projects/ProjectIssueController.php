@@ -7,6 +7,7 @@ use App\Actions\Projects\SendProjectIssueNoticeAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LookupProjectIssueRequest;
 use App\Http\Requests\ProjectAssetRequest;
+use App\Http\Requests\SearchProjectIssueAssetsRequest;
 use App\Models\Asset;
 use App\Models\CheckoutAcceptance;
 use App\Models\Project;
@@ -99,7 +100,7 @@ class ProjectIssueController extends Controller
                 $project->assets()->attach($asset->id, ['original_status_id' => $asset->status_id, 'reserved_by' => auth()->id()]);
                 $reservation = (object) ['original_status_id' => $asset->status_id];
             }
-            $snapshot = $this->assetDetails($asset) + ['recipient_employee_number' => $worker->employee_num, 'recipient_email' => $worker->email, 'issuer_name' => $request->user()->display_name];
+            $snapshot = $this->assetDetails($asset) + ['recipient_employee_number' => $worker->employee_num, 'recipient_email' => $worker->email, 'issuer_name' => $request->user()->display_name, 'planned_handover_at' => now()->toIso8601String()];
             $project->members()->syncWithoutDetaching([$worker->id]);
             if (DB::table('project_issues')->where('asset_id', $asset->id)->whereNull('handed_over_at')->whereNull('cancelled_at')->exists()) {
                 throw ValidationException::withMessages(['asset' => trans('projects.finish_handover')]);
@@ -129,7 +130,7 @@ class ProjectIssueController extends Controller
             $issueId = DB::table('project_issues')->insertGetId(['session_id' => $session->id, 'asset_id' => $asset->id, 'user_id' => $worker->id,
                 'acceptance_id' => $acceptance->id, 'asset_tag' => $asset->asset_tag, 'recipient_name' => $worker->display_name,
                 'expected_checkin' => $return, 'asset_snapshot' => json_encode($snapshot), 'issue_note' => $request->input('note'),
-                'handover_declared_at' => now(), 'confirmed_by' => auth()->id(), 'notification_status' => 'pending',
+                'handover_declared_at' => null, 'confirmed_by' => null, 'notification_status' => 'pending',
                 'created_at' => now(), 'updated_at' => now()]);
             DB::table('project_events')->insert(['project_id' => $project->id, 'actor_id' => auth()->id(), 'action' => 'issued',
                 'description' => $asset->asset_tag.' / '.$worker->display_name, 'created_at' => now(), 'updated_at' => now()]);
@@ -185,6 +186,24 @@ class ProjectIssueController extends Controller
             'model' => $asset->model?->name, 'category' => $asset->model?->category?->name,
             'status' => $asset->status?->name, 'location' => $asset->location?->name,
             'condition' => DB::table('asset_receipts')->where('asset_id', $asset->id)->orderByDesc('id')->value('condition') ?? 'not_recorded'];
+    }
+
+    public function searchAssets(SearchProjectIssueAssetsRequest $request, string $session): JsonResponse
+    {
+        $row = $this->session($session);
+        abort_if($row->closed_at, 409);
+        $term = trim($request->validated('q') ?? '');
+        $reserved = DB::table('project_asset')->where('project_id', $row->project_id)->pluck('asset_id');
+        $assets = Asset::with(['model', 'status'])->whereNull('assigned_to')
+            ->where(fn ($q) => $q->whereHas('status', fn ($status) => $status->where('archived', 0)->where('deployable', 1))->orWhereIn('id', $reserved))
+            ->whereNotIn('id', DB::table('project_issues')->select('asset_id')->whereNull('handed_over_at')->whereNull('cancelled_at'))
+            ->whereNotIn('id', DB::table('project_asset')->select('asset_id')->where('project_id', '!=', $row->project_id))
+            ->when($term !== '', fn ($query) => $query->where(fn ($q) => $q->where('asset_tag', 'like', '%'.$term.'%')->orWhere('serial', 'like', '%'.$term.'%')->orWhere('name', 'like', '%'.$term.'%')->orWhereHas('model', fn ($m) => $m->where('name', 'like', '%'.$term.'%'))))
+            ->orderBy('asset_tag')->limit(100)->get();
+        $results = $assets->filter(fn ($asset) => $request->user()->can('checkout', $asset))
+            ->take(15)->map(fn ($asset) => ['asset_tag' => $asset->asset_tag, 'serial' => $asset->serial, 'name' => $asset->name ?: $asset->model?->name, 'model' => $asset->model?->name])->values();
+
+        return response()->json(['results' => $results]);
     }
 
     public function lookupAsset(LookupProjectIssueRequest $request, string $session): JsonResponse

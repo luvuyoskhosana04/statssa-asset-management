@@ -18,6 +18,7 @@ Route::middleware('auth')->prefix('projects')->name('projects.')->group(function
     Route::get('asset-issue/{session}', [ProjectIssueController::class, 'show'])->whereUuid('session')->name('issue.show')
         ->breadcrumbs(fn (Trail $trail, string $session) => $trail->parent('projects.issue.index')->push(trans('projects.session'), route('projects.issue.show', $session)));
     Route::post('asset-issue/{session}/lookup-employee', [ProjectIssueController::class, 'lookupEmployee'])->whereUuid('session')->name('issue.lookup-employee');
+    Route::get('asset-issue/{session}/search-assets', [ProjectIssueController::class, 'searchAssets'])->whereUuid('session')->name('issue.search-assets');
     Route::post('asset-issue/{session}/lookup-asset', [ProjectIssueController::class, 'lookupAsset'])->whereUuid('session')->name('issue.lookup-asset');
     Route::get('asset-issue/{session}/audit', [ProjectIssueController::class, 'audit'])->whereUuid('session')->name('issue.audit')
         ->breadcrumbs(fn (Trail $trail, string $session) => $trail->parent('projects.issue.index')->push(trans('projects.audit'), route('projects.issue.audit', $session)));

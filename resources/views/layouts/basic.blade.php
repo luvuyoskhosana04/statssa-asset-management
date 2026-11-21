@@ -47,7 +47,7 @@
     @endif
 
     <link rel="stylesheet" href="{{ asset('css/interface-refresh.css') }}?v=75">
-    <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=28">
+    <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=55">
 </head>
 
 <body class="ui-refresh hold-transition login-page">
@@ -117,6 +117,8 @@
     @stack('js')
 
     @include('partials.theme-mode-toggle')
+<script nonce="{{ csrf_token() }}">window.SnipePresentation = @json(trans('presentation'));</script>
+<script defer src="{{ asset('js/form-field-experience.js') }}?v=5" nonce="{{ csrf_token() }}"></script>
 </body>
 
 </html>

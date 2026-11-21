@@ -39,3 +39,11 @@ Inspect stylesheet order in `resources/views/layouts/default.blade.php` and `lay
 Check desktop and narrow mobile widths, keyboard navigation, visible labels and errors, reduced motion, light/dark themes, empty/loading states and long values. Preserve bronze primary actions, blue record links and red destructive/error states. Do not use colour alone for status.
 
 The optional local demo uses `auth/role-login.blade.php` and `auth.demo_role_login`. It is disabled by default and rejected unless the configured application URL is localhost. It selects existing demo accounts; it does not create accounts or change permissions.
+
+## Shared field experience
+
+`public/js/form-field-experience.js` and the shared theme provide inset labels, muted examples, `(Optional)` labels and filled green validation ticks. Native validation and the configured jQuery rules run during editing. Project employee and asset inputs use `data-field-verification` with `pending`, `valid` and `invalid` states; their lookup handlers emit `field:verified` after success. Dynamic and Select2 controls use the same presentation.
+
+Estimated completion time appears at the start of data entry forms. General estimates use the field count and type, excluding permission matrices. Issue and receiving flows have explicit estimates per employee or asset. A form may supply `data-form-estimate` to override the general estimate. Keep estimates approximate and update them when a workflow changes.
+
+Use `data-no-field-ui` for scanner capture sinks and other controls whose presentation is managed by the workflow. Header searches, table filtering and permission grids keep their specialised controls. Field enhancement preserves field names, values and form submission routes.

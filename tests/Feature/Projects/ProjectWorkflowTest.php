@@ -32,6 +32,27 @@ class ProjectWorkflowTest extends TestCase
         return ['worker' => 'STATSSA-EMP-'.$worker->id, 'asset' => $asset->asset_tag, 'expected_checkin' => $project->end_date->toDateString(), 'reviewed' => 1, 'handover_declared' => 1, 'note' => 'Charger included'];
     }
 
+    public function test_asset_search_filters_inventory_and_never_allocates(): void
+    {
+        [$manager, $project, $worker, $asset, $session] = $this->context();
+        $asset->update(['asset_tag' => 'SEARCH-0001', 'serial' => 'SERIAL-SEARCH', 'name' => 'Field tablet']);
+        $url = route('projects.issue.search-assets', $session);
+        foreach (['SEARCH-0001', 'SERIAL-SEARCH', 'Field tablet', $asset->model->name] as $term) {
+            $this->getJson($url.'?'.http_build_query(['q' => $term]))->assertOk()->assertJsonFragment(['asset_tag' => 'SEARCH-0001']);
+        }
+        $this->getJson($url.'?q=NO-MATCH-XYZ')->assertOk()->assertJsonCount(0, 'results');
+        $this->getJson($url.'?q='.str_repeat('x', 256))->assertJsonPath('status', 'error');
+        $this->assertDatabaseCount('project_issues', 0);
+        $this->assertNull($asset->fresh()->assigned_to);
+        $this->post(route('projects.issue.store', $session), $this->data($worker, $asset, $project))->assertSessionHasNoErrors();
+        $this->getJson($url.'?q=SEARCH-0001')->assertOk()->assertJsonCount(0, 'results');
+        $this->actingAs(User::factory()->admin()->create());
+        $this->getJson($url)->assertNotFound();
+        $this->actingAs($manager);
+        DB::table('project_issue_sessions')->where('id', $session)->update(['closed_at' => now()]);
+        $this->getJson($url)->assertStatus(409);
+    }
+
     public function test_directory_is_readonly_even_for_managers(): void
     {
         [$manager, $project] = $this->context();
@@ -55,6 +76,7 @@ class ProjectWorkflowTest extends TestCase
         }
         $this->postJson(route('projects.issue.lookup-employee', $session), ['barcode' => 'EMP-001'])->assertForbidden();
         $this->postJson(route('projects.issue.lookup-asset', $session), ['barcode' => 'ANY'])->assertForbidden();
+        $this->getJson(route('projects.issue.search-assets', $session))->assertForbidden();
     }
 
     public function test_scans_identify_real_directory_employee_and_inventory_without_allocating(): void
@@ -77,7 +99,9 @@ class ProjectWorkflowTest extends TestCase
         $this->post(route('projects.issue.store', $session), $this->data($worker, $asset, $project))->assertSessionHasNoErrors()->assertRedirect(route('projects.issue.audit', $session));
         $issue = DB::table('project_issues')->first();
         $this->assertEquals($worker->id, $asset->fresh()->assigned_to);
-        $this->assertNotNull($issue->handover_declared_at);
+        $this->assertNull($issue->handover_declared_at);
+        $this->assertNull($issue->confirmed_by);
+        $this->assertNotEmpty(json_decode($issue->asset_snapshot, true)['planned_handover_at']);
         $this->assertNull($issue->handed_over_at);
         $this->assertEquals($project->end_date->toDateString(), $issue->expected_checkin);
         $this->assertEquals($asset->serial, json_decode($issue->asset_snapshot, true)['serial']);
@@ -88,16 +112,21 @@ class ProjectWorkflowTest extends TestCase
         $this->assertDatabaseCount('project_issues', 1);
     }
 
-    public function test_employee_acceptance_keeps_asset_reserved_and_links_handover(): void
+    public function test_employee_acceptance_keeps_asset_reserved_and_requires_separate_handover(): void
     {
-        [, $project, $worker, $asset, $session] = $this->context();
+        [$manager, $project, $worker, $asset, $session] = $this->context();
         $this->post(route('projects.issue.store', $session), $this->data($worker, $asset, $project))->assertSessionHasNoErrors();
         $issue = DB::table('project_issues')->first();
+        $this->post(route('projects.issue.handover', [$session, $issue->id]))->assertSessionHasErrors('asset');
         $acceptance = CheckoutAcceptance::findOrFail($issue->acceptance_id);
         // The issuing official cannot supply the employee response.
         $this->get(route('account.accept.item', $acceptance->id))->assertRedirect();
         $this->actingAs($worker)->get(route('account.accept.item', $acceptance->id))->assertOk();
         $acceptance->accept(null);
+        $this->assertNull(DB::table('project_issues')->where('id', $issue->id)->value('handed_over_at'));
+        $this->actingAs($manager);
+        $this->get(route('projects.issue.audit', $session))->assertOk()->assertSee(trans('projects.handover_planned'))->assertSee('action="'.route('projects.issue.handover', [$session, $issue->id]).'"', false);
+        $this->post(route('projects.issue.handover', [$session, $issue->id]))->assertSessionHasNoErrors();
         $this->assertNotNull(DB::table('project_issues')->where('id', $issue->id)->value('handed_over_at'));
         $this->assertFalse($asset->fresh()->availableForCheckout());
         $this->assertDatabaseHas('project_events', ['project_id' => $project->id, 'action' => 'accepted']);
