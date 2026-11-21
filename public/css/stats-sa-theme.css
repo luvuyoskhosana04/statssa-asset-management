@@ -754,7 +754,7 @@ body.ui-refresh .ui-field-shell .select2-container--default .select2-selection--
 body.ui-refresh .ui-field-shell .select2-container--default .select2-selection--multiple .select2-search__field{height:26px!important;min-height:26px!important;padding:0!important}
 .ui-field-shell.is-field-empty select.ui-field-control,.ui-field-shell .select2-selection__placeholder{color:var(--ui-placeholder,#767268)!important}
 .ui-field-check{position:absolute;right:13px;bottom:12px;z-index:3;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:#2f7d50;color:#fff;font:700 13px/1 Arial,sans-serif;pointer-events:none}
-.ui-field-check[hidden]{display:none!important}.ui-field-shell.is-select-field>.ui-field-check{right:38px}
+.ui-field-check[hidden]{display:none!important}.ui-field-shell.is-select-field>.ui-field-check{right:8px}
 .ui-field-shell .employee-picker-toggle{top:25px}.ui-field-shell .employee-picker-menu{box-shadow:var(--ui-float-shadow);background:var(--ui-surface,#fff)}
 .ui-field-shell.is-field-invalid{border-color:var(--ui-danger,#b54735)}
 .ui-field-shell.is-field-disabled{background:var(--ui-soft,#f5f4f0)}
@@ -807,7 +807,7 @@ body.ui-refresh form .ui-field-shell .ui-field-inline-action>.ui-field-add-butto
 body.ui-refresh form .ui-field-shell .ui-field-inline-action>.ui-field-add-button:focus-visible{outline:2px solid var(--ui-primary-button,#996735);outline-offset:2px}
 .ui-field-inline-action .mac_spinner{position:absolute;right:4px;top:14px;pointer-events:none}
 .ui-field-shell.has-inline-add>.ui-field-check{right:81px}
-.ui-field-shell.has-inline-add.is-select-field>.ui-field-check{right:106px}
+.ui-field-shell.has-inline-add.is-select-field>.ui-field-check{right:76px}
 body.ui-refresh .ui-field-shell.has-inline-add .select2-selection--single .select2-selection__arrow{right:72px}
 body .ui-field-shell.has-inline-add .select2-selection--single .select2-selection__clear{right:102px!important}
 body .ui-field-shell.has-inline-add.is-field-valid .select2-selection--single .select2-selection__clear{right:132px!important}
@@ -825,3 +825,21 @@ body.ui-refresh .form-ui-ready.form-horizontal .form-ui-row:not(:has(>.form-ui-a
 .ui-required-message-replaced{display:none!important}
 .ui-field-shell.is-field-invalid,.ui-field-shell.is-required-missing{border-color:#b54735!important}
 .ui-field-shell.is-field-invalid:focus-within{box-shadow:0 0 0 2px rgba(181,71,53,.12)}
+
+/* Validation is the last icon, immediately before any inset action button. */
+body.ui-refresh .ui-field-shell.is-field-valid .select2-container--default .select2-selection--single .select2-selection__arrow{right:34px}
+body.ui-refresh .ui-field-shell.has-inline-add.is-field-valid .select2-container--default .select2-selection--single .select2-selection__arrow{right:102px}
+body.ui-refresh .ui-field-shell.is-field-valid .employee-picker-toggle{inset-inline-end:34px}
+body .ui-field-shell.is-field-valid .employee-picker input.ui-field-control{padding-right:74px!important}
+.ui-field-shell.is-field-valid:has(>select.ui-field-control:not([multiple]):not(.select2-hidden-accessible))::after{right:44px}
+.ui-field-shell.has-inline-add:has(>select.ui-field-control:not([multiple]):not(.select2-hidden-accessible))::after{right:82px}
+.ui-field-shell.has-inline-add.is-field-valid:has(>select.ui-field-control:not([multiple]):not(.select2-hidden-accessible))::after{right:112px}
+
+/* Picker and accessory controls use the same inset field treatment as Add. */
+body .input-group.ui-inset-group{display:block!important;width:100%!important;padding:0!important}
+body .input-group.ui-inset-group>.ui-field-shell{display:block;width:100%;border-radius:10px}
+.ui-field-shell .ui-picker-original-icon{display:none!important}
+body.ui-refresh form .ui-field-shell .ui-field-inline-action>.ui-field-inset-addon{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;cursor:pointer}
+body.ui-refresh form .ui-field-shell .ui-field-inset-addon>button{width:100%;height:100%;min-height:0!important;padding:0!important;display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;color:inherit}
+
+body .input-group.ui-inset-group>.ui-field-shell>.ui-field-control{float:none!important}

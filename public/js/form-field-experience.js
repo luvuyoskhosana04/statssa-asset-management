@@ -180,11 +180,32 @@
             row.classList.add('has-inline-field-action'); shell.appendChild(aside);
         });
     }
+    function inlineAddons() {
+        document.querySelectorAll('.input-group > .input-group-addon,.input-group > .input-group-btn').forEach(function (addon) {
+            var group = addon.parentElement, shell = group.querySelector(':scope > .ui-field-shell');
+            if (!shell || group.querySelectorAll('input:not([type=hidden]),select,textarea').length !== 1 || shell.classList.contains('has-inline-add')) return;
+            var control = shell.querySelector('.ui-field-control'), record = records.get(control);
+            var datePicker = group.matches('.date,[data-provide="datetimepicker"],[data-provide="datepicker"]');
+            var colourPicker = group.matches('.colorpicker-component');
+            var wrapper = node('span','ui-field-inline-action');
+            shell.classList.add('has-inline-add'); group.classList.add('ui-inset-group');
+            addon.classList.add('ui-field-add-button','ui-field-inset-addon');
+            if (datePicker || colourPicker) {
+                Array.from(addon.children).forEach(function (child) { child.classList.add('ui-picker-original-icon'); child.setAttribute('aria-hidden','true'); });
+                addon.appendChild(node('span','',text('field_select')));
+                addon.setAttribute('role','button'); addon.tabIndex = control.disabled ? -1 : 0;
+                addon.setAttribute('aria-label',text('field_select')+' '+(record ? record.title.toLowerCase() : ''));
+                addon.addEventListener('keydown',function (event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); addon.click(); } });
+            }
+            wrapper.appendChild(addon); shell.appendChild(wrapper);
+        });
+    }
     function scan() {
         scheduled = false;
         records.forEach(function (record,c) { if (!c.isConnected || !record.shell.isConnected || (!record.shell.contains(c) && !['checkbox','radio'].includes(c.type))) { clearTimeout(record.timer); if (record.motion) record.motion.destroy(); records.delete(c); } });
         document.querySelectorAll(controlSelector).forEach(enhance);
         inlineActions();
+        inlineAddons();
         document.querySelectorAll('form').forEach(estimate);
         var importBody = document.querySelector('#importMappingModal .modal-body');
         if (importBody && !importBody.querySelector('.ui-form-estimate')) importBody.prepend(node('p','ui-form-estimate',text('field_import_time')));
@@ -208,6 +229,7 @@
                 if (record.motionReady) { record.motion.goToAndStop(record.motion.totalFrames - 1, true); record.motionPlaying = false; }
             });
         });
+        if (window.jQuery) window.jQuery(document).on('dp.change','.ui-inset-group',function () { var c=this.querySelector('.ui-field-control'); if (c) changed({target:c,type:'change'}); });
         scan();
         new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['required','disabled','aria-required','aria-invalid','data-field-verification']});
     }

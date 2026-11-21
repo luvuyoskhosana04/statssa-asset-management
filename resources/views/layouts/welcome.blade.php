@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#e2d7bf">
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     <link rel="stylesheet" href="{{ asset('css/welcome.css') }}?v=10">
-    <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=61">
+    <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=64">
 </head>
 <body class="stats-sa-welcome">
     <a class="skip-link" href="#{{ config('auth.demo_role_login') ? 'role' : 'username' }}">{{ trans('auth/role-login.skip') }}</a>
@@ -28,6 +28,6 @@
     @yield('scripts')
 <script nonce="{{ csrf_token() }}">window.SnipePresentation = @json(trans('presentation'));</script>
 <script defer src="{{ asset('js/vendor/lottie-light-5.13.0.min.js') }}" nonce="{{ csrf_token() }}"></script>
-<script defer src="{{ asset('js/form-field-experience.js') }}?v=9" data-success-animation="{{ asset('animations/validation-success.json') }}" nonce="{{ csrf_token() }}"></script>
+<script defer src="{{ asset('js/form-field-experience.js') }}?v=11" data-success-animation="{{ asset('animations/validation-success.json') }}" nonce="{{ csrf_token() }}"></script>
 </body>
 </html>

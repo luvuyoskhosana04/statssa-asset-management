@@ -8,7 +8,7 @@
         @show
       </title>
         <link rel="stylesheet" href="{{ url(mix('css/dist/all.css')) }}">
-        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=61">
+        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=64">
 
 
 
@@ -159,6 +159,6 @@
 
     <script nonce="{{ csrf_token() }}">window.SnipePresentation = @json(trans('presentation'));</script>
 <script defer src="{{ asset('js/vendor/lottie-light-5.13.0.min.js') }}" nonce="{{ csrf_token() }}"></script>
-<script defer src="{{ asset('js/form-field-experience.js') }}?v=9" data-success-animation="{{ asset('animations/validation-success.json') }}" nonce="{{ csrf_token() }}"></script>
+<script defer src="{{ asset('js/form-field-experience.js') }}?v=11" data-success-animation="{{ asset('animations/validation-success.json') }}" nonce="{{ csrf_token() }}"></script>
 </body>
 </html>
