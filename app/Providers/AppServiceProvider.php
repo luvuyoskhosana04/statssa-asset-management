@@ -56,6 +56,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(UrlGenerator $url)
     {
+        config(['app.name' => 'Stats SA Asset Management', 'mail.from.name' => 'Stats SA Asset Management', 'mail.reply_to.name' => 'Stats SA Asset Management']);
+
         /**
          * This is a workaround for proxies/reverse proxies that don't always pass the proper headers.
          *

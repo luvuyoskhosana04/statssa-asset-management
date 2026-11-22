@@ -40,4 +40,4 @@
 <section class="box box-default"><div class="box-body"><p>{{ trans($session->closed_at ? 'projects.session_closed' : 'projects.pending_acceptance') }}</p><a class="btn btn-primary" href="{{ route('projects.issue.audit', $session->id) }}">{{ trans('projects.investigate') }}</a></div></section>
 @endif
 @stop
-@push('js')<script src="{{ asset('js/project-issue-session.js') }}?v=9" nonce="{{ csrf_token() }}"></script>@endpush
+@push('js')<script src="{{ asset('js/project-issue-session.js') }}?v=12" nonce="{{ csrf_token() }}"></script>@endpush

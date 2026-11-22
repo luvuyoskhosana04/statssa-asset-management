@@ -106,10 +106,13 @@
     </x-page-column>
 
     <x-page-column class="col-md-5">
+            <x-form.support-panel>
         <x-checkout-request-context :request="$checkoutRequest" :requestable="$snipe_component" />
 
         <livewire:checkout-target-panel type="components" defaultTargetType="asset" />
-    </x-page-column>
+
+            </x-form.support-panel>
+        </x-page-column>
 
 </x-container>
 

@@ -14,12 +14,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
 
 
-    <link rel="apple-touch-icon"
-          href="{{ ($snipeSettings) && ($snipeSettings->favicon!='') ?  Storage::disk('public')->url(e($snipeSettings->logo)) :  config('app.url').'/img/snipe-logo-bug.png' }}">
-    <link rel="apple-touch-startup-image"
-          href="{{ ($snipeSettings) && ($snipeSettings->favicon!='') ?  Storage::disk('public')->url(e($snipeSettings->logo)) :  config('app.url').'/img/snipe-logo-bug.png' }}">
-    <link rel="shortcut icon" type="image/ico"
-          href="{{ ($snipeSettings) && ($snipeSettings->favicon!='') ?  Storage::disk('public')->url(e($snipeSettings->favicon)) : config('app.url').'/favicon.ico' }}">
+    @include('partials.branding.favicon')
 
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -53,7 +48,7 @@
 
         <link rel="stylesheet" href="{{ asset('css/interface-refresh.css') }}?v=92">
         <link rel="stylesheet" href="{{ asset('css/icon-states.css') }}?v=3">
-        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=66">
+        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=86">
 
     <script nonce="{{ csrf_token() }}">
         window.snipeit = {
@@ -853,12 +848,14 @@
                     @if ($snipeSettings->support_footer!='off')
                         @if (($snipeSettings->support_footer=='on') || (($snipeSettings->support_footer=='admin') && (Auth::user()->isSuperUser()=='1')))
                             <a target="_blank" class="label label-default"
-                               href="https://snipe-it.readme.io/docs/overview"
+                               href="/user-guide"
                                rel="noopener">{{ trans('general.user_manual') }}</a>
-                            <a target="_blank" class="label label-default" href="https://snipeitapp.com/support/"
+                            <a target="_blank" class="label label-default" href="mailto:statssa@assetverification.co.za"
                                rel="noopener">{{ trans('general.bug_report') }}</a>
                         @endif
                     @endif
+
+                    <a class="label label-default" href="{{ route('statssa.notices') }}">{{ trans('branding.notices') }}</a>
 
                     @if ($snipeSettings->privacy_policy_link!='')
                         <a target="_blank" class="label label-default" rel="noopener"
@@ -1369,13 +1366,13 @@
             window.SnipePresentation.restored_form_input = @json(session()->has('_old_input'));
             window.SnipeTableViews = @json(\App\Presenters\Presenter::tableViews());
         </script>
-        <script defer src="{{ asset('js/interface-presentation.js') }}?v=34" nonce="{{ csrf_token() }}"></script>
+        <script defer src="{{ asset('js/interface-presentation.js') }}?v=38" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/table-column-filters.js') }}?v=7" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/table-pagination.js') }}?v=1" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/interface-motion.js') }}?v=8" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/form-stepper.js') }}?v=19" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/vendor/lottie-light-5.13.0.min.js') }}" nonce="{{ csrf_token() }}"></script>
-        <script defer src="{{ asset('js/form-field-experience.js') }}?v=11" data-success-animation="{{ asset('animations/validation-success.json') }}" nonce="{{ csrf_token() }}"></script>
+        <script defer src="{{ asset('js/form-field-experience.js') }}?v=13" data-success-animation="{{ asset('animations/validation-success.json') }}" nonce="{{ csrf_token() }}"></script>
         @if (request()->routeIs('settings.*') && ! request()->routeIs('settings.index', 'settings.ldap.wizard'))
             <script defer src="{{ asset('js/settings-tabs.js') }}?v=1" nonce="{{ csrf_token() }}"></script>
         @endif

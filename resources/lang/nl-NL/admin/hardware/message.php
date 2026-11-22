@@ -74,7 +74,7 @@ return [
         'file_delete_error' => 'Het bestand kon niet worden verwijderd',
         'file_missing' => 'Het geselecteerde bestand ontbreekt',
         'file_already_deleted' => 'Het geselecteerde bestand is al verwijderd',
-        'file_missing_on_disk' => 'The file for this import is no longer on disk. It may have been deleted outside of Snipe-IT. Delete this entry and re-upload the file to try again.',
+        'file_missing_on_disk' => 'The file for this import is no longer on disk. It may have been deleted outside of Stats SA Asset Management. Delete this entry and re-upload the file to try again.',
         'file_empty' => 'This file has no data rows. Nothing can be imported from it.',
         'header_row_missing' => 'This file does not have a recognized header row. Delete this entry and re-upload the file to try again.',
         'header_row_has_malformed_characters' => 'Een of meer attributen in de kopregel bevatten ongeldige UTF-8-tekens',

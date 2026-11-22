@@ -38,7 +38,7 @@
          inside this wizard. Uses the theme's --box-bg + --color-fg so
          it matches whatever dark-mode palette the site is running. --}}
     <style>
-        /* Scoped to actual input elements. Snipe-IT wraps checkboxes in
+        /* Scoped to actual input elements. Stats SA Asset Management wraps checkboxes in
            `<label class="form-control">` (see checkbox-row), and applying
            the dark background/border to those labels breaks their
            inherit-from-parent styling. Explicit element targets keep
@@ -75,7 +75,7 @@
            override re-asserts red on all four sides so a field in an
            error state actually LOOKS wrong instead of just having a
            red label + inline message. Also covers light mode since
-           Snipe-IT's AdminLTE overrides use the same has-error class. */
+           Stats SA Asset Management's AdminLTE overrides use the same has-error class. */
         .ldap-wizard .has-error input.form-control,
         .ldap-wizard .has-error textarea.form-control,
         .ldap-wizard .has-error select.form-control {

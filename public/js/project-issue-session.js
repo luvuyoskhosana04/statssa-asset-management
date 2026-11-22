@@ -92,7 +92,7 @@
     }
     function display(index) {
         if (index !== 0) closeEmployeePicker();
-        if (index !== 1) closeAssetPicker();
+        closeAssetPicker();
         step = index; errors([]); values(); status.textContent = index === 1 ? (equipment ? copy.asset_identified : copy.employee_identified) : '';
         panels.forEach(function (panel, i) { panel.hidden = i !== step; });
         markers.forEach(function (marker, i) {
@@ -128,7 +128,7 @@
             input.dataset.fieldVerification = 'valid'; input.dispatchEvent(new CustomEvent('field:verified',{bubbles:true}));
             return true;
         } catch (error) { input.dataset.fieldVerification = 'invalid'; errors([{id: input.id, text: error.message || copy.lookup_failed}]); status.textContent = ''; return false; }
-        finally { busy = false; next.disabled = false; back.disabled = false; employeeToggle.disabled = false; worker.readOnly = false; assetToggle.disabled = false; asset.readOnly = false; if (kind === 'worker' && step === 1 && !equipment) searchAssets(); }
+        finally { busy = false; next.disabled = false; back.disabled = false; employeeToggle.disabled = false; worker.readOnly = false; assetToggle.disabled = false; asset.readOnly = false; }
     }
     var assetPicker = document.getElementById('issue-asset-picker'), assetMenu = document.getElementById('issue-asset-menu');
     var assetList = document.getElementById('issue-asset-list'), assetToggle = document.getElementById('issue-asset-toggle');
@@ -170,7 +170,7 @@
             if (query && exact.length === 1 && !equipment) chooseAsset(exact[0]);
         } catch (error) { if (sequence === searchSequence) resultStatus.textContent = copy.lookup_failed; }
     }
-    asset.addEventListener('focus',searchAssets);
+    asset.addEventListener('click',searchAssets);
     asset.addEventListener('input',function () {
         equipment = null; asset.dataset.fieldVerification = 'pending'; document.getElementById('issue-scan-result').hidden = true; errors([]); status.textContent = '';
         document.getElementById('issue-accepted').checked = false; document.getElementById('issue-handed-over').checked = false;

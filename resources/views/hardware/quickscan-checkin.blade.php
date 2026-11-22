@@ -111,6 +111,7 @@
         </x-page-column>
 
         <x-page-column class="col-md-6">
+            <x-form.support-panel :label="trans('general.quickscan_checkin_status')">
             <div class="box box-default" id="checkedin-div" style="display: none">
                 <div class="box-header with-border">
                     <h2 class="box-title">
@@ -137,6 +138,8 @@
                     </table>
                 </div>
             </div>
+
+            </x-form.support-panel>
         </x-page-column>
 
     </x-container>

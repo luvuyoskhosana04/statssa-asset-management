@@ -89,5 +89,5 @@ return [
         'date_picker' => 'Date Picker',
         'datetime_picker' => 'Datetime Picker',
     ],
-    'general_help_text' => 'В пользовательских полях хранится дополнительная информация, не относящаяся к стандартным полям ресурса. <a href="https://snipe-it.readme.io/docs/custom-fields#/"><i class="fa fa-external-link"></i></a>.',
+    'general_help_text' => 'В пользовательских полях хранится дополнительная информация, не относящаяся к стандартным полям ресурса. <a href="/user-guide"><i class="fa fa-external-link"></i></a>.',
 ];

@@ -719,7 +719,7 @@ return [
     'use_cloned_image' => 'crwdns13522:0crwdne13522:0',
     'use_cloned_image_help' => 'crwdns13524:0crwdne13524:0',
     'use_cloned_no_image_help' => 'crwdns13526:0crwdne13526:0',
-    'footer_credit' => 'crwdns14414:0crwdne14414:0',
+    'footer_credit' => '<a href="/about/open-source">Open-source notices</a>',
     'set_password' => 'crwdns13494:0crwdne13494:0',
     'upload_deleted' => 'crwdns13768:0crwdne13768:0',
     'child_locations' => 'crwdns13796:0crwdne13796:0',

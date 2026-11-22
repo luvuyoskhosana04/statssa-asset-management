@@ -667,7 +667,7 @@ body.ui-refresh{--ui-delete-ink:#b4232a;--ui-delete-bg:#fbe4e5;--ui-delete-hover
 .ui-refresh .btn-danger:not(:disabled):not(.disabled):active{background:var(--ui-delete-pressed)!important}
 
 /* A lighter selection tint identifies the row under the pointer at every nav level. */
-body.ui-refresh {--ui-nav-hover-bg:color-mix(in srgb,var(--ui-brand-green-soft) 75%,var(--ui-surface));}
+body.ui-refresh {--ui-nav-hover-bg:color-mix(in srgb,var(--ui-brand-green-soft) 30%,var(--ui-surface));}
 .ui-refresh .main-sidebar .sidebar-menu>li:not(.active)>a:is(:hover,:focus-visible),
 .ui-refresh .main-sidebar .sidebar-menu>li.menu-open:not(.active)>a,
 .ui-refresh .main-sidebar .sidebar-menu .treeview-menu>li:not(.active)>:is(a,button):is(:hover,:focus-visible),
@@ -846,3 +846,127 @@ body .input-group.ui-inset-group>.ui-field-shell>.ui-field-control{float:none!im
 
 /* Slightly shorter footer actions retain a comfortable click target. */
 body.ui-refresh form:has(.ui-field-shell) :is(.box-footer,.project-issue-footer,.form-actions-footer,.modal-footer) .btn,body.ui-refresh form :is(.box-footer,.project-issue-footer,.form-actions-footer,.modal-footer) .btn{min-height:56px!important;padding-top:8px!important;padding-bottom:8px!important}
+
+/* Native date fields share the same large Select action as calendar widgets. */
+.ui-field-shell.can-open-date-picker input.ui-field-control::-webkit-calendar-picker-indicator{display:none}
+body .ui-field-shell.has-native-date-action input.ui-field-control{padding-right:112px!important}
+body.ui-refresh form .ui-field-shell .ui-field-add-button:disabled{cursor:not-allowed;opacity:.55}
+
+@media(max-width:767px){body.ui-refresh .column-filter-panel{left:12px!important;right:12px!important;width:auto!important;max-width:calc(100vw - 24px)}}
+
+/* Column menus provide sorting without repeated arrow icons in table headers. */
+body.ui-refresh table :is(thead,tfoot) .th-inner.sortable{background-image:none!important;padding-right:14px!important}
+
+/* A soft start and settled stop for the sidebar and its nested navigation. */
+@media(prefers-reduced-motion:no-preference){
+ body.ui-refresh .main-sidebar{transition:transform 560ms cubic-bezier(.32,0,.2,1),width 560ms cubic-bezier(.32,0,.2,1)}
+ body.ui-refresh :is(.content-wrapper,.main-footer){transition:transform 560ms cubic-bezier(.32,0,.2,1),margin 560ms cubic-bezier(.32,0,.2,1)}
+ body.ui-refresh .main-header .navbar{transition:margin 560ms cubic-bezier(.32,0,.2,1)}
+ body.ui-refresh .sidebar-menu :is(a,button){transition:background-color 220ms ease,color 220ms ease}
+ body.ui-refresh .sidebar-menu :is(.fa-angle-left,.asset-nav-chevron){transition:transform 420ms cubic-bezier(.32,0,.2,1)}
+}
+body.ui-refresh .asset-nav-panel.is-nav-closing{pointer-events:none}
+
+/* Expanded navigation groups have a stronger label and a quiet shared surface. */
+body.ui-refresh .main-sidebar .sidebar-menu li.treeview.menu-open>a{font-weight:650;color:var(--ui-brand-green,var(--ui-ink))!important}
+body.ui-refresh .main-sidebar .treeview.menu-open>.treeview-menu{background:color-mix(in srgb,var(--ui-brand-green-soft) 28%,var(--ui-surface));border-radius:8px}
+body.ui-refresh .main-sidebar .treeview.menu-open>.treeview-menu>li>:is(a,button){font-weight:500;color:var(--ui-ink)!important}
+body.ui-refresh .main-sidebar .treeview-menu>li>.asset-nav-trigger[aria-expanded=true]{background:var(--ui-brand-green-soft)!important;color:var(--ui-brand-green)!important;font-weight:650}
+body.ui-refresh .asset-nav-panel .asset-nav-title{color:var(--ui-brand-green);font-weight:650}
+body.ui-refresh .asset-nav-panel .asset-nav-links>li>a{color:var(--ui-ink);font-weight:500}
+body.ui-refresh .main-sidebar .treeview-menu>li.active>:is(a,button),body.ui-refresh .asset-nav-panel .asset-nav-links>li.active>a{font-weight:650}
+
+/* Higher-contrast labels make submenu options easier to read. */
+body.ui-refresh{--ui-nav-substep-ink:#202923}
+[data-theme=dark] body.ui-refresh{--ui-nav-substep-ink:#f0f3ef}
+body.ui-refresh .main-sidebar .treeview.menu-open>.treeview-menu>li>:is(a,button),body.ui-refresh .asset-nav-panel .asset-nav-links>li>a{color:var(--ui-nav-substep-ink)!important}
+
+/* Current assignments are contextual detail beneath the full-width recipient step. */
+body.ui-refresh .bulk-current-assignments{margin:28px 0 8px;border:1px solid var(--ui-line);border-radius:10px;background:var(--ui-alt)}
+body.ui-refresh .bulk-current-assignments>summary{min-height:48px;padding:14px 18px;color:var(--ui-ink);font-weight:600;cursor:pointer}
+body.ui-refresh .bulk-current-assignments>summary:focus-visible{outline:2px solid var(--ui-primary-button);outline-offset:3px;border-radius:8px}
+body.ui-refresh .bulk-current-assignments-body{padding:0 18px 16px}
+body.ui-refresh .bulk-current-assignments .box{margin:0;border:0;box-shadow:none;background:transparent}
+body.ui-refresh .bulk-current-assignments .box-header{padding:12px 0}
+body.ui-refresh .bulk-current-assignments .box-body{padding:12px 0 0;min-height:0}
+
+/* Shared forms use a readable field column inside full-width cards. */
+body.ui-refresh .form-ui-ready.form-horizontal .form-group.form-ui-row,
+body.ui-refresh .form-ui-ready.form-horizontal .form-ui-checkrow,
+body.ui-refresh .form-ui-ready .form-field-guidance,
+body.ui-refresh .form-ui-ready .form-error-summary{max-width:800px;width:100%}
+body.ui-refresh .form-ui-ready .ui-field-shell input[type=number]{max-width:none}
+body.ui-refresh .content details>summary{position:relative;display:flex;align-items:center;gap:12px;min-height:44px;padding-inline-end:48px;list-style:none;cursor:pointer}
+body.ui-refresh .content details>summary::-webkit-details-marker{display:none}
+body.ui-refresh .content details>summary::marker{content:""}
+body.ui-refresh .content details>summary::after{content:"";position:absolute;inset-inline-end:20px;top:50%;width:9px;height:9px;border:solid currentColor;border-width:0 1.5px 1.5px 0;transform:translateY(-70%) rotate(45deg);transition:transform 220ms ease;pointer-events:none}
+body.ui-refresh .content details[open]>summary::after{transform:translateY(-25%) rotate(225deg)}
+body.ui-refresh .content .permission-section>summary::before{content:none}
+body.ui-refresh .content details>summary:focus-visible{outline:2px solid var(--ui-primary-button);outline-offset:3px;border-radius:8px}
+@media(prefers-reduced-motion:reduce){body.ui-refresh .content details>summary::after{transition:none}}
+
+/* Collapsed navigation uses the same roomy disclosure cards as its children. */
+body.ui-refresh .sidebar-flyout-title{display:none}
+@media(min-width:768px){
+ body.ui-refresh.sidebar-collapse .main-sidebar .sidebar-menu{overflow:visible!important}
+ body.ui-refresh.sidebar-collapse .main-sidebar .sidebar-menu>li.treeview>a>span{display:none!important}
+ body.ui-refresh.sidebar-collapse .main-sidebar .sidebar-menu>li.treeview>.treeview-menu{display:none!important;position:absolute!important;left:calc(100% + 8px);top:0;width:280px;margin:0;padding:14px;border:1px solid var(--ui-line);border-radius:12px;background:var(--ui-surface)!important;box-shadow:var(--ui-float-shadow);overflow-y:auto;overscroll-behavior:contain;white-space:normal;z-index:1040}
+ body.ui-refresh.sidebar-collapse .main-sidebar .sidebar-menu>li.treeview:hover>.treeview-menu{display:none!important}
+ body.ui-refresh.sidebar-collapse .main-sidebar .sidebar-menu>li.treeview:is(.nav-user-open,.nav-root-closing)>.treeview-menu{display:block!important}
+ body.ui-refresh.sidebar-collapse .main-sidebar .sidebar-menu>li.treeview>.treeview-menu::before{content:none}
+ body.ui-refresh.sidebar-collapse .main-sidebar .sidebar-flyout-title{display:block;margin:0 0 8px;padding:2px 8px 10px;border-bottom:1px solid var(--ui-line);font-size:14px;font-weight:650;line-height:1.5;color:var(--ui-brand-green)}
+ body.ui-refresh.sidebar-collapse .main-sidebar .sidebar-menu>.treeview>.treeview-menu>li>:is(a,button){display:flex;align-items:center;gap:10px;min-height:44px;width:100%;padding:10px 8px;border-radius:8px;font-size:14px;line-height:1.45;color:var(--ui-nav-substep-ink);white-space:normal;text-align:start}
+ body.ui-refresh.sidebar-collapse .main-sidebar .sidebar-menu>.treeview>.treeview-menu>li>:is(a,button):focus-visible{outline:2px solid var(--ui-accent);outline-offset:2px}
+ [dir=rtl] body.ui-refresh.sidebar-collapse .main-sidebar .sidebar-menu>li.treeview>.treeview-menu{left:auto;right:calc(100% + 8px)}
+}
+
+/* A passing hover stays lighter than the current page, at every submenu level. */
+body.ui-refresh .main-sidebar .treeview-menu>li:not(.active)>.asset-nav-trigger[aria-expanded=true]{background:var(--ui-nav-hover-bg)!important;font-weight:500}
+body.ui-refresh .main-sidebar .sidebar-menu>.treeview>.treeview-menu>li.active>:is(a,button),
+body.ui-refresh .asset-nav-panel .asset-nav-links>li.active>a{background:var(--ui-brand-green-soft)!important;box-shadow:inset 3px 0 var(--ui-brand-green-edge);font-weight:650}
+[dir=rtl] body.ui-refresh .main-sidebar .treeview-menu>li.active>:is(a,button),
+[dir=rtl] body.ui-refresh .asset-nav-panel .asset-nav-links>li.active>a{box-shadow:inset -3px 0 var(--ui-brand-green-edge)}
+
+/* Expanded, collapsed and nested navigation share the same state hierarchy. */
+body.ui-refresh .main-sidebar .sidebar-menu .treeview-menu>li:not(.active)>:is(a,button):is(:hover,:focus-visible,[aria-expanded=true]){background:var(--ui-nav-hover-bg)!important;color:var(--ui-brand-green)!important;box-shadow:none;font-weight:500}
+body.ui-refresh .main-sidebar .sidebar-menu .treeview-menu>li.active>:is(a,button){background:var(--ui-brand-green-soft)!important;color:var(--ui-brand-green)!important;box-shadow:inset 3px 0 var(--ui-brand-green-edge);font-weight:650}
+[dir=rtl] body.ui-refresh .main-sidebar .sidebar-menu .treeview-menu>li.active>:is(a,button){box-shadow:inset -3px 0 var(--ui-brand-green-edge)}
+
+/* Group rows use tint and weight; the edge accent belongs to selected children. */
+body.ui-refresh .main-sidebar .sidebar-menu .treeview-menu>li.asset-nav-group.active>.asset-nav-trigger{box-shadow:none!important}
+
+/* Form workspaces span the page; supporting information follows in disclosures. */
+body.ui-refresh .ui-page-layout:has(> .ui-page-column form.form-horizontal)>.ui-page-column,
+body.ui-refresh .content .row>[class*="col-"]:has(>form.form-horizontal){float:none;width:100%;margin-inline:0}
+body.ui-refresh .form-support-disclosure{margin:0 0 20px;border:1px solid var(--ui-line);border-radius:12px;background:var(--ui-surface)}
+body.ui-refresh .form-support-disclosure>summary{padding:16px 48px 16px 20px;color:var(--ui-ink);font-weight:600;min-height:52px}
+body.ui-refresh .form-support-body{padding:0 20px 20px}
+body.ui-refresh .form-support-body>.box{margin:0;border:0;box-shadow:none}
+body.ui-refresh .form-support-disclosure:has(>.form-support-body>.box[style*="display: none"]){display:none}
+
+/* Group flyouts already contain their title; suppress the legacy hover label. */
+@media(min-width:768px){
+ body.ui-refresh.sidebar-mini.sidebar-collapse .main-sidebar .sidebar-menu>li.treeview:is(:hover,:focus-within)>a>span{display:none!important}
+}
+
+/* Shared table toolbars prioritise search and create; secondary controls are grouped. */
+body.ui-refresh .table-toolbar-grouped>.columns{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+body.ui-refresh .table-control-group[hidden]{display:none!important}
+body.ui-refresh .table-control-group>summary{min-height:44px;height:44px;padding:10px 38px 10px 14px;font-size:13px;white-space:nowrap;border-radius:8px!important}
+body.ui-refresh .table-control-panel{min-width:260px;max-width:calc(100vw - 32px);padding:10px;gap:4px;z-index:1045}
+body.ui-refresh .table-control-panel .presentation-views{display:flex;flex-direction:column;align-items:stretch;gap:8px;margin:0 0 8px;padding:4px 4px 12px;border-bottom:1px solid var(--ui-line);white-space:normal}
+body.ui-refresh .table-control-panel .presentation-views select{width:100%;min-width:0;max-width:none;min-height:44px;height:44px}
+body.ui-refresh .table-control-panel .presentation-views label{font-size:12px}
+body.ui-refresh .fixed-table-toolbar .table-control-panel>.btn,
+body.ui-refresh .fixed-table-toolbar .table-control-panel>.btn-group>.btn{display:flex;align-items:center;justify-content:flex-start;gap:10px;width:100%;min-height:44px;height:auto;border:0!important;border-radius:6px!important;background:transparent!important;color:var(--ui-ink)!important;text-align:start;font-size:13px;padding:10px 12px}
+body.ui-refresh .table-control-panel>.btn-group{display:flex;flex-direction:column;float:none;width:100%;margin:0}
+body.ui-refresh .table-control-panel .dropdown-menu{position:static;float:none;min-width:0;width:100%;max-height:280px;overflow:auto;box-shadow:none;border:0;margin:0;padding:4px 0;background:var(--ui-alt)}
+body.ui-refresh .table-control-panel .dropdown-menu label{white-space:normal}
+body.ui-refresh .fixed-table-toolbar .table-control-panel .btn:is(:hover,:focus-visible){background:var(--ui-nav-hover-bg)!important}
+body.ui-refresh .fixed-table-toolbar .table-control-panel .btn.btn-selected{background:var(--ui-brand-green-soft)!important;color:var(--ui-brand-green)!important}
+body.ui-refresh .table-group-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;padding:2px 5px;border-radius:10px;background:var(--ui-brand-green-soft);color:var(--ui-brand-green);font-size:11px}
+body.ui-refresh .table-group-count[hidden]{display:none}
+@media(max-width:767px){body.ui-refresh .table-toolbar-grouped>.search{flex:1 1 100%;max-width:none;margin:0}body.ui-refresh .table-toolbar-grouped>.columns{width:100%;justify-content:flex-end}body.ui-refresh .table-control-panel{min-width:240px}}
+
+body.ui-refresh #main .table-control-panel .btn{border:0!important;box-shadow:none!important}
+body.ui-refresh .table-control-panel{overflow:auto;overscroll-behavior:contain}

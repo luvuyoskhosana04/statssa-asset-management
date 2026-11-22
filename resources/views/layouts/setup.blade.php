@@ -2,13 +2,14 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <html>
     <head>
+    @include('partials.branding.favicon')
       <title>
         @section('title')
-         Snipe-IT {{ trans('general.setup') }}
+         Stats SA Asset Management {{ trans('general.setup') }}
         @show
       </title>
         <link rel="stylesheet" href="{{ url(mix('css/dist/all.css')) }}">
-        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=66">
+        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=86">
 
 
 
@@ -81,7 +82,7 @@
           <main id="main" class="container">
               <div class="row">
                   <div class="col-lg-10 col-lg-offset-1">
-                    <h1 class="page-header"><img src="../img/logo.png" style="height: 65px;" alt="Snipe-IT logo"> {{ trans('general.pre_flight') }}</h1>
+                    <h1 class="page-header"><img src="{{ asset('img/stats-sa-logo.png') }}" style="height: 65px;" alt="Stats SA Asset Management logo"> {{ trans('general.pre_flight') }}</h1>
                   </div>
                   <div class="col-lg-12">
 
@@ -139,7 +140,7 @@
                         </div>
                     </div>
 
-                      <strong>Snipe-IT {{ trans('general.version') }}</strong> {{ config('version.app_version') }} -
+                      <strong>Stats SA Asset Management {{ trans('general.version') }}</strong> {{ config('version.app_version') }} -
                       {{ trans('general.build') }} {{ config('version.build_version') }} ({{ config('version.branch') }})
 
                   </div>
@@ -159,6 +160,6 @@
 
     <script nonce="{{ csrf_token() }}">window.SnipePresentation = @json(trans('presentation'));</script>
 <script defer src="{{ asset('js/vendor/lottie-light-5.13.0.min.js') }}" nonce="{{ csrf_token() }}"></script>
-<script defer src="{{ asset('js/form-field-experience.js') }}?v=11" data-success-animation="{{ asset('animations/validation-success.json') }}" nonce="{{ csrf_token() }}"></script>
+<script defer src="{{ asset('js/form-field-experience.js') }}?v=13" data-success-animation="{{ asset('animations/validation-success.json') }}" nonce="{{ csrf_token() }}"></script>
 </body>
 </html>

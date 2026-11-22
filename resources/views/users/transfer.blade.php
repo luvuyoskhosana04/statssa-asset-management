@@ -204,9 +204,12 @@
         </x-page-column>
 
         <x-page-column class="col-md-5">
+            <x-form.support-panel>
             <livewire:checkout-target-panel type="assets" defaultTargetType="user" />
             <livewire:checkout-target-panel type="accessories" defaultTargetType="user" />
             <livewire:checkout-target-panel type="licenses" defaultTargetType="user" />
+
+            </x-form.support-panel>
         </x-page-column>
     </x-container>
 

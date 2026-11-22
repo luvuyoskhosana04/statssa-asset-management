@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'name' => 'Stats SA Asset Management',
+    'guide' => 'User guide',
+    'guide_intro' => 'Manage Stats SA assets from receipt to allocation, return and audit.',
+    'assets' => 'Receive and manage assets',
+    'assets_help' => 'Scan the original barcode, then the printed Stats SA barcode. Review received assets before ending the receiving session. Use All Assets to search, filter and inspect inventory.',
+    'projects' => 'Projects and allocations',
+    'projects_help' => 'Choose a project and identify the employee. Select or scan an available asset, set its return date, review the details and request acceptance. An asset awaiting acceptance remains unavailable for another allocation.',
+    'audits' => 'Audits and returns',
+    'audits_help' => 'Use Scanner Bulk Audit to record checks. Quick Scan Checkin records returned assets. Supporting results appear below the form and can be expanded when needed.',
+    'imports' => 'Imports',
+    'imports_help' => 'Choose the record type, upload a CSV file, map its column headings and review the preview before importing. Follow the examples shown in the import screens.',
+    'access' => 'Access and settings',
+    'access_help' => 'Sign in with your own account. Your assigned permissions determine the records and actions you can access. Administrators manage integrations and authentication under Settings.',
+    'api' => 'API access',
+    'api_help' => 'Authorised users can manage API access from their account. Use the application API under /api/v1 with your own credentials and the permissions granted to your account.',
+    'support' => 'Contact support',
+    'support_help' => 'Include the page address, what you expected, what happened and a screenshot. Do not include passwords or access tokens.',
+    'notices' => 'Open-source notices',
+    'upstream_credit' => 'This application includes Snipe-IT by Grokability, Inc., licensed under the GNU Affero General Public License version 3. Original source notices and third-party licences are retained.',
+    'no_warranty' => 'This software is provided without warranty. See the licence for the full terms.',
+    'license' => 'Read the licence',
+    'source' => 'Project source repository',
+    'setup_ready' => 'Your Stats SA workspace is ready. Open the dashboard or read the user guide to get started.',
+    'dashboard' => 'Open dashboard',
+];

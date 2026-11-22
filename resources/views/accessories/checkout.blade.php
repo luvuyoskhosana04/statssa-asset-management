@@ -86,8 +86,11 @@
     </x-page-column>
 
     <x-page-column class="col-md-5">
+            <x-form.support-panel>
         <livewire:checkout-target-panel type="accessories" />
-    </x-page-column>
+
+            </x-form.support-panel>
+        </x-page-column>
 
 </x-container>
 

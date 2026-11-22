@@ -81,6 +81,7 @@
         var control = record.control, filled = hasValue(control), checked = false;
         record.shell.classList.toggle('is-field-empty',!filled);
         record.shell.classList.toggle('is-field-disabled',control.disabled || control.readOnly);
+        if (record.dateButton) record.dateButton.disabled = control.disabled || control.readOnly;
         if (record.label && !['checkbox','radio'].includes(control.type)) {
             var suffix = required(control) ? '' : ' '+text('field_optional');
             var nextLabel = record.title+suffix;
@@ -149,6 +150,32 @@
         window.InterfaceForms?.guideControl?.(control); example(control,title);
         if (control.type === 'date' || control.type === 'datetime-local') {
             var dateExample = node('span','ui-field-date-example',control.type === 'date' ? text('field_date_example') : text('field_datetime_example')); dateExample.setAttribute('aria-hidden','true'); shell.appendChild(dateExample);
+            var dateAction = node('span','ui-field-inline-action');
+            var dateButton = node('button','btn btn-default ui-field-add-button',text('field_select'));
+            dateButton.type = 'button'; dateButton.setAttribute('aria-label',text('field_select')+' '+title.toLowerCase());
+            dateButton.addEventListener('click',function () {
+                if (control.disabled || control.readOnly) return;
+                if (window.jQuery?.fn.datetimepicker) {
+                    var picker = window.jQuery(shell).data('DateTimePicker');
+                    if (!picker) {
+                        window.jQuery(shell).datetimepicker({
+                            format:control.type === 'date' ? 'YYYY-MM-DD' : 'YYYY-MM-DDTHH:mm:ss',
+                            allowInputToggle:false,useCurrent:false,showClear:true,showClose:true,showTodayButton:true,
+                            minDate:control.min || false,maxDate:control.max || false,
+                            icons:{time:'fa-regular fa-clock',date:'fa-regular fa-calendar',up:'fa-solid fa-chevron-up',down:'fa-solid fa-chevron-down',previous:'fa-solid fa-chevron-left',next:'fa-solid fa-chevron-right',today:'fa-solid fa-calendar-day',clear:'fa-solid fa-trash',close:'fa-solid fa-xmark'}
+                        });
+                        window.jQuery(shell).on('dp.change',function () { changed({target:control,type:'change'}); });
+                        picker = window.jQuery(shell).data('DateTimePicker');
+                    }
+                    picker.show();
+                } else if (typeof control.showPicker === 'function') {
+                    try { control.showPicker(); } catch (_) { control.focus(); }
+                } else { control.focus(); control.click(); }
+            });
+            dateAction.appendChild(dateButton); shell.appendChild(dateAction);
+            shell.classList.add('has-inline-add','has-native-date-action');
+            if (window.jQuery?.fn.datetimepicker || typeof control.showPicker === 'function') shell.classList.add('can-open-date-picker');
+            record.dateButton = dateButton;
         }
         update(record,false);
         if (wasFocused) control.focus({preventScroll:true});

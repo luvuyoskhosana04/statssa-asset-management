@@ -74,7 +74,7 @@ return [
         'file_delete_error' => '파일을 삭제할 수 없습니다',
         'file_missing' => '선택한 파일이 없습니다',
         'file_already_deleted' => '선택한 파일이 이미 삭제되었습니다',
-        'file_missing_on_disk' => 'The file for this import is no longer on disk. It may have been deleted outside of Snipe-IT. Delete this entry and re-upload the file to try again.',
+        'file_missing_on_disk' => 'The file for this import is no longer on disk. It may have been deleted outside of Stats SA Asset Management. Delete this entry and re-upload the file to try again.',
         'file_empty' => 'This file has no data rows. Nothing can be imported from it.',
         'header_row_missing' => 'This file does not have a recognized header row. Delete this entry and re-upload the file to try again.',
         'header_row_has_malformed_characters' => '헤더 행의 하나 이상의 속성에 잘못된 형식의 UTF-8 문자가 포함되어 있습니다',

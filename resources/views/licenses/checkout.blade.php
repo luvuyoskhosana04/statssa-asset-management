@@ -82,9 +82,12 @@
         </x-page-column>
 
         <x-page-column class="col-md-5">
+            <x-form.support-panel>
             <x-checkout-request-context :request="$checkoutRequest ?? null" :requestable="$license" />
 
             <livewire:checkout-target-panel type="licenses" />
+
+            </x-form.support-panel>
         </x-page-column>
 
     </x-container>

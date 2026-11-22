@@ -131,6 +131,7 @@
         </x-page-column>
 
         <x-page-column class="col-md-3">
+            <x-form.support-panel>
 
             <x-box>
                 <x-slot:header>
@@ -149,6 +150,8 @@
                 </ul>
             </x-box>
 
+
+            </x-form.support-panel>
         </x-page-column>
 
     </x-container>

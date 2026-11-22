@@ -15,6 +15,58 @@ use Tests\TestCase;
 
 class ProjectWorkflowTest extends TestCase
 {
+    public function test_analytics_separates_currencies_and_reports_missing_costs(): void
+    {
+        $this->actingAs(User::factory()->admin()->create());
+        $project = Project::factory()->create();
+        foreach ([['ZAR', 123.45], ['USD', 20], ['ZAR', null]] as [$currency, $cost]) {
+            $location = \App\Models\Location::factory()->create(['currency' => $currency]);
+            $asset = Asset::factory()->create(['purchase_cost' => $cost, 'location_id' => $location->id]);
+            $project->assets()->attach($asset, ['original_status_id' => $asset->status_id, 'reserved_by' => auth()->id()]);
+        }
+        $this->get(route('projects.index', ['tab' => 'analytics', 'currency' => 'ZAR']))->assertOk()
+            ->assertSee(trans('projects.analytics_tab'))->assertViewHas('analytics', fn ($data) => $data['value'] === 12345 && $data['assets'] === 3 && $data['missing_costs'] === 1 && $data['currencies'] === ['USD', 'ZAR']);
+        $this->get(route('projects.index', ['tab' => 'analytics', 'currency' => 'USD']))->assertOk()
+            ->assertViewHas('analytics', fn ($data) => $data['value'] === 2000 && $data['currency'] === 'USD');
+    }
+
+    public function test_analytics_renders_empty_state_and_requires_permission(): void
+    {
+        $this->actingAs(User::factory()->admin()->create())->get(route('projects.index', ['tab' => 'analytics']))
+            ->assertOk()->assertSee(trans('projects.analytics_empty'))->assertViewHas('analytics', fn ($data) => $data['assets'] === 0 && $data['value'] === 0);
+        $this->actingAs(User::factory()->create())->get(route('projects.index', ['tab' => 'analytics']))->assertForbidden();
+    }
+
+    public function test_analytics_excludes_other_companies(): void
+    {
+        $this->settings->enableMultipleFullCompanySupport();
+        $visible = Company::factory()->create();
+        $hidden = Company::factory()->create();
+        $user = User::factory()->viewAssets()->create();
+        $user->companies()->attach($visible);
+        $project = Project::factory()->create(['company_id' => $visible->id]);
+        $other = Project::factory()->create(['company_id' => $hidden->id, 'name' => 'Private project analytics']);
+        $asset = Asset::factory()->create(['company_id' => $hidden->id, 'purchase_cost' => 999]);
+        $other->assets()->attach($asset, ['original_status_id' => $asset->status_id, 'reserved_by' => $user->id]);
+        $this->actingAs($user)->get(route('projects.index', ['tab' => 'analytics']))->assertOk()
+            ->assertDontSee('Private project analytics')->assertViewHas('analytics', fn ($data) => $data['projects'] === 1 && $data['assets'] === 0 && $data['value'] === 0);
+    }
+
+    public function test_analytics_distinguishes_pending_acceptance_from_overdue_issued_assets(): void
+    {
+        [, $project, $worker, $asset] = $this->context();
+        $location = \App\Models\Location::factory()->create(['currency' => 'ZAR']);
+        $asset->update(['purchase_cost' => 88, 'location_id' => $location->id]);
+        $session = DB::table('project_issue_sessions')->where('project_id', $project->id)->first()->id;
+        $this->post(route('projects.issue.store', $session), $this->data($worker, $asset, $project))->assertSessionHasNoErrors();
+        $project->update(['start_date' => today()->subYear(), 'end_date' => today()->subDay()]);
+        $url = route('projects.index', ['tab' => 'analytics', 'currency' => 'ZAR']);
+        $this->get($url)->assertOk()->assertViewHas('analytics', fn ($data) => $data['stages']['awaiting'] === 1 && $data['pending_returns'] === 0 && $data['at_risk'] === 0);
+        $issue = DB::table('project_issues')->where('session_id', $session)->first();
+        CheckoutAcceptance::findOrFail($issue->acceptance_id)->forceFill(['accepted_at' => now()])->save();
+        $this->get($url)->assertOk()->assertViewHas('analytics', fn ($data) => $data['stages']['issued'] === 1 && $data['overdue'] === 1 && $data['at_risk'] === 8800);
+    }
+
     private function context(): array
     {
         $manager = User::factory()->admin()->create();
@@ -56,7 +108,8 @@ class ProjectWorkflowTest extends TestCase
     public function test_directory_is_readonly_even_for_managers(): void
     {
         [$manager, $project] = $this->context();
-        $this->get(route('projects.index'))->assertOk()->assertSee($project->name)->assertDontSee('href="'.route('projects.create').'"', false)->assertSee('project-directory');
+        $this->get(route('projects.index'))->assertOk()->assertSee('projectsListingTable')->assertDontSee('href="'.route('projects.create').'"', false)->assertDontSee('project-directory');
+        $this->getJson(route('projects.index', ['table' => 1]))->assertOk()->assertJsonFragment(['name' => $project->name]);
         $this->get(route('projects.show', $project))->assertOk();
         $this->get(route('projects.create'))->assertForbidden();
         $this->get(route('projects.edit', $project))->assertForbidden();
@@ -200,6 +253,39 @@ class ProjectWorkflowTest extends TestCase
         $this->assertContains(DB::table('project_issues')->value('notification_status'), ['demo_logged', 'sent']);
     }
 
+    public function test_project_column_filters_cover_all_rows_and_combine_conditions(): void
+    {
+        $this->actingAs(User::factory()->admin()->create());
+        Project::factory()->count(21)->create(['name' => 'A directory project', 'status' => 'active']);
+        $target = Project::factory()->create(['name' => 'Z final project', 'status' => 'ended']);
+        $url = route('projects.index', ['table' => 1]);
+        $this->getJson($url)->assertOk()->assertJsonPath('total', 22);
+        $filters = ['name' => ['op' => 'in', 'values' => [$target->name]], 'status' => ['op' => 'in', 'values' => [trans('projects.ended')]]];
+        $this->getJson($url.'&'.http_build_query(['limit' => 1, 'column_filters' => json_encode($filters)]))
+            ->assertOk()->assertJsonPath('total', 1)->assertJsonPath('rows.0.name', $target->name);
+        $filters['assets_count'] = ['op' => 'gt', 'value' => '0'];
+        $this->getJson($url.'&'.http_build_query(['column_filters' => json_encode($filters)]))->assertOk()->assertJsonPath('total', 0);
+        $this->getJson($url.'&column_filter_field=status')->assertOk()->assertJsonFragment(['values' => [trans('projects.active'), trans('projects.ended')]]);
+        $this->getJson($url.'&'.http_build_query(['column_filters' => json_encode(['private_field' => ['op' => 'blank']])]))->assertJsonPath('status', 'error');
+        $this->actingAs(User::factory()->create());
+        $this->getJson($url)->assertForbidden();
+        $this->getJson($url.'&column_filter_meta=1')->assertForbidden();
+    }
+
+    public function test_audit_can_start_another_issue_for_the_same_project(): void
+    {
+        [$manager, $project, , , $original] = $this->context();
+        $this->get(route('projects.issue.audit', $original))->assertOk()
+            ->assertSee(trans('projects.issue_another'))
+            ->assertSee('action="'.route('projects.issue.start').'"', false)
+            ->assertSee('name="project_id" value="'.$project->id.'"', false);
+        $this->post(route('projects.issue.start'), ['project_id' => $project->id])->assertSessionHasNoErrors();
+        $newSession = DB::table('project_issue_sessions')->where('created_by', $manager->id)->where('id', '!=', $original)->sole();
+        $this->assertSame($project->id, (int) $newSession->project_id);
+        $this->assertDatabaseHas('project_issue_sessions', ['id' => $original, 'closed_at' => null]);
+        $this->get(route('projects.issue.show', $newSession->id))->assertOk()->assertSee('id="issue-worker"', false);
+    }
+
     public function test_company_scope_hides_other_projects_and_employees(): void
     {
         $own = Company::factory()->create();
@@ -208,7 +294,8 @@ class ProjectWorkflowTest extends TestCase
         $hidden = Project::factory()->create(['company_id' => $other->id]);
         $this->settings->enableMultipleFullCompanySupport();
         $this->actingAs(User::factory()->viewAssets()->forCompany($own->id)->create());
-        $this->get(route('projects.index'))->assertOk()->assertSee($visible->name)->assertDontSee($hidden->name);
+        $this->getJson(route('projects.index', ['table' => 1]))->assertOk()->assertJsonFragment(['name' => $visible->name])->assertJsonMissing(['name' => $hidden->name])->assertJsonMissingPath('rows.0.members_count');
+        $this->getJson(route('projects.index', ['table' => 1, 'column_filter_meta' => 1]))->assertOk()->assertJsonMissingPath('columns.members_count');
         $this->get(route('projects.show', $hidden))->assertRedirect(route('projects.index'));
     }
 }

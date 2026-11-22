@@ -98,7 +98,7 @@ $style = [
                                     {{ $snipeSettings->site_name }}
                                 @endif
                             @else
-                                Snipe-IT
+                                Stats SA Asset Management
                             @endif
                         </td>
                     </tr>

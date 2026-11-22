@@ -89,5 +89,5 @@ return [
         'date_picker' => 'Date Picker',
         'datetime_picker' => 'Datetime Picker',
     ],
-    'general_help_text' => 'Benutzerdefinierte Felder speichern zusätzliche Informationen, die nicht von den Standard-Asset-Feldern abgedeckt sind. <a href="https://snipe-it.readme.io/docs/custom-fields#/"><i class="fa fa-external-link"></i></a>.',
+    'general_help_text' => 'Benutzerdefinierte Felder speichern zusätzliche Informationen, die nicht von den Standard-Asset-Feldern abgedeckt sind. <a href="/user-guide"><i class="fa fa-external-link"></i></a>.',
 ];

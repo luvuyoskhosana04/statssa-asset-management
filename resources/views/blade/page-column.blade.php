@@ -3,6 +3,6 @@
 ])
 
 <!-- Start column component -->
-<div class="{{ $class }}" {{ $attributes->merge(['style' => '']) }}>
+<div class="ui-page-column {{ $class }}" {{ $attributes->merge(['style' => '']) }}>
     {{ $slot }}
 </div>

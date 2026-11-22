@@ -18,7 +18,7 @@
 {{ $snipeSettings->site_name }}
 @endif
 @else
-Snipe-IT
+Stats SA Asset Management
 @endif
 @endcomponent
 @endslot
@@ -41,7 +41,7 @@ Snipe-IT
 @if($snipeSettings::setupCompleted())
 © {{ date('Y') }} {{ $snipeSettings->site_name }}. {{ trans('mail.rights_reserved') }}
 @else
-© {{ date('Y') }} Snipe-IT. {{ trans('mail.rights_reserved') }}
+© {{ date('Y') }} Stats SA Asset Management. {{ trans('mail.rights_reserved') }}
 @endif
 
 @if ($snipeSettings->privacy_policy_link!='')

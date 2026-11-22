@@ -1054,3 +1054,5 @@ Route::middleware(['auth'])->get(
     );
 
 require __DIR__.'/web/projects.php';
+
+require __DIR__.'/web/branding.php';

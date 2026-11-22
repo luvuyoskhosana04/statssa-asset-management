@@ -1,8 +1,13 @@
 <?php
 
 return [
+    'table_view_filters' => 'View & filters',
+    'form_supporting_information' => 'Supporting information',
     'field_import_time' => 'Estimated time: about 2 to 5 minutes to prepare this import.',
     'field_signin_time' => 'Estimated time: under 1 minute.',
+    'bulk_current_assignments' => 'View current assignments',
+    'bulk_current_assignments_help' => 'Review assets already checked out to the user, asset or location selected above.',
+    'project_view' => 'View project',
     'field_select' => 'Select',
     'field_add' => 'Add',
     'field_optional' => '(Optional)',

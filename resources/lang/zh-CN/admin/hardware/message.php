@@ -74,7 +74,7 @@ return [
         'file_delete_error' => '该文件无法被删除',
         'file_missing' => '所选文件丢失',
         'file_already_deleted' => '选择的文件已被删除',
-        'file_missing_on_disk' => 'The file for this import is no longer on disk. It may have been deleted outside of Snipe-IT. Delete this entry and re-upload the file to try again.',
+        'file_missing_on_disk' => 'The file for this import is no longer on disk. It may have been deleted outside of Stats SA Asset Management. Delete this entry and re-upload the file to try again.',
         'file_empty' => 'This file has no data rows. Nothing can be imported from it.',
         'header_row_missing' => 'This file does not have a recognized header row. Delete this entry and re-upload the file to try again.',
         'header_row_has_malformed_characters' => '标题行中的一个或多个属性包含格式错误的 UTF-8 字符',

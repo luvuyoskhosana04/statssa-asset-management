@@ -74,7 +74,7 @@ return [
         'file_delete_error' => 'A fájlt nem sikerült törölni',
         'file_missing' => 'A kijelölt fájl nem található',
         'file_already_deleted' => 'A kiválasztott fájl már törlésre került',
-        'file_missing_on_disk' => 'The file for this import is no longer on disk. It may have been deleted outside of Snipe-IT. Delete this entry and re-upload the file to try again.',
+        'file_missing_on_disk' => 'The file for this import is no longer on disk. It may have been deleted outside of Stats SA Asset Management. Delete this entry and re-upload the file to try again.',
         'file_empty' => 'This file has no data rows. Nothing can be imported from it.',
         'header_row_missing' => 'This file does not have a recognized header row. Delete this entry and re-upload the file to try again.',
         'header_row_has_malformed_characters' => 'A fejlécsorban egy vagy több attribútum hibás formájú UTF-8 karaktereket tartalmaz',

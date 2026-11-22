@@ -79,10 +79,13 @@
     </x-page-column>
 
     <x-page-column class="col-md-5">
+            <x-form.support-panel>
         <x-checkout-request-context :request="$checkoutRequest ?? null" :requestable="$consumable" />
 
         <livewire:checkout-target-panel type="consumables" />
-    </x-page-column>
+
+            </x-form.support-panel>
+        </x-page-column>
 
 </x-container>
 

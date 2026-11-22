@@ -124,10 +124,13 @@
         </x-page-column>
 
         <x-page-column class="col-md-5">
+            <x-form.support-panel>
             <x-side-panel.removed-assets
                 :items="$removed_assets"
                 :message="trans('general.unassigned_assets_removed')"
             />
+
+            </x-form.support-panel>
         </x-page-column>
 
     </x-container>

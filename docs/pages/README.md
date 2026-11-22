@@ -9,7 +9,7 @@ Example paths identify feature entry points. Individual routes and permissions v
 | Dashboard | `/` | [resources/views/dashboard.blade.php](../../resources/views/dashboard.blade.php) | [app/Http/Controllers/DashboardController.php](../../app/Http/Controllers/DashboardController.php) | Reporting dashboard with return, warranty, offboarding and asset comparisons; permission filtered |
 | Sign-in | `/login` | [resources/views/auth](../../resources/views/auth) | [app/Http/Controllers/Auth](../../app/Http/Controllers/Auth) | Public credentials form; password recovery and optional configured identity providers |
 | Assets | `/hardware` | [resources/views/hardware](../../resources/views/hardware) | [app/Http/Controllers/Assets](../../app/Http/Controllers/Assets) | Asset Manager; inventory, record, create/edit, checkout/checkin, audit and files |
-| Projects | `/projects` | [resources/views/projects](../../resources/views/projects) | [app/Http/Controllers/Projects](../../app/Http/Controllers/Projects) | Local project records, employee membership, reservations, issue sessions and physical handover; company scoped |
+| Projects | `/projects` | [resources/views/projects](../../resources/views/projects) | [app/Http/Controllers/Projects](../../app/Http/Controllers/Projects) | Read-only project directory and All Project Analytics tab with company-scoped purchase values by currency, project values, outstanding returns and allocation stages. Shared column filters and sorting across authorised records; start/end dates filter separately. Employee membership, reservations and issue sessions remain company scoped. |
 | Barcode receiving | `/hardware/receive-tag` | [receiving views](../../resources/views/hardware/receive-batch-create.blade.php) | [AssetReceivingController](../../app/Http/Controllers/Assets/AssetReceivingController.php) | Scan new barcodes into a removable draft; Save creates assets and receipt history atomically |
 | Licenses | `/licenses` | [resources/views/licenses](../../resources/views/licenses) | [app/Http/Controllers/Licenses](../../app/Http/Controllers/Licenses) | License Manager; product records, seats, assignments and files |
 | Accessories | `/accessories` | [resources/views/accessories](../../resources/views/accessories) | [app/Http/Controllers/Accessories](../../app/Http/Controllers/Accessories) | Accessory Manager; stock, assignments and files |
@@ -42,3 +42,5 @@ Example paths identify feature entry points. Individual routes and permissions v
 - [Livewire views](../../resources/views/livewire): interactive widgets, including import and permissions.
 
 Page access is enforced on the server. Hiding a menu item is not authorization.
+
+The Stats SA user guide is available at `/user-guide` to signed-in users. `/about/open-source` provides licence notices without requiring sign-in after installation. Both use the shared Stats SA layouts.

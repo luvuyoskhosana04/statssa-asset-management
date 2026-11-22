@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ trans('auth/role-login.title') }}</title>
     <meta name="theme-color" content="#e2d7bf">
-    <link rel="icon" href="{{ asset('favicon.ico') }}">
+    @include('partials.branding.favicon')
     <link rel="stylesheet" href="{{ asset('css/welcome.css') }}?v=10">
-    <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=66">
+    <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=86">
 </head>
 <body class="stats-sa-welcome">
     <a class="skip-link" href="#{{ config('auth.demo_role_login') ? 'role' : 'username' }}">{{ trans('auth/role-login.skip') }}</a>
@@ -28,6 +28,6 @@
     @yield('scripts')
 <script nonce="{{ csrf_token() }}">window.SnipePresentation = @json(trans('presentation'));</script>
 <script defer src="{{ asset('js/vendor/lottie-light-5.13.0.min.js') }}" nonce="{{ csrf_token() }}"></script>
-<script defer src="{{ asset('js/form-field-experience.js') }}?v=11" data-success-animation="{{ asset('animations/validation-success.json') }}" nonce="{{ csrf_token() }}"></script>
+<script defer src="{{ asset('js/form-field-experience.js') }}?v=13" data-success-animation="{{ asset('animations/validation-success.json') }}" nonce="{{ csrf_token() }}"></script>
 </body>
 </html>

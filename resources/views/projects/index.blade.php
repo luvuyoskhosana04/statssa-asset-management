@@ -3,25 +3,40 @@
 @section('content')
 <section class="box box-default">
     <div class="box-header with-border project-toolbar">
-        <h2 class="box-title">{{ trans('projects.all') }}</h2>
+        <nav class="project-tabs project-index-tabs" aria-label="{{ trans('projects.title') }}">
+            <a href="{{ route('projects.index') }}" @if($tab === 'projects') aria-current="page" @endif>{{ trans('projects.all') }}</a>
+            <a href="{{ route('projects.index', ['tab' => 'analytics']) }}" @if($tab === 'analytics') aria-current="page" @endif>{{ trans('projects.analytics_tab') }}</a>
+        </nav>
         <div class="project-actions">
             @can('issue', \App\Models\Project::class)<a class="btn btn-default" href="{{ route('projects.issue.index') }}">{{ trans('projects.issue') }}</a>@endcan
         </div>
     </div>
     <div class="box-body">
+        @if($tab === 'analytics')
+            @include('projects.partials.analytics')
+        @else
         <p class="help-block">{{ trans('projects.local_source') }}</p>
-        <form method="get" action="{{ route('projects.index') }}" class="project-filters">
-            <div class="project-search"><label for="project-directory">{{ trans('projects.choose_project') }}</label><select id="project-directory" name="project_id" class="form-control"><option value="">{{ trans('projects.all') }}</option>@foreach($projectOptions as $option)<option value="{{ $option->id }}" @selected((int)request('project_id') === $option->id)>{{ $option->name }} ({{ $option->code }})</option>@endforeach</select></div><div><label for="project-status">{{ trans('general.status') }}</label><select id="project-status" name="status" class="form-control">
-                @foreach (['active', 'planned', 'suspended', 'ended', 'all'] as $status)<option value="{{ $status }}" @selected(request('status', 'active') === $status)>{{ trans('projects.'.$status) }}</option>@endforeach
-            </select></div>
-            <div class="project-search"><label for="project-search">{{ trans('general.search') }}</label><input class="form-control" id="project-search" type="search" name="search" maxlength="255" placeholder="{{ trans('projects.search') }}" value="{{ request('search') }}"></div>
-            <button class="btn btn-default" type="submit">{{ trans('general.search') }}</button>
-        </form>
-        <div class="table-responsive"><table class="table table-striped project-table"><thead><tr><th scope="col">{{ trans('projects.title') }}</th><th scope="col">{{ trans('projects.dates') }}</th><th scope="col">{{ trans('general.status') }}</th><th scope="col">{{ trans('projects.office') }}</th><th scope="col">{{ trans('projects.assets') }}</th>@can('view', \App\Models\User::class)<th scope="col">{{ trans('projects.people') }}</th>@endcan<th scope="col">{{ trans('general.action') }}</th></tr></thead>
-            <tbody>@forelse ($projects as $project)<tr><th scope="row"><a href="{{ route('projects.show', $project) }}">{{ $project->name }}</a><small class="text-muted">{{ $project->code }}</small></th><td>{{ $project->present()->dates() }}</td><td><span class="project-status project-status-{{ $project->status }}">{{ $project->present()->status() }}</span></td><td>{{ $project->location?->name ?? trans('general.unassigned') }}</td><td>{{ number_format($project->assets_count) }}</td>@can('view', \App\Models\User::class)<td>{{ number_format($project->members_count) }}</td>@endcan<td><a class="btn btn-default btn-sm" href="{{ route('projects.show', $project) }}">{{ trans('projects.view') }}</a></td></tr>
-            @empty<tr><td colspan="7" class="project-empty"><p>{{ trans('projects.empty') }}</p>@can('create', \App\Models\Project::class)<p class="help-block">{{ trans('projects.empty_help') }}</p>@endcan</td></tr>@endforelse</tbody>
-        </table></div>
+        <table id="projectsListingTable" data-cookie-id-table="projectsListingTable" class="table table-striped snipe-table project-table"
+               data-url="{{ route('projects.index', ['table' => 1]) }}" data-side-pagination="server"
+               data-pagination="true" data-search="true" data-show-refresh="true" data-sort-name="name" data-sort-order="asc">
+            <thead><tr>
+                <th data-field="name" data-sortable="true" data-formatter="projectNameFormatter">{{ trans('projects.title') }}</th>
+                <th data-field="start_date" data-sortable="true">{{ trans('projects.start_date') }}</th>
+                <th data-field="end_date" data-sortable="true">{{ trans('projects.end_date') }}</th>
+                <th data-field="status" data-sortable="true" data-formatter="projectStatusFormatter">{{ trans('general.status') }}</th>
+                <th data-field="office" data-sortable="true" data-formatter="projectTextFormatter">{{ trans('projects.office') }}</th>
+                <th data-field="assets_count" data-sortable="true">{{ trans('projects.assets') }}</th>
+                @can('view', \App\Models\User::class)<th data-field="members_count" data-sortable="true">{{ trans('projects.people') }}</th>@endcan
+                <th data-field="actions" data-searchable="false" data-formatter="projectViewFormatter">{{ trans('general.action') }}</th>
+            </tr></thead>
+        </table>
+        @endif
     </div>
-    <div class="box-footer">{{ $projects->links() }}</div>
 </section>
+@stop
+@section('moar_scripts')
+<script src="{{ asset('js/projects.js') }}?v=4" nonce="{{ csrf_token() }}"></script>
+@if($tab === 'projects')
+@include('partials.bootstrap-table', ['exportFile' => 'projects-export', 'search' => true])
+@endif
 @stop

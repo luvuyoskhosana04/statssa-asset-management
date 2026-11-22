@@ -15,10 +15,12 @@
         }
     </style>
 
-    <x-container columns="2">
-        <x-page-column class="col-md-7">
-
-            <x-form data-stepper="bulk" id="checkout_form" route="{{ url()->current() }}" data-disable-empty-on-submit data-autofocus-select2-search>
+    <x-container>
+            <x-side-panel.removed-assets
+                :items="$removed_assets"
+                :message="trans('general.assigned_assets_removed')"
+            />
+            <x-form class="form-horizontal bulk-checkout-workspace" data-stepper="bulk" id="checkout_form" route="{{ url()->current() }}" data-disable-empty-on-submit data-autofocus-select2-search>
 
                 <x-box header="{{ trans('admin/hardware/form.tag') }}">
 
@@ -89,6 +91,14 @@
                         </x-slot:input>
                     </x-form.row>
 
+                    <details class="bulk-current-assignments" data-stepper-section="0">
+                        <summary>{{ trans('presentation.bulk_current_assignments') }}</summary>
+                        <div class="bulk-current-assignments-body">
+                            <p class="help-block">{{ trans('presentation.bulk_current_assignments_help') }}</p>
+                            <livewire:checkout-target-panel type="assets" />
+                        </div>
+                    </details>
+
                     <x-slot:customfooter>
                         <x-redirect_submit_options
                             index_route="hardware.index"
@@ -103,16 +113,6 @@
                 </x-box>
 
             </x-form>
-
-        </x-page-column>
-
-        <x-page-column class="col-md-5">
-            <x-side-panel.removed-assets
-                :items="$removed_assets"
-                :message="trans('general.assigned_assets_removed')"
-            />
-            <livewire:checkout-target-panel type="assets" />
-        </x-page-column>
 
     </x-container>
 @stop

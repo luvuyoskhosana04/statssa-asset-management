@@ -2882,7 +2882,7 @@
         // Sourced from the transformer via IconHelper so the icon
         // stays consistent with the rest of the app's per-type
         // iconography. Sits INSIDE the anchor to match how the
-        // rest of Snipe-IT renders icon+text links.
+        // rest of Stats SA Asset Management renders icon+text links.
         var icon = row.requestable.icon
             ? '<i class="' + row.requestable.icon + ' fa-fw" aria-hidden="true" title="' + (row.requestable.type || '') + '"></i> '
             : '';

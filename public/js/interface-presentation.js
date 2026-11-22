@@ -171,18 +171,7 @@
         if (create) create.classList.add('asset-create-button');
         const columns = toolbar.querySelector('.keep-open > button');
         if (columns && !columns.querySelector('.asset-control-label')) columns.append(el('span', 'asset-control-label', columns.getAttribute('aria-label')));
-        const group = toolbar.querySelector('.columns');
-        if (!group || group.querySelector('.asset-table-tools')) return;
-        const tools = el('details', 'asset-table-tools'), summary = el('summary', 'btn btn-default', t('table_tools')), panel = el('div', 'asset-tools-panel');
-        tools.append(summary, panel);
-        ['btnAddMaintenance', 'btnShowDeleted', 'btnExport', 'print', 'fullscreen'].forEach(name => {
-            const button = group.querySelector('[name="' + name + '"]');
-            if (!button) return;
-            button.append(el('span', '', button.getAttribute('data-original-title') || button.getAttribute('title') || button.getAttribute('aria-label')));
-            panel.append(button);
-        });
-        if (panel.childElementCount) group.append(tools);
-        panel.addEventListener('click', () => { tools.open = false; });
+
     }
     const profiles = { assetsListingTable: 'assets', licensesListingTable: 'licenses', accessoriesListingTable: 'accessories', consumablesListingTable: 'consumables', componentsListingTable: 'components', usersListingTable: 'users', maintenanceListingTable: 'maintenance', checkoutRequestsListingTable: 'requests' };
     function profileFor(table) {
@@ -242,14 +231,91 @@
             toolbar.classList.add('card-header-toolbar');
         }
     }
+    function groupedTableControls(table) {
+        const instance = $(table).data('bootstrap.table');
+        const toolbar = instance?.$toolbar?.[0] || table.closest('.bootstrap-table')?.querySelector('.fixed-table-toolbar');
+        const controls = toolbar?.querySelector('.columns');
+        if (!controls) return;
+        toolbar.classList.add('table-toolbar-grouped');
+        function group(kind, label) {
+            let details = controls.querySelector(':scope > [data-table-control-group="' + kind + '"]');
+            if (details) return details;
+            details = el('details', 'asset-table-tools table-control-group hidden-print');
+            details.dataset.tableControlGroup = kind;
+            const summary = el('summary', 'btn btn-default', label);
+            const panel = el('div', 'asset-tools-panel table-control-panel');
+            details.append(summary, panel); controls.append(details);
+            function positionPanel() {
+                if (!details.open) return;
+                const anchor = summary.getBoundingClientRect();
+                const below = innerHeight - anchor.bottom - 16, above = anchor.top - 16;
+                const flip = below < Math.min(320, panel.scrollHeight) && above > below;
+                panel.style.top = flip ? 'auto' : 'calc(100% + 6px)';
+                panel.style.bottom = flip ? 'calc(100% + 6px)' : 'auto';
+                panel.style.maxHeight = Math.max(120, flip ? above : below) + 'px';
+                panel.style.right = '0px';
+                const bounds = panel.getBoundingClientRect();
+                if (bounds.left < 12) panel.style.right = (bounds.left - 12) + 'px';
+                else if (bounds.right > innerWidth - 12) panel.style.right = (bounds.right - innerWidth + 12) + 'px';
+            }
+            details.addEventListener('toggle', () => {
+                if (details.open) {
+                    document.querySelectorAll('.table-control-group[open]').forEach(other => { if (other !== details) other.open = false; });
+                    requestAnimationFrame(positionPanel);
+                } else {
+                    panel.querySelectorAll('.btn-group.open').forEach(dropdown => {
+                        dropdown.classList.remove('open');
+                        dropdown.querySelector('[data-toggle="dropdown"]')?.setAttribute('aria-expanded', 'false');
+                    });
+                }
+            });
+            panel.addEventListener('click', () => requestAnimationFrame(positionPanel));
+            panel.addEventListener('click', event => {
+                const button = event.target.closest('button,a');
+                if (button && !button.matches('[data-toggle="dropdown"],.dropdown-toggle') && !button.closest('.keep-open')) {
+                    setTimeout(() => { details.open = false; }, 0);
+                }
+            });
+            return details;
+        }
+        const view = group('view', t('table_view_filters'));
+        const tools = group('tools', t('table_tools'));
+        const viewPanel = view.querySelector('.table-control-panel');
+        const toolPanel = tools.querySelector('.table-control-panel');
+        const profile = table.closest('.bootstrap-table')?.querySelector(':scope > .presentation-views');
+        if (profile) viewPanel.prepend(profile);
+        const viewNames = new Set(['btnShowDeleted', 'btnToggleCompleted', 'btnDue', 'btnOverdue', 'btnShowAdmins', 'btnShowExpiring', 'btnShowInactive', 'advancedSearch', 'toggle', 'paginationSwitch']);
+        Array.from(controls.children).forEach(holder => {
+            if (holder.matches('.table-control-group')) return;
+            const button = holder.matches('button,a') ? holder : holder.querySelector(':scope > button,:scope > a');
+            if (!button || button.getAttribute('name') === 'btnAdd') return;
+            const name = button.getAttribute('name');
+            const destination = holder.classList.contains('keep-open') || viewNames.has(name) ? viewPanel : toolPanel;
+            const label = button.getAttribute('data-original-title') || button.getAttribute('title') || button.getAttribute('aria-label') || button.textContent.trim();
+            const visibleText = Array.from(button.childNodes).filter(node => node.nodeType === Node.TEXT_NODE || (node.nodeType === Node.ELEMENT_NODE && !node.matches('i,svg,.sr-only,.caret'))).map(node => node.textContent.trim()).join('');
+            if (label && !visibleText) button.append(el('span', 'table-control-label', label));
+            if (label) button.setAttribute('aria-label', label);
+            button.removeAttribute('data-tooltip');
+            destination.append(holder);
+        });
+        // Keep the primary action before the two secondary menus.
+        const create = controls.querySelector(':scope > [name="btnAdd"]');
+        if (create) controls.prepend(create);
+        [view, tools].forEach(details => { details.hidden = !details.querySelector('.table-control-panel').childElementCount; });
+        const active = viewPanel.querySelectorAll('.btn-selected,[aria-pressed="true"]').length;
+        let count = view.querySelector('summary .table-group-count');
+        if (active && !count) { count = el('span', 'table-group-count'); view.querySelector('summary').append(count); }
+        if (count) { count.textContent = String(active); count.hidden = !active; }
+    }
+
     function tableTools(table) {
         tableCreateControls(table);
         assetTableControls(table);
         cardTableControls(table);
         const key = profileFor(table), views = (window.SnipeTableViews || {})[key];
-        if (!views || !$(table).data('bootstrap.table')) return;
+        if (!views || !$(table).data('bootstrap.table')) { groupedTableControls(table); return; }
         const wrap = table.closest('.bootstrap-table');
-        if (!wrap || wrap.querySelector('.presentation-views')) { pinTable(table); return; }
+        if (!wrap || wrap.querySelector('.presentation-views') || $(table).data('bootstrap.table')?.$toolbar?.[0]?.querySelector('.presentation-views')) { groupedTableControls(table); pinTable(table); return; }
         const toolbar = el('div', 'presentation-views');
         const label = el('label', '', t('view')); label.htmlFor = table.id + '-presentation';
         const select = el('select', 'form-control'); select.id = label.htmlFor;
@@ -271,6 +337,7 @@
             pinTable(table);
         });
         $(table).on('column-switch.bs.table', () => { if (!applying) select.value = 'custom'; });
+        groupedTableControls(table);
         pinTable(table);
     }
     function permissions(editor) {
@@ -922,6 +989,55 @@
                     openTimer: null, closeTimer: null
                 };
             }).filter(section => section.link && section.panel);
+            const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+            const collapsedDesktop = () => window.innerWidth >= 768 && document.body.classList.contains('sidebar-collapse');
+            sections.forEach(section => {
+                const title = section.link.textContent.trim();
+                section.link.setAttribute('aria-label', title);
+                const heading = document.createElement('li');
+                heading.className = 'sidebar-flyout-title';
+                heading.setAttribute('role', 'presentation');
+                heading.textContent = title;
+                section.panel.prepend(heading);
+            });
+            function positionSections() {
+                sections.forEach(section => {
+                    if (!collapsedDesktop()) {
+                        section.panel.style.removeProperty('top');
+                        section.panel.style.removeProperty('max-height');
+                        return;
+                    }
+                    const anchor = section.item.getBoundingClientRect();
+                    const height = section.panel.scrollHeight;
+                    section.panel.style.top = Math.max(12 - anchor.top, Math.min(0, window.innerHeight - anchor.top - height - 12)) + 'px';
+                    section.panel.style.maxHeight = (window.innerHeight - 24) + 'px';
+                });
+            }
+            // One easing for both directions, with no queued animations on rapid reversals.
+            $.easing.snipeNavGlide = progress => .5 - Math.cos(progress * Math.PI) / 2;
+            if (!$(menu).data('lte.tree') && $.fn.tree) $(menu).tree();
+            const navigationTree = $(menu).data('lte.tree');
+            if (navigationTree) {
+                navigationTree.expand = function (panels, items) {
+                    if (this.options.accordion) {
+                        const siblings = items.siblings('.menu-open');
+                        this.collapse(siblings.children('.treeview-menu'), siblings);
+                    }
+                    items.removeClass('nav-root-closing').addClass('menu-open nav-user-open'); sync(); positionSections();
+                    panels.stop(true, false).slideDown({duration:motionPreference.matches ? 0 : 480,easing:'snipeNavGlide',complete:() => {
+                        items.css('height','auto'); $(this.element).trigger('expanded.tree');
+                    }});
+                };
+                navigationTree.collapse = function (panels, items) {
+                    items.addClass('nav-root-closing').removeClass('menu-open nav-user-open'); sync();
+                    panels.stop(true, false).slideUp({duration:motionPreference.matches ? 0 : 420,easing:'snipeNavGlide',complete:() => {
+                        items.removeClass('nav-root-closing');
+                        items.find('.treeview').removeClass('menu-open').find('.treeview-menu').hide();
+                        $(this.element).trigger('collapsed.tree');
+                    }});
+                };
+                motionPreference.addEventListener('change',() => { if (motionPreference.matches) $(menu).find('.treeview-menu').finish(); });
+            }
             function familyContains(section, target) {
                 if (!target || !(target instanceof Element)) return false;
                 return section.item.contains(target) || target.closest('.asset-nav-panel')?.dataset.sidebarOwner === section.item.id;
@@ -941,19 +1057,14 @@
                 section.closeTimer = setTimeout(() => {
                     if (pointer && familyContains(section, document.elementFromPoint(pointer.x, pointer.y))) return;
                     if (!keyboardMode || !familyContains(section, document.activeElement)) close(section);
-                }, 360);
+                }, 320);
             }
             function open(section) {
                 clearTimeout(section.closeTimer);
                 if (section.item.classList.contains('menu-open')) return;
                 if (!$(menu).data('lte.tree') && $.fn.tree) $(menu).tree();
                 const tree = $(menu).data('lte.tree');
-                if (tree) {
-                    const speed = tree.options.animationSpeed;
-                    tree.options.animationSpeed = 0;
-                    tree.expand($(section.panel), $(section.item));
-                    tree.options.animationSpeed = speed;
-                }
+                if (tree) tree.expand($(section.panel), $(section.item));
                 sync();
             }
             sections.forEach(section => {
@@ -969,7 +1080,7 @@
                 section.item.addEventListener('pointerleave', () => leave(section));
                 section.link.addEventListener('keydown', event => {
                     keyboardMode = true;
-                    if (event.key === 'ArrowRight') { event.preventDefault(); open(section); }
+                    if (event.key === 'ArrowRight') { event.preventDefault(); open(section); section.panel.querySelector('a,button')?.focus(); }
                     if (event.key === 'Escape') { event.preventDefault(); close(section); }
                 });
             });
@@ -987,7 +1098,39 @@
                 if (event.pointerType === 'mouse') pointer = {x: event.clientX, y: event.clientY};
             });
             document.addEventListener('mouseleave', () => { pointer = null; sections.forEach(leave); });
-            $(menu).on('expanded.tree collapsed.tree', sync);
+            sections.forEach(section => {
+                section.panel.addEventListener('keydown', event => {
+                    if (event.key === 'Escape' || event.key === 'ArrowLeft') {
+                        event.preventDefault(); close(section); section.link.focus();
+                    }
+                });
+            });
+            document.addEventListener('pointerdown', event => {
+                if (collapsedDesktop()) sections.forEach(section => { if (!familyContains(section, event.target)) close(section); });
+            });
+            function resetFlyouts() {
+                sections.forEach(section => {
+                    clearTimeout(section.openTimer); clearTimeout(section.closeTimer);
+                    $(section.panel).stop(true, false).hide();
+                    section.item.classList.remove('menu-open', 'nav-user-open', 'nav-root-closing');
+                });
+                pointer = null; keyboardMode = false; sync();
+            }
+            let wasCollapsed = collapsedDesktop();
+            if (wasCollapsed) resetFlyouts();
+            new MutationObserver(() => {
+                const isCollapsed = collapsedDesktop();
+                if (isCollapsed !== wasCollapsed) { resetFlyouts(); wasCollapsed = isCollapsed; }
+                positionSections();
+            }).observe(document.body, {attributes:true,attributeFilter:['class']});
+            document.addEventListener('focusin', event => {
+                if (collapsedDesktop()) sections.forEach(section => { if (!familyContains(section, event.target)) close(section); });
+            });
+            window.addEventListener('blur', resetFlyouts);
+            document.addEventListener('visibilitychange', () => { if (document.hidden) resetFlyouts(); });
+            window.addEventListener('resize', positionSections);
+            document.querySelector('.main-sidebar > .sidebar')?.addEventListener('scroll', positionSections, {passive:true});
+            $(menu).on('expanded.tree collapsed.tree', () => { sync(); positionSections(); });
         });
     }
 
@@ -1005,13 +1148,34 @@
             panel.dataset.sidebarOwner = group.closest('.treeview').id;
             return {group, trigger, panel};
         });
+        const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+        function glide(entry, opening) {
+            const panel = entry.panel, wasHidden = panel.hidden;
+            const appearance = wasHidden ? null : getComputedStyle(panel);
+            const opacity = appearance ? appearance.opacity : '0';
+            const transform = appearance ? appearance.transform : 'translateX(-8px)';
+            entry.motion?.cancel(); entry.motion = null;
+            panel.hidden = false; panel.inert = !opening;
+            panel.classList.toggle('is-nav-closing',!opening);
+            if (motionPreference.matches || !panel.animate) { panel.hidden = !opening; return; }
+            const motion = panel.animate([
+                {opacity,transform},
+                {opacity:opening ? 1 : 0,transform:opening ? 'translateX(0)' : 'translateX(-8px)'}
+            ],{duration:opening ? 400 : 320,easing:'cubic-bezier(.32,0,.2,1)',fill:'both'});
+            entry.motion = motion;
+            motion.onfinish = () => {
+                if (entry.motion !== motion) return;
+                panel.hidden = !opening; motion.cancel(); entry.motion = null;
+            };
+        }
+        motionPreference.addEventListener('change',() => { if (motionPreference.matches) entries.forEach(entry => entry.motion?.finish()); });
         function close(restoreFocus) {
             clearTimeout(openTimer); clearTimeout(closeTimer);
             if (!current) return;
             const previous = current;
             current = null;
             hovered = null;
-            previous.panel.hidden = true;
+            glide(previous, false);
             previous.trigger.setAttribute('aria-expanded', 'false');
             previous.group.classList.remove('asset-nav-open');
             if (restoreFocus) previous.trigger.focus();
@@ -1024,7 +1188,8 @@
             const width = Math.min(300, window.innerWidth - 24);
             entry.panel.style.width = width + 'px';
             entry.panel.style.maxHeight = Math.max(120, window.innerHeight - 24) + 'px';
-            const left = rtl ? sidebar.left - width - 8 : sidebar.right + 8;
+            const parent = entry.group.closest('.treeview-menu').getBoundingClientRect();
+            const left = rtl ? Math.min(sidebar.left, parent.left, anchor.left) - width - 8 : Math.max(sidebar.right, parent.right, anchor.right) + 8;
             entry.panel.style.left = Math.max(12, Math.min(left, window.innerWidth - width - 12)) + 'px';
             entry.panel.style.top = Math.max(12, Math.min(anchor.top, window.innerHeight - entry.panel.offsetHeight - 12)) + 'px';
         }
@@ -1032,6 +1197,8 @@
             clearTimeout(openTimer); clearTimeout(closeTimer);
             if (current !== entry) close(false);
             current = entry;
+            const alreadyOpen = entry.trigger.getAttribute('aria-expanded') === 'true' && !entry.panel.hidden;
+            if (!alreadyOpen) glide(entry, true);
             entry.panel.hidden = false;
             entry.trigger.setAttribute('aria-expanded', 'true');
             entry.group.classList.add('asset-nav-open');
@@ -1044,11 +1211,12 @@
             closeTimer = setTimeout(() => {
                 closeTimer = null;
                 if (current && (!keyboardMode || (!current.panel.contains(document.activeElement) && document.activeElement !== current.trigger))) close(false);
-            }, 260);
+            }, 320);
         }
         function layout() {
             close(false);
             entries.forEach(entry => {
+                entry.motion?.cancel(); entry.motion = null; entry.panel.hidden = true; entry.panel.inert = true;
                 entry.panel.classList.toggle('asset-nav-floating', desktop.matches);
                 (desktop.matches ? document.body : entry.group).appendChild(entry.panel);
                 if (!desktop.matches) entry.panel.removeAttribute('style');
@@ -1121,8 +1289,11 @@
         if (assets) new MutationObserver(() => {
             if (current && !assets.classList.contains('menu-open')) close(false);
         }).observe(assets, {attributes: true, attributeFilter: ['class']});
+        window.addEventListener('blur', () => close(false));
+        document.addEventListener('visibilitychange', () => { if (document.hidden) close(false); });
         desktop.addEventListener('change', layout);
         window.addEventListener('resize', () => { if (current) position(current); });
+        $('.main-sidebar .sidebar-menu').on('expanded.tree', () => { if (current) position(current); });
         layout();
     }
 

@@ -1,5 +1,12 @@
 # Validation
 
+## Projects column filters checked on 22 November 2026
+
+- Replaced the separate Projects filter form with the shared table column menus, search, sorting and pagination.
+- 27 Projects and shared column-filter tests passed with 281 assertions in the isolated `statssa_role_tests` database with preview configuration caching bypassed.
+- Covers filtering records beyond page one, combining column conditions, numeric conditions, invalid fields, company scoping and restricted employee counts.
+- Browser checks covered value selection, empty results, reset, persistence after reload and mobile column selection. No script errors were reported in the final preview.
+
 ## Local role selector checked on 19 November 2026
 
 - Restored the optional localhost role selector and its existing regression coverage.
@@ -33,3 +40,5 @@ php artisan test tests/Feature/Auth/RoleLoginTest.php
 ```
 
 The database name must come from your isolated testing environment. Set it explicitly if container environment variables would override `.env.testing`.
+
+Stats SA branding is covered by `tests/Feature/Branding/BrandingTest.php`: application and mail sender names, rendered email content, authenticated guide access, and public licence attribution. Keep original licences and internal compatibility identifiers intact when adjusting visible branding.

@@ -6,9 +6,8 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ ($snipeSettings) && ($snipeSettings->site_name) ? $snipeSettings->site_name : 'Snipe-IT' }}</title>
-
-    <link rel="shortcut icon" type="image/ico" href="{{ ($snipeSettings) && ($snipeSettings->favicon!='') ?  Storage::disk('public')->url(e($snipeSettings->favicon)) : config('app.url').'/favicon.ico' }}">
+    <title>{{ ($snipeSettings) && ($snipeSettings->site_name) ? $snipeSettings->site_name : 'Stats SA Asset Management' }}</title>
+    @include('partials.branding.favicon')
 
     @include('partials.theme-mode-preflight')
 
@@ -47,7 +46,7 @@
     @endif
 
     <link rel="stylesheet" href="{{ asset('css/interface-refresh.css') }}?v=75">
-    <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=66">
+    <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=86">
 </head>
 
 <body class="ui-refresh hold-transition login-page">
@@ -74,7 +73,7 @@
                 @if (($snipeSettings) && ($snipeSettings->logo!=''))
                     <img id="login-logo" src="{{ asset('img/stats-sa-logo.png') }}" alt="{{ trans('auth/role-login.organisation_logo') }}">
                 @else
-                    <span class="basic-page-header__site-name">{{ $snipeSettings->site_name ?? 'Snipe-IT' }}</span>
+                    <span class="basic-page-header__site-name">{{ $snipeSettings->site_name ?? 'Stats SA Asset Management' }}</span>
                 @endif
             </a>
         @else
@@ -82,7 +81,7 @@
                 @if (($snipeSettings) && ($snipeSettings->logo!=''))
                     <img id="login-logo" src="{{ asset('img/stats-sa-logo.png') }}" alt="{{ trans('auth/role-login.organisation_logo') }}">
                 @else
-                    <span class="basic-page-header__site-name">{{ $snipeSettings->site_name ?? 'Snipe-IT' }}</span>
+                    <span class="basic-page-header__site-name">{{ $snipeSettings->site_name ?? 'Stats SA Asset Management' }}</span>
                 @endif
             </span>
         @endauth
@@ -119,7 +118,7 @@
     @include('partials.theme-mode-toggle')
 <script nonce="{{ csrf_token() }}">window.SnipePresentation = @json(trans('presentation'));</script>
 <script defer src="{{ asset('js/vendor/lottie-light-5.13.0.min.js') }}" nonce="{{ csrf_token() }}"></script>
-<script defer src="{{ asset('js/form-field-experience.js') }}?v=11" data-success-animation="{{ asset('animations/validation-success.json') }}" nonce="{{ csrf_token() }}"></script>
+<script defer src="{{ asset('js/form-field-experience.js') }}?v=13" data-success-animation="{{ asset('animations/validation-success.json') }}" nonce="{{ csrf_token() }}"></script>
 </body>
 
 </html>

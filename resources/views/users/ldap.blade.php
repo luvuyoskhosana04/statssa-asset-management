@@ -17,7 +17,7 @@
                 <x-callout type="legend" icon="tip" class="col-md-12">
 
                         <strong>
-                            {!! trans('admin/users/general.ldap_sync_intro', ['link' => 'https://snipe-it.readme.io/docs/ldap-sync#/']) !!}
+                            {!! trans('admin/users/general.ldap_sync_intro', ['link' => '/user-guide']) !!}
                         </strong>
                    
                 </x-callout>

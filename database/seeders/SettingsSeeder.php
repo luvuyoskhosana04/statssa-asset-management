@@ -15,10 +15,10 @@ class SettingsSeeder extends Seeder
         Setting::truncate();
         $settings = new Setting;
         $settings->per_page = 20;
-        $settings->site_name = 'Snipe-IT Demo';
+        $settings->site_name = 'Stats SA Asset Management';
         $settings->auto_increment_assets = 1;
         $settings->logo = 'snipe-logo.png';
-        $settings->alert_email = 'service@snipe-it.io';
+        $settings->alert_email = 'notifications@example.test';
         $settings->header_color = null;
         $settings->label2_2d_type = 'QRCODE';
         $settings->default_currency = 'USD';

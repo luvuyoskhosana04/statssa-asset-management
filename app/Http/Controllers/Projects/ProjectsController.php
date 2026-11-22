@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Projects;
 
+use App\Actions\Projects\BuildProjectAnalyticsAction;
+use App\Helpers\TableColumnFilters;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProjectAssetRequest;
 use App\Http\Requests\SaveProjectRequest;
@@ -10,6 +12,7 @@ use App\Models\Project;
 use App\Models\Statuslabel;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,25 +21,51 @@ use Illuminate\Validation\ValidationException;
 
 class ProjectsController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $this->authorize('view', Project::class);
-        $options = Project::orderBy('name')->get(['id', 'name', 'code']);
+        if (! $request->boolean('table')) {
+            $tab = $request->input('tab') === 'analytics' ? 'analytics' : 'projects';
+            $request->validate(['currency' => 'nullable|string|max:50']);
+
+            return view('projects.index', ['tab' => $tab, 'analytics' => $tab === 'analytics' ? BuildProjectAnalyticsAction::run($request->input('currency')) : null]);
+        }
+        $request->validate(['search' => 'nullable|string|max:255', 'sort' => 'nullable|string', 'order' => 'nullable|in:asc,desc']);
+        $canViewPeople = Gate::allows('view', User::class);
         $query = Project::query()->with('location')->withCount('assets');
-        if ($request->filled('project_id')) {
-            $query->whereKey($request->integer('project_id'));
-        }
-        if (Gate::allows('view', User::class)) {
+        if ($canViewPeople) {
             $query->withCount('members');
-        }
-        if (in_array($request->input('status', 'active'), ['planned', 'active', 'suspended', 'ended'], true)) {
-            $query->where('status', $request->input('status', 'active'));
         }
         if ($search = mb_substr(trim((string) $request->input('search')), 0, 255)) {
             $query->where(fn ($q) => $q->where('name', 'like', '%'.$search.'%')->orWhere('code', 'like', '%'.$search.'%'));
         }
+        $columns = ['name' => 'text', 'start_date' => 'date', 'end_date' => 'date', 'status' => 'text', 'office' => 'text', 'assets_count' => 'number'];
+        if ($canViewPeople) {
+            $columns['members_count'] = 'number';
+        }
+        if ($request->boolean('column_filter_meta')) {
+            return response()->json(TableColumnFilters::handleRows([], $columns, $request));
+        }
+        $rows = $query->orderBy('name')->get()->map(function (Project $project) use ($canViewPeople) {
+            $row = [
+                'name' => $project->name, 'code' => $project->code,
+                'start_date' => $project->start_date?->toDateString(), 'end_date' => $project->end_date?->toDateString(),
+                'status' => $project->present()->status(), 'status_key' => $project->status,
+                'office' => $project->location?->name ?? trans('general.unassigned'),
+                'assets_count' => $project->assets_count, 'view_url' => route('projects.show', $project),
+            ];
+            if ($canViewPeople) {
+                $row['members_count'] = $project->members_count;
+            }
 
-        return view('projects.index', ['projects' => $query->orderBy('name')->paginate(20)->withQueryString(), 'projectOptions' => $options]);
+            return $row;
+        });
+        $sort = $request->input('sort', 'name');
+        if (is_string($sort) && isset($columns[$sort])) {
+            $rows = $rows->sortBy($sort, $columns[$sort] === 'number' ? SORT_NUMERIC : SORT_NATURAL | SORT_FLAG_CASE, $request->input('order') === 'desc')->values();
+        }
+
+        return response()->json(TableColumnFilters::handleRows($rows->all(), $columns, $request));
     }
 
     public function create(): View

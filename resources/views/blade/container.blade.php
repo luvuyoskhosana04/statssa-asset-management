@@ -4,7 +4,7 @@
 ])
 
 <!-- Start container+row component -->
-<div {{ $attributes->merge(['class' => 'row']) }}>
+<div {{ $attributes->merge(['class' => 'row ui-page-layout']) }}>
 
     <!-- Only one column, so set the general col-md-12 div -->
     @if ($columns == 1)

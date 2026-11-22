@@ -66,6 +66,7 @@
         </x-page-column>
 
         <x-page-column class="col-md-5">
+            <x-form.support-panel>
             <aside class="box box-default kit-checkout-help">
                 <div class="box-body">
                     <p class="kit-eyebrow">{{ trans('admin/kits/general.template_label') }}</p>
@@ -84,6 +85,8 @@
                 </div>
             </aside>
             <livewire:checkout-target-panel type="assets" />
+
+            </x-form.support-panel>
         </x-page-column>
 
     </x-container>
