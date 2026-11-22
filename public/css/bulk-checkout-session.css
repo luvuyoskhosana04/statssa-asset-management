@@ -1,0 +1,158 @@
+/* Bulk Checkout is intentionally a two-column workspace on wide screens. */
+body.ui-refresh .bulk-session{width:100%;container-type:inline-size}
+.bulk-session [hidden]{display:none!important}
+.bulk-session .bulk-intro{color:var(--ui-muted);margin:0 0 20px;font-size:14px}
+.bulk-session #bulk-checkout-session-form{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+body.ui-refresh .bulk-session .box{border-radius:22px;margin:0;min-width:0;overflow:visible}
+body.ui-refresh .bulk-session .box-body{padding:22px}
+body.ui-refresh .bulk-session .box-header{padding:10px 16px 0}
+.bulk-session .bulk-section-title{display:flex;align-items:center;gap:10px;margin:0 0 10px}
+.bulk-session .bulk-section-title h2{font-size:18px;font-weight:650;letter-spacing:-.3px;margin:0}
+.bulk-session .bulk-step{display:grid;place-items:center;width:28px;height:28px;flex-shrink:0;background:var(--ui-soft);border:1px solid var(--ui-line);border-radius:50%;font-size:12px;color:var(--ui-muted)}
+.bulk-session .help-block{font-size:12px;line-height:1.6;color:var(--ui-muted);margin:8px 0 0}
+.bulk-session .bulk-fields{margin:16px 0 0;max-width:none}
+body.ui-refresh .bulk-session :is(.bulk-fields,.bulk-default-fields) .form-group{display:flow-root;margin:0 0 14px!important}
+body.ui-refresh .bulk-session :is(.bulk-fields,.bulk-default-fields) .form-group>.col-md-7{float:none!important;width:100%!important;max-width:none!important;padding:0!important;margin:0!important}
+.bulk-session .bulk-context-options{border-top:1px solid var(--ui-line);margin-top:14px;padding-top:4px;font-size:12px}
+.bulk-session .bulk-context-options>summary{padding:10px 32px 10px 0;font-weight:500;cursor:pointer}
+.bulk-session .bulk-context-options .form-group{margin-top:10px!important}
+.bulk-session .bulk-stock-scope{margin:16px 0;border:1px solid var(--ui-line);border-radius:14px;font-size:12px}
+.bulk-session .bulk-stock-scope>summary{padding:13px 40px 13px 14px;cursor:pointer;font-weight:600;display:flex;gap:12px;flex-wrap:wrap}
+.bulk-session #bulk-source-summary{font-weight:400;color:var(--ui-muted);overflow-wrap:anywhere}
+.bulk-session .bulk-scope-fields{padding:0 14px 14px}
+.bulk-session .bulk-source-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bulk-session .bulk-source-controls>label{font-size:12px;margin:0;width:100%}
+.bulk-session .bulk-source-controls>select{width:160px}
+.bulk-session .bulk-source-controls>div{flex:1;min-width:160px}
+body.ui-refresh .bulk-session [data-no-field-ui].form-control{height:46px!important;min-height:46px!important;border-radius:12px;padding:10px 12px!important;box-shadow:none;background:var(--ui-surface);color:var(--ui-ink);border:1px solid var(--ui-field-edge)}
+.bulk-session .bulk-scanner-wrap{background:var(--ui-soft);border:1px solid var(--ui-line);border-radius:16px;padding:16px;margin:16px 0}
+.bulk-session .bulk-scanner-wrap>label{font-size:13px;font-weight:600}
+.bulk-session .bulk-scanner{display:flex;gap:8px;align-items:center;margin-top:6px}
+.bulk-session .bulk-scanner>input{flex:1;min-width:0}
+body.ui-refresh .bulk-session .btn{min-height:44px;padding:10px 16px;margin:0;line-height:1.4}
+body.ui-refresh .bulk-session .bulk-scanner>.btn{height:46px!important;min-height:46px!important;flex-shrink:0}
+.bulk-session .bulk-picker-actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.bulk-session .bulk-feedback{padding:12px 14px;border-radius:12px;background:var(--ui-soft);color:var(--ui-ink);margin:14px 0;font-size:12px;white-space:pre-line;border:1px solid var(--ui-line)}
+.bulk-session .bulk-feedback.is-error{background:var(--ui-danger-soft);color:var(--ui-danger)}
+.bulk-session .bulk-stock-picker{border-top:1px solid var(--ui-line);padding-top:16px;margin:18px 0}
+.bulk-session .bulk-picker-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.bulk-session h3{font-size:14px;font-weight:600;margin:0}
+.bulk-session .bulk-picker-heading>input{width:200px;max-width:100%}
+.bulk-session .bulk-stock-table{max-height:390px;overflow:auto;overscroll-behavior:contain;margin-top:12px}
+.bulk-session .bulk-stock-table table{min-width:480px;width:100%;margin:0}
+.bulk-session .bulk-stock-table thead{position:sticky;top:0;z-index:1;background:var(--ui-surface)}
+.bulk-session .bulk-stock-table th{font-size:11px;white-space:nowrap}
+.bulk-session .bulk-stock-table td{font-size:12px;vertical-align:middle;padding:12px 8px}
+.bulk-session .bulk-stock-table td small{display:block;color:var(--ui-muted);margin-top:4px;font-size:10px;line-height:1.5}
+.bulk-session .bulk-stock-table td strong{font-size:12px}
+.bulk-session .bulk-stock-table td:first-child{min-width:150px}
+.bulk-session .bulk-stock-table .bulk-stock-availability{min-width:110px}
+.bulk-session .bulk-stock-table input{width:66px;min-width:60px}
+body.ui-refresh .bulk-session .bulk-stock-table .btn{min-height:40px;padding:8px 12px}
+.bulk-session .bulk-batch-defaults{margin-top:18px;border:1px solid var(--ui-line);border-radius:14px;background:var(--ui-soft)}
+.bulk-session .bulk-batch-defaults>summary{padding:13px 40px 13px 14px;font-weight:500;font-size:12px;cursor:pointer}
+.bulk-session .bulk-default-fields{padding:14px}
+.bulk-session .bulk-review-hint{font-size:12px;line-height:1.6;color:var(--ui-muted);margin:0 0 16px}
+.bulk-session .bulk-review-overview{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px;background:var(--ui-soft);border-radius:14px;margin:0 0 18px}
+.bulk-session .bulk-review-overview>div{display:flex;flex-direction:column;gap:6px;min-width:0}
+.bulk-session .bulk-review-overview>div:first-child{grid-column:1/-1;padding-bottom:14px;border-bottom:1px solid var(--ui-line)}
+.bulk-session .bulk-review-overview span{font-size:11px;color:var(--ui-muted)}
+.bulk-session .bulk-review-overview strong{font-size:22px;font-weight:650;color:var(--ui-ink);overflow-wrap:anywhere}
+.bulk-session #bulk-summary-target{font-size:16px;line-height:1.5}
+.bulk-session .bulk-session-list-heading{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:16px 0 12px}
+.bulk-session .bulk-session-list-heading>span{border-radius:999px;padding:3px 9px;background:var(--ui-soft);font-size:11px;color:var(--ui-muted)}
+.bulk-session .bulk-empty{padding:28px 18px;background:var(--ui-soft);border:1px dashed var(--ui-line);border-radius:14px;text-align:center;color:var(--ui-muted);font-size:12px;line-height:1.7}
+.bulk-session .bulk-session-list{padding:0;margin:0;list-style:none;display:grid;gap:10px}
+.bulk-session .bulk-session-item{padding:12px;border:1px solid var(--ui-line);border-radius:14px;background:var(--ui-surface)}
+.bulk-session .bulk-item-main{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap}
+.bulk-session .bulk-item-description{flex:1;min-width:120px}
+.bulk-session .bulk-item-description strong{display:block;font-size:13px;color:var(--ui-ink);overflow-wrap:anywhere;line-height:1.5}
+.bulk-session .bulk-item-description small{display:block;font-size:10px;color:var(--ui-muted);margin-top:4px;overflow-wrap:anywhere;line-height:1.5}
+.bulk-session .bulk-item-kind{font-size:9px;text-transform:uppercase;color:var(--ui-muted);padding:4px 7px;border:1px solid var(--ui-line);border-radius:999px;flex-shrink:0;margin-top:2px}
+.bulk-session .bulk-item-actions{display:flex;align-items:center;gap:10px;width:100%;justify-content:flex-end;margin-top:2px}
+.bulk-session .bulk-item-actions label{font-size:10px;font-weight:400;margin:0;display:flex;align-items:center;gap:8px;color:var(--ui-muted)}
+body.ui-refresh .bulk-session .bulk-item-actions input{width:64px;height:38px!important;min-height:38px!important;padding:6px 8px!important}
+body.ui-refresh .bulk-session .bulk-item-actions .btn{font-size:11px;min-height:36px;padding:8px 10px}
+.bulk-session .bulk-unit-count{font-size:12px;color:var(--ui-muted)}
+.bulk-session .bulk-item-overrides{margin-top:10px;padding-top:8px;border-top:1px solid var(--ui-line);color:var(--ui-muted);font-size:11px}
+.bulk-session .bulk-item-overrides summary{cursor:pointer}
+.bulk-session .bulk-item-defaults{display:grid;gap:10px;margin-top:12px}
+.bulk-session .bulk-item-defaults>label{font-size:11px;font-weight:400}
+.bulk-session .bulk-item-defaults select{margin-top:5px;width:100%}
+.bulk-session #bulk-current-assignments{margin:16px 0}
+.bulk-session .bulk-assignment{display:grid;grid-template-columns:55px minmax(0,1fr) 25px;gap:8px;padding:10px 0;border-bottom:1px solid var(--ui-line);font-size:11px}
+.bulk-session .bulk-assignment strong{overflow-wrap:anywhere}
+.bulk-session .bulk-assignment>span:last-child{text-align:right}
+.bulk-session .bulk-review-check{display:flex;align-items:flex-start;gap:9px;font-weight:400;line-height:1.6;font-size:12px;margin:14px 0 0}
+.bulk-session .bulk-review-check input{flex-shrink:0;margin-top:3px}
+body.ui-refresh .bulk-session .bulk-review-card .box-footer{display:flex;flex-direction:column;gap:10px;padding:16px 22px;border-top:1px solid var(--ui-line);flex-shrink:0}
+body.ui-refresh .bulk-session .box-footer>.btn{margin:0!important;width:100%}
+.bulk-session #bulk-finalize{order:0}
+.bulk-session #bulk-clear{order:1}
+.bulk-session #bulk-completed{grid-column:1/-1}
+.bulk-session #bulk-completed h2{font-size:22px;margin:0 0 16px}
+.bulk-session .ui-form-estimate{display:none}
+@container(min-width:900px){
+ .bulk-session #bulk-checkout-session-form{grid-template-columns:minmax(0,1fr) minmax(340px,.72fr);grid-template-rows:auto 1fr}
+ .bulk-session .bulk-recipient-card{grid-column:1;grid-row:1}
+ .bulk-session .bulk-items-card{grid-column:1;grid-row:2}
+ body.ui-refresh .bulk-session .bulk-review-card{grid-column:2;grid-row:1 / span 2;position:sticky;top:82px;max-height:calc(100dvh - 240px);display:flex;flex-direction:column}
+ .bulk-session .bulk-review-card>.box-body{overflow-y:auto;min-height:0;overscroll-behavior:contain}
+}
+@media(max-width:600px){
+ body.ui-refresh .bulk-session .box-body{padding:18px}
+ .bulk-session .bulk-source-controls>select,.bulk-session .bulk-source-controls>div{width:100%;flex-basis:100%}
+ .bulk-session .bulk-section-title h2{font-size:17px}
+ .bulk-session .bulk-picker-heading>input{width:100%}
+}
+
+
+.bulk-session .bulk-item-serial{font-size:11px;color:var(--ui-muted);overflow-wrap:anywhere;margin-top:12px}
+body.ui-refresh .bulk-session .bulk-item-actions input{height:44px!important;min-height:44px!important}
+body.ui-refresh .bulk-session .bulk-item-actions .btn{min-height:44px}
+body.ui-refresh .bulk-session .bulk-review-card .box-footer{flex-direction:row;flex-wrap:wrap;align-items:center}
+.bulk-session .bulk-review-card .box-footer .bulk-review-check{flex-basis:100%;margin:0 0 6px}
+body.ui-refresh .bulk-session .box-footer>.btn{width:auto}
+body.ui-refresh .bulk-session #bulk-finalize{order:2;flex:1;min-height:48px}
+.bulk-session #bulk-clear{order:1;font-size:12px}
+/* Keep the page wrapper from becoming a separate sticky scroll container. */
+body.ui-refresh:has(#bulk-session)>.wrapper{overflow-x:clip;overflow-y:visible}
+
+.bulk-session .bulk-review-overview{grid-template-columns:minmax(0,1fr) auto auto;align-items:start;gap:14px;padding:14px}
+.bulk-session .bulk-review-overview>div:first-child{grid-column:auto;padding:0;border:0}
+.bulk-session #bulk-summary-target{font-size:14px}
+.bulk-session .bulk-session-item{padding:10px}
+.bulk-session .bulk-item-overrides{margin-top:6px;padding-top:6px}
+@media(max-height:650px){body.ui-refresh .bulk-session .bulk-review-card{position:static!important;max-height:none!important}}
+/* The system's tall form-button rule is too large for this compact workspace. */
+body.ui-refresh #bulk-session #bulk-checkout-session-form .btn{min-height:44px!important}
+body.ui-refresh #bulk-session #bulk-checkout-session-form #bulk-scan-add{height:46px!important;min-height:46px!important}
+body.ui-refresh #bulk-session #bulk-checkout-session-form #bulk-finalize{min-height:48px!important}
+
+
+/* Compact recipient controls and a quieter review hierarchy. */
+.bulk-session .bulk-recipient-card .bulk-fields{display:grid;grid-template-columns:1fr;gap:0 14px}
+.bulk-session .bulk-recipient-card .bulk-fields>.bulk-context-options{grid-column:1/-1;margin-top:0}
+.bulk-session .bulk-recipient-card .bulk-fields>.bulk-target{min-width:0}
+.bulk-session .bulk-summary-heading{justify-content:space-between;gap:12px;margin-bottom:18px}
+.bulk-session .bulk-review-state{flex-shrink:0;font-size:10px;line-height:1.5;padding:5px 10px;border:1px solid var(--ui-line);border-radius:999px;color:var(--ui-muted);background:var(--ui-soft)}
+.bulk-session .bulk-review-state.is-ready{color:var(--ui-success);background:var(--ui-success-soft);border-color:var(--ui-success)}
+.bulk-session .bulk-review-overview{grid-template-columns:1fr 1fr;gap:14px;background:transparent;padding:0 0 18px;border-bottom:1px solid var(--ui-line);border-radius:0;margin-bottom:18px}
+.bulk-session .bulk-review-overview>div:first-child{grid-column:1/-1;background:var(--ui-soft);padding:14px;border-radius:14px}
+.bulk-session .bulk-review-overview>div:not(:first-child){padding:0 14px;gap:2px}
+.bulk-session .bulk-review-overview strong{font-size:28px;font-variant-numeric:tabular-nums;line-height:1.25}
+.bulk-session #bulk-summary-target{font-size:15px;font-weight:600;line-height:1.5}
+.bulk-session .bulk-empty{padding:26px 20px;border-style:solid;background:transparent}
+.bulk-session .bulk-empty strong{display:block;color:var(--ui-ink);font-size:14px;font-weight:600;margin-bottom:8px}
+.bulk-session .bulk-empty p{max-width:280px;margin:0 auto;line-height:1.7}
+.bulk-session .bulk-review-card .box-footer .bulk-review-hint{flex-basis:100%;margin:0;padding:0 0 4px;font-size:12px}
+.bulk-session .bulk-picker-actions .btn.is-open{background:var(--ui-selection)!important;color:var(--ui-ink)!important;border-color:var(--ui-accent)!important}
+.bulk-session .bulk-stock-table tr.is-selected td:first-child{border-left:3px solid var(--ui-success)}
+.bulk-session .bulk-session-list-heading h3{font-size:12px;color:var(--ui-muted);font-weight:500}
+.bulk-session .bulk-scanner-wrap{margin-top:18px}
+@container(min-width:1100px){
+ .bulk-session .bulk-recipient-card .bulk-fields{grid-template-columns:minmax(160px,.38fr) minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:no-preference){
+ .bulk-session .bulk-review-state,.bulk-session .bulk-picker-actions .btn{transition:background-color .2s ease,border-color .2s ease,color .2s ease}
+}

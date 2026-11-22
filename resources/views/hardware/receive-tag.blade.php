@@ -4,7 +4,7 @@
 @section('content')
 <div id="receiving-drafts-hub" data-local-key="statssa-receiving-{{ auth()->id() }}-v1" data-draft-store="{{ route('hardware.receive.drafts.store') }}">
 
-@can('create', \App\Models\Asset::class)<div id="receiving-recovery" class="alert alert-info" hidden><p id="receiving-recovery-message">{{ trans('intake.draft_recovery') }}</p><button type="button" id="receiving-recover" class="btn btn-default">{{ trans('intake.recover_draft') }}</button></div>@endcan
+@can('receive', \App\Models\Asset::class)<div id="receiving-recovery" class="alert alert-info" hidden><p id="receiving-recovery-message">{{ trans('intake.draft_recovery') }}</p><button type="button" id="receiving-recover" class="btn btn-default">{{ trans('intake.recover_draft') }}</button></div>@endcan
 <p class="help-block">{{ trans($tab === 'drafts' ? 'intake.drafts_intro' : 'presentation.receive_audit_intro') }}</p>
 <section class="box box-default receipt-history-panel">
     <div class="box-header with-border receipt-history-toolbar">
@@ -17,7 +17,7 @@
                 @if ($search !== '')<a href="{{ route('hardware.receive.index') }}" class="btn btn-default">{{ trans('presentation.receive_clear_search') }}</a>@endif
             </form>@endif
             <a href="{{ route('hardware.receive.index', ['q' => $search, 'tab' => $tab]) }}" class="btn btn-default" aria-label="{{ trans('presentation.receive_refresh') }}"><x-icon type="refresh" /> {{ trans('intake.refresh') }}</a>
-            @can('create', \App\Models\Asset::class)<a href="{{ route('hardware.receive.create') }}" class="btn btn-primary"><x-icon type="plus" /> {{ trans('presentation.receive_new') }}</a>@endcan
+            @can('receive', \App\Models\Asset::class)<a href="{{ route('hardware.receive.create') }}" class="btn btn-primary"><x-icon type="plus" /> {{ trans('presentation.receive_new') }}</a>@endcan
         </div>
     </div>
     <div class="box-body">

@@ -10,6 +10,6 @@ class ReceiptHistoryRequest extends Request
 
     public function authorize(): bool
     {
-        return $this->user()->can('update', Asset::class) || ($this->user()->can('create', Asset::class) && $this->user()->can('view', Asset::class));
+        return $this->user()->can('update', Asset::class) || ($this->user()->can('receive', Asset::class) && $this->user()->can('view', Asset::class));
     }
 }

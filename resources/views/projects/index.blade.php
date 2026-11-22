@@ -2,12 +2,12 @@
 @section('title'){{ trans('projects.title') }} @parent @stop
 @section('content')
 <section class="box box-default">
-    <div class="box-header with-border project-toolbar">
+    <div class="box-header with-border project-toolbar project-list-header">
         <nav class="project-tabs project-index-tabs" aria-label="{{ trans('projects.title') }}">
             <a href="{{ route('projects.index') }}" @if($tab === 'projects') aria-current="page" @endif>{{ trans('projects.all') }}</a>
             <a href="{{ route('projects.index', ['tab' => 'analytics']) }}" @if($tab === 'analytics') aria-current="page" @endif>{{ trans('projects.analytics_tab') }}</a>
         </nav>
-        <div class="project-actions">
+        <div class="project-actions project-header-controls">
             @can('issue', \App\Models\Project::class)<a class="btn btn-primary" href="{{ route('projects.issue.index') }}">{{ trans('projects.issue') }}</a>@endcan
         </div>
     </div>
@@ -15,7 +15,6 @@
         @if($tab === 'analytics')
             @include('projects.partials.analytics')
         @else
-        <p class="help-block">{{ trans('projects.local_source') }}</p>
         <table id="projectsListingTable" data-cookie-id-table="projectsListingTable" class="table table-striped snipe-table project-table"
                data-url="{{ route('projects.index', ['table' => 1]) }}" data-side-pagination="server"
                data-pagination="true" data-search="true" data-show-refresh="true" data-sort-name="name" data-sort-order="asc">
@@ -26,6 +25,7 @@
                 <th data-field="status" data-sortable="true" data-formatter="projectStatusFormatter">{{ trans('general.status') }}</th>
                 <th data-field="office" data-sortable="true" data-formatter="projectTextFormatter">{{ trans('projects.office') }}</th>
                 <th data-field="assets_count" data-sortable="true">{{ trans('projects.assets') }}</th>
+                @can('view', \App\Models\Accessory::class)<th data-field="accessories_count" data-sortable="true">{{ trans('general.accessories') }}</th>@endcan
                 @can('view', \App\Models\User::class)<th data-field="members_count" data-sortable="true">{{ trans('projects.people') }}</th>@endcan
                 <th data-field="actions" data-searchable="false" data-formatter="projectViewFormatter">{{ trans('general.action') }}</th>
             </tr></thead>
@@ -35,7 +35,7 @@
 </section>
 @stop
 @section('moar_scripts')
-<script src="{{ asset('js/projects.js') }}?v=4" nonce="{{ csrf_token() }}"></script>
+<script src="{{ asset('js/projects.js') }}?v=7" nonce="{{ csrf_token() }}"></script>
 @if($tab === 'projects')
 @include('partials.bootstrap-table', ['exportFile' => 'projects-export', 'search' => true])
 @endif

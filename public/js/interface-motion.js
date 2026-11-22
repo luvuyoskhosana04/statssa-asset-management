@@ -64,6 +64,7 @@
     }
 
     function prepareCounter(element, index) {
+        if (element.closest('.dashboard-modern')) return;
         var previous = counters.get(element);
         if (previous && element.contains(previous.span)) return;
         if (previous) finishCounter(previous);
@@ -110,6 +111,8 @@
     }
 
     function reveal(element) {
+        // The dashboard owns its chart and card timeline.
+        if (element.closest('.dashboard-modern')) return;
         if (pending.has(element) || element.closest('.fixed-table-body, .fixed-table-toolbar')) return;
         if (revealed.has(element)) {
             // Async tables can push an initially visible panel below the fold.

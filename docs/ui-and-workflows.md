@@ -106,3 +106,75 @@ The header asset lookup and standalone searches reveal from an icon. Opening or 
 The dashboard includes permission-filtered stock alerts, recent activity with notes, and recorded acquisition values for assets due for return or approaching warranty expiry. Currency totals stay separate and missing asset costs are reported. Stock alerts follow the existing site threshold. Pending offboarding follows the inventory charts and includes visible outstanding assets, accessories and directly assigned licence seats for ended, disabled or archived users. Its monetary value explicitly covers active assets only.
 
 Recent Activity uses a dedicated feed backed by the existing scoped activity API. It supports search, refresh, incremental loading, readable notes and record links only when the API marks each record as viewable. No audit records are merged or removed for display.
+
+### Admin settings cards
+
+The settings directory now uses compact icon badges, three columns on wide screens, two on medium screens and one on mobile. Category and individual-setting cards share the same rounded surfaces, wrapped descriptions, outlined Open actions and keyboard focus treatment. Settings counts remain factual. Surfaces follow the existing theme tokens, with sage and sand accents, subtle hover feedback and reduced-motion support. Existing category navigation, keyword filtering and destinations are preserved.
+
+### Shared tab selection
+
+Settings, project pages, receiving, Bootstrap detail tabs, role-based tab lists and dashboard section links now use the Branding settings selection style: neutral labels, a semibold selected label, a thin bronze bottom border and fully rounded corners. The shared cascade layer removes competing filled pills, inset shadows and top accents. Hover, visible keyboard focus, reduced motion, existing tab switching and mobile wrapping or scrolling are preserved. Dropdown actions and sidebar navigation remain independent controls.
+
+### Stock quantity adjustment
+
+The shared accessory, consumable and component adjustment dialog now shows available stock before and after the proposed change. Add stock, Remove stock and Audit only choices preserve the existing signed amount payload and zero-change audit behavior. The reason stays in the main flow; optional order, supplier, date, cost, currency and attachments are grouped in a disclosure. The header and footer remain visible while expanded details scroll. The calendar is positioned within the modal surface, outside the scrolling content, and closes when that content scrolls. Reopening for another item resets the form and disclosure. Balance previews reject fractional quantities and removals beyond available stock without posting changes. Browser checks covered all three inventory types, resets, disclosure, calendar, dark mode and mobile sizing. No stock adjustment was submitted during verification.
+
+
+## Bulk Checkout legacy alignment
+
+Bulk Checkout now uses separate User, Location and Project session flows with scans, mixed asset/accessory queues, source filters, batch defaults and explicit review. See [the comparison and implementation limits](bulk-checkout-audit.md).
+
+
+## Three-step project issuing and cancellation
+
+Project Asset Issue now has Employee, Scan asset and Acceptance steps. The scan step contains the return date, optional issue notes and issuer review. Submitting it sends the acceptance request and redirects to the informational Acceptance step. That screen uses the persisted notification status: sent, demo mail log, pending or failed. It explains that delivery resumes after employee acceptance. Physical handover remains a separate action in the issue audit after acceptance, rather than a fourth wizard step.
+
+Cancel issuing is available from the employee/scan form and acceptance screen, with an inline confirmation. The issuer can also cancel an unfinished issue from its audit, including a previously closed session. Cancellation closes the session, stops outstanding acceptance links, reverses only matching assignments that have not been handed over, restores the recorded original location, and preserves pre-existing project reservations. Newly created issue reservations are released. Completed handovers are unchanged. Cancellation and response handling lock the same issue record so a simultaneous employee response cannot bypass cancellation. Audit labels distinguish issuer cancellation from employee rejection.
+
+Validation: 51 project and acceptance UI tests passed with 343 assertions; the four cancellation tests passed again after the final idempotence adjustment. Browser verification checked three step markers, scan review, cancellation disclosure/keep action, full-width Acceptance and accurate demo mail status. Browser verification did not submit any new employee request or cancel existing allocations.
+
+
+## Bulk Checkout workspace layout
+
+Bulk Checkout alone uses a two-column layout when at least 900px of content width is available. Recipient and scanning controls stay on the left; a sticky summary on the right contains the destination, counts, selected items, quantity edits, current assignments and persistent review/confirmation controls. Narrow screens stack the same sections in reading order. Other form layouts remain unchanged.
+
+Purpose captions explain User, Location and Project. Optional project allocation, stock source and batch defaults use disclosures; required stock source controls open for Location and Project. The stock picker groups availability, existing allocations and remaining-after-session figures into four columns. The summary gives a contextual next-action hint and explains missing selections before confirmation becomes available. Serial details and item overrides remain accessible inside each item's disclosure.
+
+Validation: the existing 28 checkout feature tests passed, with 117 assertions. Browser checks covered recipient selection, mixed scans/accessory quantities, review gating, separate mode queues, automatic Project source disclosure, sticky summary/footer, dark theme, mobile stacking and no page overflow. Verification items were cleared without saving a checkout.
+
+
+### Bulk Checkout: single-page workspace
+
+Recipient selection and the item picker appear together on the left, with the checkout summary on the right on wide screens. Narrow screens stack the cards. There is no stepper, Continue or Back process. The required Checkout to dropdown selects User, Location or Project, with Project permission gated. Switching type updates instructions and stock rules while preserving separate queues. Final confirmation still requires a recipient, valid stock source, items and review confirmation. Browser verification confirmed all sections are visible and the dropdown changes recipient type.
+
+Bulk Checkout polish: recipient type and target share a compact row on wide content areas and stack on smaller screens. The summary separates recipient context from unit counts, explains the empty state, and shows Draft, Review items or Ready to confirm. Guidance sits beside the final confirmation. Open picker buttons and selected stock rows have visible states; asset rows already staged say Selected. Scanner lookups announce progress and suppress overlapping scan requests. Switching pickers cancels a pending search debounce to prevent a late refresh from replacing quantity input.
+
+Validation covered one scanned asset, accessory quantity 2, quantity edits, review reset after adding items, confirmation enabled only after a valid recipient and review, selected asset feedback, clear-session recovery, and mobile without page overflow. All staged verification items were cleared; no checkout was submitted. Styling uses existing light/dark theme tokens and reduced-motion handling. The backend workflow is unchanged. Contextual guidance follows [NN/G recognition and recall](https://www.nngroup.com/articles/recognition-and-recall/).
+
+### Project issue confirmation receipt
+
+The recorded issue now opens a completion receipt instead of the final wizard panel. A sage check confirms the issue record was saved, with a separate acceptance badge to avoid implying employee acceptance or physical handover. Employee, asset tag/model, project, return date, issuer and timestamp are drawn from the saved issue and snapshot. Notification text continues to distinguish sent, demo-logged and failed or pending states; recorded demo mail is explicitly not inbox delivery.
+
+Next actions include Issue Another Asset within the same project, View issue record, View project and the existing cancellation confirmation. Accepted issues promote Continue to handover, leading to the audit record rather than marking handover complete. A quiet timeline describes the remaining work. Light/dark tokens, narrow stacking and reduced-motion preferences are supported. Browser checks covered both themes, narrow layout without overflow and opening/dismissing cancellation; no issue or inventory state was changed. Existing ProjectWorkflowTest passed: 23 tests, 227 assertions.
+
+### Manual inventory creation disabled
+
+Manual create and clone abilities for Asset, Accessory and License are denied centrally before the superuser override. Existing policy-driven table buttons, Quick actions, model shortcuts and row actions consequently hide those entry points. UI form URLs and submissions, clone URLs and direct inventory API POSTs are forbidden, including for administrators and superusers. The legacy accessory clone POST has an explicit permission middleware. Asset multi-create requests authorize before field validation.
+
+As explicitly selected by the user, Scan to Receive and imports remain available. The Asset receive ability retains the former assets.create permission requirement and existing admin behavior; receiving views, requests, barcode checks, controller and action now use it independently of manual creation. Viewing, editing, quantity adjustments and checkouts are unaffected. Deleted asset navigation retains its former permission requirement through the receive alias.
+
+Validation: 42 manual-creation and receiving tests passed (338 assertions), 3 import permission tests passed (3 assertions), and 3 actual asset/accessory/license import tests passed (96 assertions). Browser verification confirmed removed toolbar buttons on all three lists, the updated Quick actions Create group, and the retained Scan to Receive entry. No preview inventory was changed.
+
+### Demo project directory
+
+DemoProjectSeeder adds 20 fictional projects with names prefixed Demo: and stable codes STATSSA-DEMO-001 through STATSSA-DEMO-020. It is an explicit opt-in seeder, not part of DatabaseSeeder, and firstOrCreate preserves existing rows on reruns. Records share the existing eNumerate company when present and rotate through existing compatible locations. Dates are based on the seed date: 12 active, 4 planned, 2 suspended and 2 ended. It creates no employee memberships, reservations or inventory. Executed on the local demo on 22 November 2026; the Projects table shows 21 total rows including the existing project.
+
+The All Assets navigation total now uses a neutral frosted pill rather than orange: a mostly opaque white or charcoal fill, 12px backdrop blur, desaturation, soft rim and theme text. Rounded corners remain. Reduced transparency, forced colours and unsupported-backdrop browsers use a solid surface. Browser verification confirmed neutral computed fills and blur in both light and dark themes.
+
+Table search disclosures no longer inherit the old 140px minimum width from expanded search fields. The collapsed parent fits the 44px icon and shares the standard 8px toolbar gap with View & filters. Expansion and collapse were verified in the browser. The shared rule applies to table search disclosures throughout the application.
+
+### Operational asset status parity
+
+The ten missing legacy operational statuses have been restored with their verified status types. Status filtering now includes unused catalogue labels and preserves operational names for assigned assets rather than flattening them to Deployed. Existing inventory and default statuses were preserved. See [the status audit](asset-status-audit.md) for the mapping and validation.
+
+Dashboard quick-link icons have been replaced with a greeting using the signed-in user’s first name and an asset analytics overview sentence. Existing section navigation remains alongside the introduction and stacks on mobile. Inventory shortcuts remain available in Quick actions. Browser verification confirmed the greeting and removal of the icon row.

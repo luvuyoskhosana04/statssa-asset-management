@@ -199,36 +199,54 @@
             left += header.getBoundingClientRect().width;
         });
     }
-    const cardControlLocations = new WeakMap();
-    function cardTableControls(table) {
+    const tableControlLocations = new WeakMap();
+    function alignTableControls(table) {
         const instance = $(table).data('bootstrap.table');
         const wrap = table.closest('.bootstrap-table');
+        const toolbar = instance?.$toolbar?.[0] || wrap?.querySelector('.fixed-table-toolbar');
+        if (!wrap || !toolbar || !toolbar.querySelector('input,select,button,a,summary')) return;
+        toolbar.classList.add('table-toolbar-aligned');
+        let primary = toolbar.querySelector(':scope > .table-primary-actions');
+        const createButtons = toolbar.querySelectorAll('.columns > [name="btnAdd"],.columns > .table-create-button');
+        if (createButtons.length && !primary) {
+            primary = el('div', 'table-primary-actions');
+            toolbar.append(primary);
+        }
+        createButtons.forEach(button => primary.append(button));
+        const search = toolbar.querySelector(':scope > .search');
+        const columns = toolbar.querySelector(':scope > .columns');
+        if (search && columns && search.nextElementSibling !== columns) toolbar.insertBefore(search, columns);
+        if (primary && toolbar.lastElementChild !== primary) toolbar.append(primary);
+
         const box = table.closest('.box');
         const header = box?.querySelector(':scope > .box-header');
-        const title = header?.querySelector(':scope > .box-title');
-        const tools = header?.querySelector(':scope > .box-tools');
-        const toolbar = instance?.$toolbar?.[0];
-        if (!wrap || !title || !tools?.querySelector('[data-widget="collapse"]') || !toolbar || !toolbar.querySelector('.search input,.columns button')) return;
-        // Multiple tables and transaction controls retain their own contextual toolbars.
-        let location = cardControlLocations.get(table);
-        if (!location && (box.querySelectorAll('table.snipe-table[id]').length !== 1 || toolbar.querySelector('.bs-bars input,.bs-bars select,.bs-bars button,.bs-bars a'))) return;
+        if (!header || box.querySelectorAll('table.snipe-table[id]').length !== 1) return;
+        let location = tableControlLocations.get(table);
         if (!location) {
             const anchor = el('div', 'table-toolbar-anchor');
             toolbar.before(anchor);
-            location = {anchor, toolbar}; cardControlLocations.set(table, location);
-            new ResizeObserver(entries => {
-                header.classList.toggle('table-header-compact', entries[0].contentRect.width < 480);
-            }).observe(box);
-            new MutationObserver(() => cardTableControls(table)).observe(wrap, {attributes: true, attributeFilter: ['class']});
+            location = {anchor, actions: []}; tableControlLocations.set(table, location);
+            const actions = header.querySelector('.project-header-controls');
+            header.querySelectorAll('a.btn-primary,a.btn-theme,a.btn-success,a.btn[href$="/create"]').forEach(button => {
+                if (button.closest('.fixed-table-toolbar')) return;
+                location.actions.push(button);
+                button.remove();
+            });
+            if (actions && !actions.childElementCount) actions.remove();
+            new MutationObserver(() => alignTableControls(table)).observe(wrap, {attributes: true, attributeFilter: ['class']});
         }
-        if (wrap.classList.contains('fullscreen')) {
+        if (location.actions.length) {
+            if (!primary) { primary = el('div', 'table-primary-actions'); toolbar.append(primary); }
+            location.actions.forEach(button => { if (button.parentElement !== primary) primary.append(button); });
+            if (toolbar.lastElementChild !== primary) toolbar.append(primary);
+        }
+        const fullscreen = wrap.classList.contains('fullscreen');
+        header.classList.toggle('table-header-aligned', !fullscreen);
+        toolbar.classList.toggle('table-header-toolbar', !fullscreen);
+        if (fullscreen) {
             if (toolbar.parentElement !== wrap) location.anchor.before(toolbar);
-            header.classList.remove('has-table-controls');
-            toolbar.classList.remove('card-header-toolbar');
-        } else {
-            if (toolbar.parentElement !== header) header.insertBefore(toolbar, tools);
-            header.classList.add('has-table-controls');
-            toolbar.classList.add('card-header-toolbar');
+        } else if (toolbar.parentElement !== header) {
+            header.insertBefore(toolbar, header.querySelector(':scope > .box-tools'));
         }
     }
     function groupedTableControls(table) {
@@ -311,11 +329,10 @@
     function tableTools(table) {
         tableCreateControls(table);
         assetTableControls(table);
-        cardTableControls(table);
         const key = profileFor(table), views = (window.SnipeTableViews || {})[key];
-        if (!views || !$(table).data('bootstrap.table')) { groupedTableControls(table); return; }
+        if (!views || !$(table).data('bootstrap.table')) { groupedTableControls(table); alignTableControls(table); return; }
         const wrap = table.closest('.bootstrap-table');
-        if (!wrap || wrap.querySelector('.presentation-views') || $(table).data('bootstrap.table')?.$toolbar?.[0]?.querySelector('.presentation-views')) { groupedTableControls(table); pinTable(table); return; }
+        if (!wrap || wrap.querySelector('.presentation-views') || $(table).data('bootstrap.table')?.$toolbar?.[0]?.querySelector('.presentation-views')) { groupedTableControls(table); alignTableControls(table); pinTable(table); return; }
         const toolbar = el('div', 'presentation-views');
         const label = el('label', '', t('view')); label.htmlFor = table.id + '-presentation';
         const select = el('select', 'form-control'); select.id = label.htmlFor;
@@ -338,6 +355,7 @@
         });
         $(table).on('column-switch.bs.table', () => { if (!applying) select.value = 'custom'; });
         groupedTableControls(table);
+        alignTableControls(table);
         pinTable(table);
     }
     function permissions(editor) {
@@ -520,7 +538,9 @@
             const visual = el('span', 'settings-card-visual'); visual.setAttribute('aria-hidden', 'true');
             visual.append(el('i', 'fas fa-info-circle'));
             const content = el('span', 'settings-card-content');
-            content.append(el('h2', 'settings-card-title', system.querySelector('.box-title').textContent.trim()), el('span', 'index-block', t('settings_system_summary')), el('span', 'settings-card-action', t('settings_open')));
+            content.append(el('h2', 'settings-card-title', system.querySelector('.box-title').textContent.trim()), el('span', 'index-block', t('settings_system_summary')));
+            const footer = el('span', 'settings-category-footer');
+            footer.append(el('span', 'settings-card-action', t('settings_open'))); content.append(footer);
             link.append(visual, content); body.append(link); box.append(body); landing.prepend(box);
             system.classList.add('settings-system-details'); list.append(system);
             categories.system = {section: system, grid: null};

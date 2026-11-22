@@ -276,7 +276,7 @@ class AcceptanceController extends Controller
             }
 
             // Log the acceptance
-            $acceptance->accept($sig_filename, $item->getEula(), $pdf_filename, $request->input('note'));
+            $this->respondToProjectAcceptance($acceptance, fn ($current) => $current->accept($sig_filename, $item->getEula(), $pdf_filename, $request->input('note')));
 
             // Send the PDF to the signing user
             if (($request->input('send_copy') === '1') && ($assignedUser->email !== '')) {
@@ -302,7 +302,7 @@ class AcceptanceController extends Controller
         } else {
 
             for ($i = 0; $i < ($acceptance->qty ?? 1); $i++) {
-                $acceptance->decline($sig_filename, $request->input('note'));
+                $this->respondToProjectAcceptance($acceptance, fn ($current) => $current->decline($sig_filename, $request->input('note')));
             }
 
             $acceptance->notify(new AcceptanceItemDeclinedNotification($data));
@@ -496,5 +496,24 @@ class AcceptanceController extends Controller
         imagedestroy($flattened);
 
         return is_string($output) ? $output : $signatureBinary;
+    }
+
+    private function respondToProjectAcceptance(CheckoutAcceptance $acceptance, \Closure $respond): void
+    {
+        $issueId = \Illuminate\Support\Facades\DB::table('project_issues')->where('acceptance_id', $acceptance->id)->value('id');
+        if (! $issueId) {
+            $respond($acceptance);
+
+            return;
+        }
+        \Illuminate\Support\Facades\DB::transaction(function () use ($acceptance, $respond, $issueId): void {
+            $issue = \Illuminate\Support\Facades\DB::table('project_issues')->where('id', $issueId)->lockForUpdate()->first();
+            $current = CheckoutAcceptance::whereKey($acceptance->id)->lockForUpdate()->firstOrFail();
+            if ($issue->cancelled_at || ! $current->isPending()) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['asset_acceptance' => trans('projects.issue_cancelled')]);
+            }
+            $respond($current);
+            $acceptance->setRawAttributes($current->getAttributes(), true);
+        });
     }
 }

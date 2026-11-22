@@ -20,6 +20,6 @@ class SaveReceivingDraftRequest extends Request
 
     public function authorize(): bool
     {
-        return $this->user()->can('create', Asset::class) && $this->user()->can('view', Asset::class);
+        return $this->user()->can('receive', Asset::class) && $this->user()->can('view', Asset::class);
     }
 }

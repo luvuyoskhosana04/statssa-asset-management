@@ -49,7 +49,7 @@
                                     </li></ul>
     </div>
 </li>
-@if (Gate::allows('create', \App\Models\Asset::class) || Gate::allows('update', \App\Models\Asset::class) || Gate::allows('checkin', \App\Models\Asset::class) || Gate::allows('checkout', \App\Models\Asset::class) || Gate::allows('audit', \App\Models\Asset::class))
+@if (Gate::allows('receive', \App\Models\Asset::class) || Gate::allows('update', \App\Models\Asset::class) || Gate::allows('checkin', \App\Models\Asset::class) || Gate::allows('checkout', \App\Models\Asset::class) || Gate::allows('audit', \App\Models\Asset::class))
 <li class="asset-nav-group" data-asset-nav-group>
     <button type="button" class="asset-nav-trigger" aria-expanded="false" aria-controls="asset-nav-tools"><span>{{ trans('presentation.asset_nav_tools') }}</span><span class="asset-nav-chevron" aria-hidden="true">›</span></button>
     <div id="asset-nav-tools" class="asset-nav-panel" role="region" aria-labelledby="asset-nav-title-tools">
@@ -64,7 +64,7 @@
                                             </a>
                                         </li>
 @endcan
-@canany(['create', 'update'], \App\Models\Asset::class)
+@canany(['receive', 'update'], \App\Models\Asset::class)
 <li{!! (request()->is('hardware/receive-tag*') ? ' class="active" aria-current="page"' : '') !!}>
     <a href="{{ route('hardware.receive.index') }}">{{ trans('presentation.receive_title') }}</a>
 </li>
@@ -142,7 +142,7 @@
                                             <span class="badge">{{ (isset($total_archived_sidebar)) ? $total_archived_sidebar : '' }}</span>
                                         </a>
                                     </li>
-@can('create', \App\Models\Asset::class)
+@can('receive', \App\Models\Asset::class)
 <li{!! (request()->query('status_type') == 'Deleted' ? ' class="active" aria-current="page"' : '') !!}>
                                             <a href="{{ url('hardware?status_type=Deleted') }}">
                                                 {{ trans('general.deleted') }}

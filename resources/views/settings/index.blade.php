@@ -32,6 +32,7 @@
 
 {{-- Page content --}}
 @section('content')
+  <link rel="stylesheet" href="{{ asset('css/admin-settings.css') }}?v=1">
 
 
 

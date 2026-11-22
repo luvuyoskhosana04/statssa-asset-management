@@ -20,7 +20,7 @@ class CreateMultipleAssetRequest extends ImageUploadRequest // should I extend f
      */
     public function authorize(): bool
     {
-        return true; // TODO - should I do the auth check here?
+        return $this->user()->can('create', Asset::class);
     }
 
     protected function prepareForValidation()

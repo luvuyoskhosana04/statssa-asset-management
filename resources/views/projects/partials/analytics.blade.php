@@ -10,7 +10,7 @@
     </div>
     <section class="analytics-value" aria-label="{{ trans('projects.analytics_total_value') }}">
         <div><span class="analytics-eyebrow">{{ trans('projects.analytics_total_value') }}</span><p class="analytics-total"><span>{{ $analytics['currency'] }}</span> {{ number_format($analytics['value'] / 100, 2) }}</p><p>{{ trans('projects.analytics_cost_basis') }}</p></div>
-        <dl><div><dt>{{ trans('projects.title') }}</dt><dd>{{ number_format($analytics['projects']) }}</dd></div><div><dt>{{ trans('projects.assets') }}</dt><dd>{{ number_format($analytics['assets']) }}</dd></div><div><dt>{{ trans('projects.analytics_missing_cost') }}</dt><dd>{{ number_format($analytics['missing_costs']) }}</dd></div></dl>
+        <dl><div><dt>{{ trans('projects.title') }}</dt><dd>{{ number_format($analytics['projects']) }}</dd></div><div><dt>{{ trans('projects.assets') }}</dt><dd>{{ number_format($analytics['assets']) }}</dd></div>@if($analytics['accessories'] !== null)<div><dt>{{ trans('general.accessories') }}</dt><dd>{{ number_format($analytics['accessories']) }}</dd></div>@endif<div><dt>{{ trans('projects.analytics_missing_cost') }}</dt><dd>{{ number_format($analytics['missing_costs']) }}</dd></div></dl>
     </section>
     <div class="analytics-signals">
         <section><h3>{{ trans('projects.analytics_returns') }}</h3><p class="analytics-signal-value">{{ number_format($analytics['pending_returns']) }} <small>{{ trans('projects.analytics_units') }}</small></p><p>{{ trans('projects.analytics_overdue', ['count' => number_format($analytics['overdue'])]) }}</p></section>

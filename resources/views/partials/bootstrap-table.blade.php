@@ -2518,6 +2518,7 @@
                 var icon_style;
                 var text_help;
                 var status_name = value.name;
+                var operational_status = @json(\App\Support\OperationalAssetStatuses::names()).includes(value.name);
                 var status_meta = {
                   'deployed': '{{ strtolower(trans('general.deployed')) }}',
                   'deployable': '{{ strtolower(trans('admin/hardware/general.deployable')) }}',
@@ -2530,10 +2531,10 @@
                     case 'deployed':
                         text_color = 'blue';
                         icon_style = 'fa-circle';
-                        status_name = @json(trans('general.deployed'));
+                        status_name = operational_status ? value.name : @json(trans('general.deployed'));
                         // Keep exceptional conditions visible, but do not describe an
                         // assigned, deployable asset as simultaneously ready to deploy.
-                        text_help = value.status_type && value.status_type !== 'deployable'
+                        text_help = !operational_status && value.status_type && value.status_type !== 'deployable'
                             ? '<span class="text-muted">(' + value.name + ')</span>' : '';
                     break;
                     case 'deployable':
@@ -2552,10 +2553,10 @@
                         text_help = '';
                 }
 
-                var status_url = value.status_meta === 'deployed' && destination === 'statuslabels'
+                var status_url = value.status_meta === 'deployed' && !operational_status && destination === 'statuslabels'
                     ? @json(url('hardware?status_type=Deployed'))
                     : '{{ config('app.url') }}/' + destination + '/' + value.id;
-                return '<nobr><a href="' + status_url + '" data-tooltip="true" title="'+ status_meta[value.status_meta] + '"> <i class="fa ' + icon_style + ' text-' + text_color + '"></i> ' + status_name + ' ' + text_help + ' </a> </nobr>';
+                return '<span class="asset-status-display"><a href="' + status_url + '" data-tooltip="true" title="'+ status_meta[value.status_meta] + '"><i class="fa ' + icon_style + ' text-' + text_color + '"></i><span>' + status_name + ' ' + text_help + '</span></a></span>';
             } else if ((value) && (value.name)) {
 
                 // Add some overrides for any funny urls we have

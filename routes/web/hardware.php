@@ -5,6 +5,7 @@ use App\Http\Controllers\Assets\AssetCheckoutController;
 use App\Http\Controllers\Assets\AssetReceivingController;
 use App\Http\Controllers\Assets\AssetsController;
 use App\Http\Controllers\Assets\BulkAssetsController;
+use App\Http\Controllers\Assets\BulkCheckoutSessionController;
 use App\Http\Controllers\BulkMaintenancesController;
 use App\Http\Controllers\MaintenancesController;
 use App\Models\Asset;
@@ -190,11 +191,18 @@ Route::group(
         )->name('hardware/bulksave');
 
         // Bulk checkout / checkin
-        Route::get('bulkcheckout', [BulkAssetsController::class, 'showCheckout'])
+        Route::get('bulkcheckout', [BulkCheckoutSessionController::class, 'index'])
             ->name('hardware.bulkcheckout.show')
             ->breadcrumbs(fn (Trail $trail) => $trail->parent('hardware.index')
                 ->push(trans('admin/hardware/general.bulk_checkout'), route('hardware.index'))
             );
+
+        Route::get('bulkcheckout/catalog', [BulkCheckoutSessionController::class, 'catalog'])->name('hardware.bulkcheckout.catalog');
+        Route::get('bulkcheckout/context', [BulkCheckoutSessionController::class, 'context'])->name('hardware.bulkcheckout.context');
+        Route::post('bulkcheckout/session', [BulkCheckoutSessionController::class, 'store'])->name('hardware.bulkcheckout.session');
+        Route::get('bulkcheckout/session/{batch}', [BulkCheckoutSessionController::class, 'receipt'])
+            ->whereUuid('batch')->name('hardware.bulkcheckout.receipt')
+            ->breadcrumbs(fn (Trail $trail) => $trail->parent('hardware.bulkcheckout.show')->push(trans('bulk_checkout.receipt'), route('hardware.bulkcheckout.receipt', request()->route('batch'))));
 
         Route::post('bulkcheckout',
             [BulkAssetsController::class, 'storeCheckout']

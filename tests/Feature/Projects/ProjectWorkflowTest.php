@@ -15,6 +15,50 @@ use Tests\TestCase;
 
 class ProjectWorkflowTest extends TestCase
 {
+    public function test_historical_project_members_remain_visible_without_becoming_eligible_for_checkout(): void
+    {
+        [, $project, $worker, , $session] = $this->context();
+        $project->members()->attach($worker);
+        $worker->delete();
+        $this->getJson(route('projects.index', ['table' => 1]))->assertOk()->assertJsonFragment(['members_count' => 1]);
+        $this->get(route('projects.show', [$project, 'tab' => 'people']))->assertOk()
+            ->assertSee($worker->display_name)->assertSee(trans('general.deleted'));
+        $this->postJson(route('projects.issue.lookup-employee', $session), ['barcode' => $worker->employee_num])
+            ->assertJsonPath('status', 'error');
+    }
+
+    public function test_project_accessory_allocations_report_quantity_and_require_accessory_permission(): void
+    {
+        $project = Project::factory()->create();
+        $accessory = \App\Models\Accessory::factory()->create();
+        $project->accessories()->attach($accessory, ['qty' => 3, 'reference' => 'LEGACY-ALLOC-1']);
+        $this->actingAs(User::factory()->admin()->create());
+        $this->getJson(route('projects.index', ['table' => 1]))->assertOk()->assertJsonFragment(['accessories_count' => 3]);
+        $this->get(route('projects.show', [$project, 'tab' => 'accessories']))->assertOk()
+            ->assertSee($accessory->name)->assertSee('LEGACY-ALLOC-1');
+        $this->get(route('projects.index', ['tab' => 'analytics']))->assertOk()
+            ->assertViewHas('analytics', fn ($data) => $data['accessories'] === 3);
+        $this->actingAs(User::factory()->viewAssets()->create());
+        $this->getJson(route('projects.index', ['table' => 1]))->assertOk()->assertJsonMissingPath('rows.0.accessories_count');
+        $this->get(route('projects.show', [$project, 'tab' => 'accessories']))->assertForbidden();
+    }
+
+    public function test_project_accessory_reporting_respects_company_scope(): void
+    {
+        $own = Company::factory()->create();
+        $other = Company::factory()->create();
+        $project = Project::factory()->create(['company_id' => $own->id]);
+        $visible = \App\Models\Accessory::factory()->create(['company_id' => $own->id]);
+        $hidden = \App\Models\Accessory::factory()->create(['company_id' => $other->id]);
+        $project->accessories()->attach($visible, ['qty' => 2]);
+        $project->accessories()->attach($hidden, ['qty' => 9]);
+        $this->settings->enableMultipleFullCompanySupport();
+        $this->actingAs(User::factory()->viewAssets()->viewAccessories()->forCompany($own->id)->create());
+        $this->getJson(route('projects.index', ['table' => 1]))->assertOk()->assertJsonFragment(['accessories_count' => 2]);
+        $this->get(route('projects.show', [$project, 'tab' => 'accessories']))->assertOk()
+            ->assertSee($visible->name)->assertDontSee($hidden->name);
+    }
+
     public function test_analytics_separates_currencies_and_reports_missing_costs(): void
     {
         $this->actingAs(User::factory()->admin()->create());
@@ -81,7 +125,7 @@ class ProjectWorkflowTest extends TestCase
 
     private function data(User $worker, Asset $asset, Project $project): array
     {
-        return ['worker' => 'STATSSA-EMP-'.$worker->id, 'asset' => $asset->asset_tag, 'expected_checkin' => $project->end_date->toDateString(), 'reviewed' => 1, 'handover_declared' => 1, 'note' => 'Charger included'];
+        return ['worker' => 'STATSSA-EMP-'.$worker->id, 'asset' => $asset->asset_tag, 'expected_checkin' => $project->end_date->toDateString(), 'reviewed' => 1, 'note' => 'Charger included'];
     }
 
     public function test_asset_search_filters_inventory_and_never_allocates(): void
@@ -149,7 +193,7 @@ class ProjectWorkflowTest extends TestCase
     public function test_issue_records_recipient_return_and_snapshot_and_blocks_duplicate_issue(): void
     {
         [, $project, $worker, $asset, $session] = $this->context();
-        $this->post(route('projects.issue.store', $session), $this->data($worker, $asset, $project))->assertSessionHasNoErrors()->assertRedirect(route('projects.issue.audit', $session));
+        $this->post(route('projects.issue.store', $session), $this->data($worker, $asset, $project))->assertSessionHasNoErrors()->assertRedirect(route('projects.issue.show', $session));
         $issue = DB::table('project_issues')->first();
         $this->assertEquals($worker->id, $asset->fresh()->assigned_to);
         $this->assertNull($issue->handover_declared_at);
@@ -213,11 +257,11 @@ class ProjectWorkflowTest extends TestCase
         $this->assertDatabaseCount('project_issues', 1);
     }
 
-    public function test_required_return_date_review_handover_and_unknown_asset_fail_without_reserving(): void
+    public function test_required_return_date_and_review_fail_without_reserving(): void
     {
         [, $project,$worker,$asset,$session] = $this->context();
         $data = $this->data($worker, $asset, $project);
-        foreach (['expected_checkin', 'reviewed', 'handover_declared'] as $field) {
+        foreach (['expected_checkin', 'reviewed'] as $field) {
             $bad = $data;
             unset($bad[$field]);
             $this->post(route('projects.issue.store', $session), $bad)->assertSessionHasErrors($field);
@@ -297,5 +341,75 @@ class ProjectWorkflowTest extends TestCase
         $this->getJson(route('projects.index', ['table' => 1]))->assertOk()->assertJsonFragment(['name' => $visible->name])->assertJsonMissing(['name' => $hidden->name])->assertJsonMissingPath('rows.0.members_count');
         $this->getJson(route('projects.index', ['table' => 1, 'column_filter_meta' => 1]))->assertOk()->assertJsonMissingPath('columns.members_count');
         $this->get(route('projects.show', $hidden))->assertRedirect(route('projects.index'));
+    }
+
+    public function test_three_step_flow_shows_notification_status_after_sending(): void
+    {
+        Notification::fake();
+        [, $project, $worker, $asset, $session] = $this->context();
+        $this->get(route('projects.issue.show', $session))->assertOk()->assertDontSee('data-issue-panel="3"', false)->assertDontSee('id="issue-handed-over"', false)->assertSee(trans('projects.cancel_issue'));
+        $this->post(route('projects.issue.store', $session), $this->data($worker, $asset, $project))->assertRedirect(route('projects.issue.show', $session));
+        $issue = DB::table('project_issues')->first();
+        DB::table('project_issues')->where('id', $issue->id)->update(['notification_status' => 'sent']);
+        $this->get(route('projects.issue.show', $session))->assertOk()->assertSee(trans('projects.acceptance_email_sent'))->assertSee(trans('projects.acceptance_resume'))->assertDontSee('id="issue-accepted"', false)->assertDontSee('id="issue-handed-over"', false);
+        DB::table('project_issues')->where('id', $issue->id)->update(['notification_status' => 'failed']);
+        $this->get(route('projects.issue.show', $session))->assertOk()->assertSee(trans('projects.acceptance_email_waiting'))->assertDontSee(trans('projects.acceptance_email_sent'));
+    }
+
+    public function test_cancel_empty_session_closes_it_and_blocks_further_issue(): void
+    {
+        [, $project, $worker, $asset, $session] = $this->context();
+        $this->post(route('projects.issue.cancel', $session))->assertRedirect(route('projects.issue.index'));
+        $this->assertNotNull(DB::table('project_issue_sessions')->where('id', $session)->value('closed_at'));
+        $this->post(route('projects.issue.store', $session), $this->data($worker, $asset, $project))->assertStatus(409);
+        $this->assertNull($asset->fresh()->assigned_to);
+    }
+
+    public function test_cancel_pending_issue_restores_inventory_and_stops_old_acceptance_link(): void
+    {
+        [$manager, $project, $worker, $asset, $session] = $this->context();
+        $location = $asset->location_id;
+        $status = $asset->status_id;
+        $this->post(route('projects.issue.store', $session), $this->data($worker, $asset, $project))->assertSessionHasNoErrors();
+        $issue = DB::table('project_issues')->first();
+        $this->post(route('projects.issue.cancel', $session))->assertSessionHasNoErrors();
+        $this->assertNull($asset->fresh()->assigned_to);
+        $this->assertSame($location, $asset->fresh()->location_id);
+        $this->assertSame($status, $asset->fresh()->status_id);
+        $this->assertTrue($asset->fresh()->availableForCheckout());
+        $this->assertNotNull(DB::table('project_issues')->value('cancelled_at'));
+        $this->assertFalse(CheckoutAcceptance::find($issue->acceptance_id)->isPending());
+        $this->actingAs($worker)->post(route('account.store-acceptance', $issue->acceptance_id), ['asset_acceptance' => 'accepted'])->assertRedirect();
+        $this->assertNull($asset->fresh()->assigned_to);
+        $this->actingAs($manager)->post(route('projects.issue.cancel', $session))->assertSessionHasNoErrors();
+        $this->assertDatabaseCount('project_events', 2);
+    }
+
+    public function test_cancel_keeps_earlier_project_reservation_and_can_follow_acceptance(): void
+    {
+        [, $project, $worker, $asset, $session] = $this->context();
+        $project->assets()->attach($asset->id, ['original_status_id' => $asset->status_id, 'reserved_by' => auth()->id()]);
+        $this->post(route('projects.issue.store', $session), $this->data($worker, $asset, $project))->assertSessionHasNoErrors();
+        $issue = DB::table('project_issues')->first();
+        CheckoutAcceptance::find($issue->acceptance_id)->accept(null);
+        $this->post(route('projects.issue.cancel', $session))->assertSessionHasNoErrors();
+        $this->assertNull($asset->fresh()->assigned_to);
+        $this->assertDatabaseHas('project_asset', ['asset_id' => $asset->id, 'project_id' => $project->id]);
+        $this->assertFalse($asset->fresh()->availableForCheckout());
+        $this->get(route('projects.issue.audit', $session))->assertOk()->assertSee(trans('projects.issue_cancelled_status'));
+    }
+
+    public function test_cancel_does_not_undo_completed_handover_and_rejects_other_issuer(): void
+    {
+        [$manager, $project, $worker, $asset, $session] = $this->context();
+        $this->actingAs(User::factory()->create())->post(route('projects.issue.cancel', $session))->assertForbidden();
+        $this->actingAs(User::factory()->admin()->create())->post(route('projects.issue.cancel', $session))->assertNotFound();
+        $this->actingAs($manager)->post(route('projects.issue.store', $session), $this->data($worker, $asset, $project))->assertSessionHasNoErrors();
+        $issue = DB::table('project_issues')->first();
+        CheckoutAcceptance::find($issue->acceptance_id)->accept(null);
+        $this->post(route('projects.issue.handover', [$session, $issue->id]))->assertSessionHasNoErrors();
+        $this->post(route('projects.issue.cancel', $session))->assertSessionHasNoErrors();
+        $this->assertEquals($worker->id, $asset->fresh()->assigned_to);
+        $this->assertNull(DB::table('project_issues')->value('cancelled_at'));
     }
 }

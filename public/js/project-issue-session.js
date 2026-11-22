@@ -46,7 +46,7 @@
     function selectEmployee(employee) {
         if (!employee || busy) return;
         clearTimeout(timers.worker); worker.value = employee.barcode; workerValue.value = ''; person = null;
-        document.getElementById('issue-accepted').checked = false; document.getElementById('issue-handed-over').checked = false;
+        document.getElementById('issue-accepted').checked = false;
         closeEmployeePicker(); lookup('worker');
     }
     worker.addEventListener('focus',openEmployeePicker);
@@ -64,7 +64,7 @@
     });
     worker.addEventListener('input',function () {
         clearTimeout(timers.worker); person = null; workerValue.value = ''; worker.dataset.fieldVerification = 'pending'; errors([]);
-        document.getElementById('issue-accepted').checked = false; document.getElementById('issue-handed-over').checked = false;
+        document.getElementById('issue-accepted').checked = false;
         openEmployeePicker();
         timers.worker = setTimeout(function () { if (exactEmployees(worker.value).length === 1) lookup('worker'); },350);
     });
@@ -102,7 +102,7 @@
             if (i < step) indicator.setAttribute('aria-label', copy.step_completed); else indicator.removeAttribute('aria-label');
             if (i === step) marker.setAttribute('aria-current', 'step'); else marker.removeAttribute('aria-current');
         });
-        back.hidden = step === 0; cancel.hidden = step !== 0; next.textContent = step === 3 ? next.dataset.finish : next.dataset.next;
+        back.hidden = step === 0; cancel.hidden = false; next.textContent = step === 1 ? next.dataset.finish : next.dataset.next;
         if (step === 0) worker.focus(); else if (step === 1) asset.focus(); else panels[step].querySelector('h3').focus();
     }
     async function lookup(kind) {
@@ -173,7 +173,7 @@
     asset.addEventListener('click',searchAssets);
     asset.addEventListener('input',function () {
         equipment = null; asset.dataset.fieldVerification = 'pending'; document.getElementById('issue-scan-result').hidden = true; errors([]); status.textContent = '';
-        document.getElementById('issue-accepted').checked = false; document.getElementById('issue-handed-over').checked = false;
+        document.getElementById('issue-accepted').checked = false;
         clearTimeout(searchTimer); searchSequence++; assetMatches = []; assetIndex = -1; assetList.replaceChildren();
         assetMenu.hidden = false; asset.setAttribute('aria-expanded','true'); assetToggle.setAttribute('aria-expanded','true');
         document.getElementById('issue-asset-results').textContent = copy.asset_picker_loading;
@@ -194,7 +194,7 @@
     assetList.addEventListener('click',function (event) { var option = event.target.closest('[data-asset-index]'); if (option) chooseAsset(assetMatches[Number(option.dataset.assetIndex)]); });
     document.addEventListener('pointerdown',function (event) { if (!assetPicker.contains(event.target)) closeAssetPicker(); });
     assetPicker.addEventListener('focusout',function (event) { if (!assetPicker.contains(event.relatedTarget)) closeAssetPicker(); });
-    date.addEventListener('input', function () { document.getElementById('issue-accepted').checked = false; document.getElementById('issue-handed-over').checked = false; });
+    date.addEventListener('input', function () { document.getElementById('issue-accepted').checked = false; });
     form.addEventListener('submit', async function (event) {
         event.preventDefault(); if (busy) return;
         if (step === 0) { if (await lookup('worker') && step === 0) display(1); return; }
@@ -202,9 +202,8 @@
             if (!await lookup('asset')) return;
             if (!date.value || date.value < date.min || date.value > date.max) { errors([{id:'issue-return', text:date.value ? copy.return_within_project : copy.return_required}]); return; }
         }
-        if (step === 2 && !document.getElementById('issue-accepted').checked) { errors([{id:'issue-accepted',text:copy.acceptance_required}]); return; }
-        if (step === 3 && !document.getElementById('issue-handed-over').checked) { errors([{id:'issue-handed-over',text:copy.handover_required}]); return; }
-        if (step < 3) display(step + 1);
+        if (step === 1 && !document.getElementById('issue-accepted').checked) { errors([{id:'issue-accepted',text:copy.acceptance_required}]); return; }
+        if (step < 1) display(step + 1);
         else { next.disabled = true; back.disabled = true; busy = true; form.submit(); }
     });
     back.addEventListener('click', function () { if (!busy && step > 0) display(step - 1); });

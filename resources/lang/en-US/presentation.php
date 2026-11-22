@@ -1,6 +1,24 @@
 <?php
 
 return [
+    'adjust_save' => 'Save adjustment',
+    'adjust_currency' => 'Currency',
+    'adjust_available_now' => 'Available now',
+    'adjust_available_after' => 'Available after adjustment',
+    'adjust_change' => 'Quantity change',
+    'adjust_quantity_placeholder' => 'e.g. 5',
+    'adjust_mode' => 'Adjustment type',
+    'adjust_add' => 'Add stock',
+    'adjust_remove' => 'Remove stock',
+    'adjust_audit' => 'Audit only',
+    'adjust_units_help' => 'Enter a whole number of items. Remove stock applies the minus sign for you.',
+    'adjust_reason_help' => 'This reason is saved in the adjustment history.',
+    'adjust_reason_placeholder' => 'For example, received a delivery or corrected a physical stock count.',
+    'adjust_details' => 'Date, purchase details and attachments (Optional)',
+    'adjust_invalid' => 'Enter a whole number of items.',
+    'adjust_exceeds' => 'You cannot remove more than the available stock.',
+    'adjust_audit_help' => 'Only a history entry will be saved. The stock quantity stays the same.',
+
     'search_open' => 'Search',
     'search_clear' => 'Clear search',
     'header_quick_actions' => 'Quick actions',
@@ -43,6 +61,8 @@ return [
     'dashboard_nav_purchases' => 'Purchase costs',
 
     'dashboard_intro' => 'Your asset estate, at a glance.',
+    'dashboard_welcome' => 'Welcome back, :name.',
+    'dashboard_analytics_intro' => 'Your asset analytics at a glance. Keep track of availability, utilisation and what needs attention.',
     'dashboard_live' => 'Current inventory',
     'dashboard_operations' => 'Upcoming attention',
     'dashboard_inventory' => 'Inventory overview',

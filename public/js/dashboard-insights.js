@@ -33,7 +33,7 @@
             var overview = document.createElement('div'); overview.className = 'status-composition-overview';
             var totalLabel = document.createElement('div'); totalLabel.className = 'status-estate-total';
             var totalNumber = document.createElement('strong'), totalCaption = document.createElement('span');
-            totalNumber.textContent = numbers.format(total); totalCaption.textContent = copy.chart_active_assets;
+            window.StatsDashboardNumbers.count(totalNumber, total, numbers.format); totalCaption.textContent = copy.chart_active_assets;
             totalLabel.append(totalNumber, totalCaption);
             var composition = document.createElement('div'); composition.className = 'status-composition-track'; composition.setAttribute('aria-hidden', 'true');
             rows.forEach(function (row) { var segment = document.createElement('span'); segment.style.flexGrow = row.count; segment.style.backgroundColor = barColor('statuses', row.label); if (row.count > 0) composition.appendChild(segment); });
@@ -43,7 +43,7 @@
                 var share = total ? row.count / total * 100 : 0;
                 var item = document.createElement('li'), label = document.createElement('span'), percent = document.createElement('strong');
                 label.className = 'status-meter-label'; label.textContent = row.label; item.style.setProperty('--status-color', barColor('statuses', row.label));
-                percent.className = 'status-meter-percent'; percent.textContent = decimals.format(share) + '%';
+                percent.className = 'status-meter-percent'; window.StatsDashboardNumbers.set(percent, share, function (value) { return decimals.format(value) + '%'; });
                 var track = document.createElement('span'), fill = document.createElement('span');
                 track.className = 'status-meter-track'; track.setAttribute('aria-hidden', 'true');
                 fill.className = 'insight-bar-fill'; fill.style.width = Math.max(0, Math.min(100, share)) + '%'; fill.style.backgroundColor = barColor('statuses', row.label); track.appendChild(fill);
@@ -97,7 +97,8 @@
         var total = costs.totals.find(function (row) { return row.currency === selector.value; });
         var priced = costs.totals.reduce(function (sum, row) { return sum + row.priced; }, 0);
         if (window.StatsPurchaseCost) window.StatsPurchaseCost.render(costs.timeline || [], selector.value, {pricedTotal: priced, assetTotal: payload.assets.total});
-        text('insight-cost-total', total ? total.currency + ' ' + money.format(total.amount) : copy.chart_empty);
+        if (total) window.StatsDashboardNumbers.set(document.getElementById('insight-cost-total'), total.amount, function (value) { return total.currency + ' ' + money.format(value); });
+        else text('insight-cost-total', copy.chart_empty);
         text('insight-priced-count', total ? interpolate(copy.chart_priced, {count: numbers.format(total.priced)}) : '');
         text('insight-unknown-costs', interpolate(copy.chart_unknown_costs, {count: numbers.format(Math.max(0, payload.assets.total - priced))}));
         ['location', 'manufacturer', 'department'].forEach(function (group) {
@@ -119,7 +120,7 @@
     }
     function pendingOffboarding(data) {
         if (!data) return;
-        text('insight-pending-offboarding', numbers.format(data.count));
+        window.StatsDashboardNumbers.count(document.getElementById('insight-pending-offboarding'), data.count, numbers.format);
         text('insight-pending-items', ['assets', 'accessories', 'licenses'].filter(function (key) { return data[key] !== null; }).map(function (key) { return interpolate(copy['chart_pending_' + key], {count: numbers.format(data[key])}); }).join(' · '));
         var value = document.querySelector('[data-alert-value="pending_asset_value"]');
         if (value) alertValue(value, data.asset_value);
@@ -138,7 +139,7 @@
         var start = new Date(data.start + 'T12:00:00'), end = new Date(data.end + 'T12:00:00');
         var dateFormat = new Intl.DateTimeFormat(locale, {day: 'numeric', month: 'short', year: 'numeric'});
         document.querySelectorAll('.insight-period').forEach(function (el) { el.textContent = interpolate(copy.chart_period, {start: dateFormat.format(start), end: dateFormat.format(end)}); });
-        document.querySelectorAll('[data-insight-value]').forEach(function (el) { var key = el.dataset.insightValue; el.textContent = numbers.format(key === 'offboarding' ? data.offboarding : data.assets[key]); });
+        document.querySelectorAll('[data-insight-value]').forEach(function (el) { var key = el.dataset.insightValue; window.StatsDashboardNumbers.count(el, key === 'offboarding' ? data.offboarding : data.assets[key], numbers.format); });
         if (!data.assets) return;
         var assets = data.assets;
         ['due_value', 'warranty_value'].forEach(function (key) { var element = document.querySelector('[data-alert-value="' + key + '"]'); if (element) alertValue(element, assets[key]); });
@@ -152,7 +153,7 @@
         });
         if (!assets.categories.length) { var emptyRow = table.insertRow(); var emptyCell = emptyRow.insertCell(); emptyCell.colSpan = 4; emptyCell.textContent = copy.chart_empty; }
         var utilisation = assets.total ? assets.deployed / assets.total * 100 : 0;
-        text('insight-utilisation-value', decimals.format(utilisation) + '%');
+        window.StatsDashboardNumbers.set(document.getElementById('insight-utilisation-value'), utilisation, function (value) { return decimals.format(value) + '%'; });
         text('insight-utilisation-context', interpolate(copy.chart_checked_out, {deployed: numbers.format(assets.deployed), total: numbers.format(assets.total)}));
         var meter = document.getElementById('insight-utilisation-meter'); meter.value = utilisation;
         document.querySelector('.utilisation-arc')?.style.setProperty('--utilisation', utilisation);

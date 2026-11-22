@@ -12,7 +12,7 @@
 
 <x-container>
 <div class="dashboard-modern dashboard-studio">
-    <div class="dashboard-intro"><x-dashboard.quick-links />@can('view', \App\Models\Asset::class)
+    <div class="dashboard-intro"><div class="dashboard-welcome"><p class="dashboard-greeting">{{ trans('presentation.dashboard_welcome', ['name' => auth()->user()->first_name ?: auth()->user()->display_name]) }}</p><p>{{ trans('presentation.dashboard_analytics_intro') }}</p></div>@can('view', \App\Models\Asset::class)
     <nav class="dashboard-jump-nav" aria-label="{{ trans('general.dashboard') }}"><a href="#dashboard-overview">{{ trans('presentation.dashboard_nav_overview') }}</a><a href="#dashboard-distribution">{{ trans('presentation.dashboard_nav_distribution') }}</a><a href="#dashboard-purchases">{{ trans('presentation.dashboard_nav_purchases') }}</a></nav>
     @endcan</div>
 
@@ -38,7 +38,7 @@
 @include('partials.bootstrap-table')
 
 @push('css')
-    <link rel="stylesheet" href="{{ asset('css/dashboard-modern.css') }}?v=23">
+    <link rel="stylesheet" href="{{ asset('css/dashboard-modern.css') }}?v=29">
 @endpush
 
 @push('js')
@@ -50,8 +50,9 @@
             $('#dashboard-low-stock-count').text(@json(trans('presentation.chart_error')));
         });
     </script>
-    <script src="{{ asset('js/dashboard-purchase-value.js') }}?v=3" nonce="{{ csrf_token() }}"></script>
-    <script src="{{ asset('js/dashboard-chart-variants.js') }}?v=10" nonce="{{ csrf_token() }}"></script>
-    <script src="{{ asset('js/dashboard-insights.js') }}?v=10" nonce="{{ csrf_token() }}"></script>
-    <script src="{{ asset('js/dashboard-motion.js') }}?v=2" nonce="{{ csrf_token() }}"></script>
+    <script src="{{ asset('js/dashboard-numbers.js') }}?v=5" nonce="{{ csrf_token() }}"></script>
+    <script src="{{ asset('js/dashboard-purchase-value.js') }}?v=4" nonce="{{ csrf_token() }}"></script>
+    <script src="{{ asset('js/dashboard-chart-variants.js') }}?v=12" nonce="{{ csrf_token() }}"></script>
+    <script src="{{ asset('js/dashboard-insights.js') }}?v=12" nonce="{{ csrf_token() }}"></script>
+    <script src="{{ asset('js/dashboard-motion.js') }}?v=3" nonce="{{ csrf_token() }}"></script>
 @endpush

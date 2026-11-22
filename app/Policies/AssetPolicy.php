@@ -12,6 +12,11 @@ class AssetPolicy extends CheckoutablePermissionsPolicy
         return 'assets';
     }
 
+    public function receive(User $user): bool
+    {
+        return $user->hasAccess('assets.create');
+    }
+
     public function viewRequestable(User $user, ?Asset $asset = null)
     {
         return $user->hasAccess('assets.view.requestable');

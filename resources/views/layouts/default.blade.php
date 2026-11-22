@@ -46,9 +46,9 @@
     @endif
 
 
-        <link rel="stylesheet" href="{{ asset('css/interface-refresh.css') }}?v=92">
+        <link rel="stylesheet" href="{{ asset('css/interface-refresh.css') }}?v=93">
         <link rel="stylesheet" href="{{ asset('css/icon-states.css') }}?v=3">
-        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=96">
+        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=100">
 
     <script nonce="{{ csrf_token() }}">
         window.snipeit = {
@@ -1256,10 +1256,10 @@
             window.SnipePresentation.restored_form_input = @json(session()->has('_old_input'));
             window.SnipeTableViews = @json(\App\Presenters\Presenter::tableViews());
         </script>
-        <script defer src="{{ asset('js/interface-presentation.js') }}?v=39" nonce="{{ csrf_token() }}"></script>
+        <script defer src="{{ asset('js/interface-presentation.js') }}?v=44" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/table-column-filters.js') }}?v=7" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/table-pagination.js') }}?v=1" nonce="{{ csrf_token() }}"></script>
-        <script defer src="{{ asset('js/interface-motion.js') }}?v=8" nonce="{{ csrf_token() }}"></script>
+        <script defer src="{{ asset('js/interface-motion.js') }}?v=10" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/form-stepper.js') }}?v=19" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/vendor/lottie-light-5.13.0.min.js') }}" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/search-disclosures.js') }}?v=2" nonce="{{ csrf_token() }}"></script>

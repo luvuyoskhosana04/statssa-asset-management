@@ -1,0 +1,38 @@
+/* Settings navigation uses neutral glass surfaces, sage and sand accents. */
+body.ui-refresh .presentation-settings-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+body.ui-refresh .presentation-settings-grid .admin{--settings-accent:var(--ui-chart-series-2);position:relative;border-radius:24px!important;overflow:visible;background:linear-gradient(140deg,color-mix(in srgb,var(--settings-accent) 7%,var(--ui-surface)),var(--ui-surface) 65%)!important;border:1px solid var(--ui-line)!important;box-shadow:0 3px 10px color-mix(in srgb,var(--ui-ink) 3%,transparent)!important;transition:border-color .3s ease,box-shadow .4s ease,translate .45s cubic-bezier(.25,.65,.25,1)}
+body.ui-refresh .presentation-settings-grid [data-settings-category=access] .admin,body.ui-refresh .presentation-settings-grid .admin[data-settings-category=access],body.ui-refresh .presentation-settings-grid [data-settings-category=integrations] .admin,body.ui-refresh .presentation-settings-grid .admin[data-settings-category=integrations]{--settings-accent:var(--ui-chart-series-1)}
+body.ui-refresh .presentation-settings-grid .box-body{padding:0!important;height:100%}
+body.ui-refresh .presentation-settings-grid .settings-card-link{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:22px;padding:24px;min-height:260px;height:100%;border-radius:23px;text-decoration:none!important;white-space:normal}
+body.ui-refresh .presentation-settings-grid .settings-card-visual{display:grid;place-items:center;flex:0 0 auto;width:50px;height:50px;border-radius:16px;background:color-mix(in srgb,var(--settings-accent) 12%,var(--ui-surface))!important;color:var(--settings-accent)!important;border:1px solid color-mix(in srgb,var(--settings-accent) 19%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--ui-surface) 70%,transparent);transition:transform .5s cubic-bezier(.25,.65,.25,1),background-color .3s}
+body.ui-refresh .presentation-settings-grid .settings-card-visual i{font-size:25px!important;width:25px;height:25px;color:inherit!important}
+body.ui-refresh .presentation-settings-grid .settings-card-content{display:flex;flex-direction:column;align-items:stretch;gap:10px;flex:1;min-width:0;width:100%;padding:0}
+body.ui-refresh .presentation-settings-grid .settings-card-title{margin:0;font-size:20px;font-weight:650;line-height:1.25;letter-spacing:-.4px;color:var(--ui-ink)}
+body.ui-refresh .presentation-settings-grid .index-block{display:block;margin:0 0 14px;min-height:42px;height:auto!important;font-size:12px;font-weight:400;line-height:1.75;color:var(--ui-muted);overflow:visible;white-space:normal;overflow-wrap:anywhere}
+body.ui-refresh .presentation-settings-grid .settings-category-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto;padding-top:14px;border-top:1px solid var(--ui-line)}
+body.ui-refresh .presentation-settings-grid .settings-category-count{font-size:11px;font-weight:500;border:1px solid var(--ui-line);border-radius:999px;background:var(--ui-surface);padding:5px 10px;color:var(--ui-muted)}
+body.ui-refresh .presentation-settings-grid .settings-card-action{display:inline-flex;align-items:center;justify-content:center;gap:12px;align-self:flex-end;margin:0 0 0 auto;min-height:44px;padding:0 14px;border:1px solid var(--ui-line);border-radius:999px;background:var(--ui-surface);color:var(--ui-ink);font-size:12px;font-weight:600;transition:background-color .3s,border-color .3s,color .3s}
+body.ui-refresh .presentation-settings-grid .settings-card-content>.settings-card-action{margin-top:auto}
+body.ui-refresh .presentation-settings-grid .settings-card-action:after{font-size:20px;transition:translate .4s cubic-bezier(.25,.65,.25,1)}
+body.ui-refresh .presentation-settings-grid .admin:focus-within{border-color:var(--ui-focus-ring)!important}
+body.ui-refresh .presentation-settings-grid .settings-card-link:focus-visible{outline:2px solid var(--ui-focus-ring);outline-offset:4px}
+body.ui-refresh .presentation-settings-grid .link-danger .settings-card-action{color:var(--ui-danger);background:var(--ui-danger-soft)}
+@media(hover:hover){
+body.ui-refresh .presentation-settings-grid .admin:hover{translate:0 -3px;border-color:color-mix(in srgb,var(--settings-accent) 45%,var(--ui-line))!important;box-shadow:0 14px 30px color-mix(in srgb,var(--ui-ink) 8%,transparent)!important}
+body.ui-refresh .presentation-settings-grid .settings-card-link:hover .settings-card-visual{transform:translateY(-2px) rotate(-4deg)}
+body.ui-refresh .presentation-settings-grid .settings-card-link:hover .settings-card-action{background:var(--ui-action);border-color:var(--ui-action-edge);color:var(--ui-action-ink)}
+body.ui-refresh .presentation-settings-grid .settings-card-link:hover .settings-card-action:after{translate:3px 0}
+}
+@media(min-width:1200px){body.ui-refresh .presentation-settings-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:767px){body.ui-refresh .presentation-settings-grid{grid-template-columns:1fr}body.ui-refresh .presentation-settings-grid .settings-card-link{min-height:230px;padding:22px}}
+@media(prefers-reduced-motion:no-preference){
+body.ui-refresh .settings-category-landing:not([hidden])>.admin{animation:settings-arrive .85s cubic-bezier(.25,.65,.25,1) backwards}
+body.ui-refresh .settings-category-landing>.admin:nth-child(2){animation-delay:80ms}
+body.ui-refresh .settings-category-landing>.admin:nth-child(3){animation-delay:160ms}
+body.ui-refresh .settings-category-landing>.admin:nth-child(4){animation-delay:240ms}
+body.ui-refresh .settings-category-landing>.admin:nth-child(5){animation-delay:320ms}
+body.ui-refresh .settings-category-landing>.admin:nth-child(6){animation-delay:400ms}
+@keyframes settings-arrive{from{opacity:.4;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+}
+@media(prefers-reduced-motion:reduce){body.ui-refresh .presentation-settings-grid .admin,body.ui-refresh .presentation-settings-grid .settings-card-visual,body.ui-refresh .presentation-settings-grid .settings-card-action,body.ui-refresh .presentation-settings-grid .settings-card-action:after{animation:none!important;transition:none!important;translate:none!important;transform:none!important}}
+@media print{body.ui-refresh .presentation-settings-grid .admin{animation:none!important;translate:none!important;transform:none!important;box-shadow:none!important;break-inside:avoid}}

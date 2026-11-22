@@ -70,7 +70,7 @@ class AssetReceivingController extends Controller
 
     public function create(?string $draft = null): View
     {
-        $this->authorize('create', Asset::class);
+        $this->authorize('receive', Asset::class);
         $this->authorize('view', Asset::class);
 
         $savedDraft = $draft ? DB::table('asset_receiving_drafts')->where('id', $draft)->where('user_id', auth()->id())->first() : null;
@@ -107,7 +107,7 @@ class AssetReceivingController extends Controller
 
     public function discardDraft(string $draft): JsonResponse
     {
-        $this->authorize('create', Asset::class);
+        $this->authorize('receive', Asset::class);
         $this->authorize('view', Asset::class);
         DB::table('asset_receiving_drafts')->where('id', $draft)->where('user_id', auth()->id())->delete();
 
@@ -137,7 +137,7 @@ class AssetReceivingController extends Controller
 
     public function show(int $batchId): View
     {
-        abort_unless(auth()->user()->can('update', Asset::class) || (auth()->user()->can('create', Asset::class) && auth()->user()->can('view', Asset::class)), 403);
+        abort_unless(auth()->user()->can('update', Asset::class) || (auth()->user()->can('receive', Asset::class) && auth()->user()->can('view', Asset::class)), 403);
         $items = $this->visibleReceipts()->where('rb.id', $batchId)->orderBy('ri.id')->get(['ri.*']);
         abort_if($items->isEmpty(), 404);
         $batch = DB::table('asset_receipt_batches')->where('id', $batchId)->first();

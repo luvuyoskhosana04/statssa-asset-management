@@ -19,7 +19,7 @@ class CreateReceivedAssetsAction
 {
     public static function run(User $actor, array $data): array
     {
-        Gate::forUser($actor)->authorize('create', Asset::class);
+        Gate::forUser($actor)->authorize('receive', Asset::class);
         $items = array_map(fn ($item) => ['asset_tag' => trim($item['asset_tag']), 'model_id' => (int) ($item['model_id'] ?? $data['model_id'] ?? 0)] + (isset($item['serial']) ? ['serial' => trim($item['serial'])] : []), $data['items']);
         $sorted = $items;
         usort($sorted, fn ($a, $b) => strcmp($a['asset_tag'], $b['asset_tag']));

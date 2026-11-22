@@ -42,7 +42,7 @@ Route::group(['prefix' => 'accessories', 'middleware' => ['auth']], function () 
 
     Route::post('{accessory}/clone',
         [Accessories\AccessoriesController::class, 'postCreate']
-    );
+    )->middleware('can:create,App\\Models\\Accessory');
 
     Route::post('{accessory}/adjust-quantity',
         [Accessories\AccessoriesController::class, 'adjustQuantity']

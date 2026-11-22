@@ -49,3 +49,19 @@ Verified the actual account-menu theme control in both directions, with desktop 
 The category ring is now 230 pixels with the legend below. Location and purchase tooltips appear only at the hovered or focused bar, with no readout on arrival. Pointer exit and Escape dismiss them; arrow keys update the focused value. Mobile keyboard tooltips remain inside the chart during horizontal scrolling.
 
 Summary counts and the acquisition total use stronger weight, with smaller, quieter context. The summary grid and chart grid use 10-pixel gutters, purchase panels use 12 pixels, and footer arrows align to the right edge. Bronze selection uses white text at a measured 4.83:1 contrast in both modes. Browser checks covered hover placement and dismissal for both plots, keyboard navigation, light/dark selection colours, mobile overflow and legend placement. All 14 chart-data checks and Pint passed. The data source and calculations were unchanged.
+
+### Dashboard motion pacing
+
+Chart entrances now observe the chart itself at 25% visibility, with a 32px inset at the bottom of the viewport. Newly rendered charts are registered after API responses and filter changes. Cards settle over one second; donut segments draw over 2.2 seconds, the utilisation dial sweeps over 2.4 seconds, and columns rise over 1.85 seconds with an 80ms stagger. Status and manufacturer segments unfold individually. Values stay exact and readable. Reduced motion skips entrances and finishes any running animation immediately; printing also finishes active motion. The old overlapping CSS entrances have been removed.
+
+### Animated dashboard figures
+
+Headline totals, status percentages, utilisation, category and financial breakdown values, average purchase cost and cost coverage count smoothly to their exact supplied values over 2.4 seconds when visible. Final-width placeholders prevent layout shifts. Screen readers receive the final figure throughout; reduced motion, printing and leaving the tab finish counters immediately. New data replaces an unfinished count safely; unchanged values remain settled. Dates, table records and hover tooltips keep their precise static display. Frontend checks cover visibility, cents, negative adjustments, mid-animation replacement, accessibility, reduced motion, printing and zero values.
+
+### Counter stability corrections
+
+Counters update existing text nodes instead of replacing nodes every frame, avoiding repeated page-wide mutation scans. The generic interface motion controller skips dashboard card reveals and counters so dashboard motion has one owner. Unchanged numeric updates do not restart active counts. Counts use a bounded 2.6-second ease-in/ease-out, with stable left alignment and tabular numerals retained after settling. Regression checks cover monotonic bounds and preserving text-node identity across frames. Browser samples confirmed increasing currency values and unchanged counter position and width.
+
+### Whole-number rendering and counter layout
+
+A browser frame capture revealed that the default Intl number formatter was exposing three fractional digits for asset and alert counts during interpolation. Counts now use an explicit whole-number counter API, while percentages and financial amounts retain their own precision. The summary metric rule also overrode the counter grid display; the dedicated grid display now takes precedence, so hidden sizing text overlaps instead of taking an additional inline slot. Browser sequences confirmed whole-number intermediate values and unchanged summary widths and card heights. Regression tests now inspect formatted frames, including digit length and precision differences between counts, percentages and money.

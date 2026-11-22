@@ -24,6 +24,7 @@ Route::middleware('auth')->prefix('projects')->name('projects.')->group(function
         ->breadcrumbs(fn (Trail $trail, string $session) => $trail->parent('projects.issue.index')->push(trans('projects.audit'), route('projects.issue.audit', $session)));
     Route::post('asset-issue/{session}/{issue}/resend', [ProjectIssueController::class, 'resend'])->whereUuid('session')->whereNumber('issue')->name('issue.resend');
     Route::post('asset-issue/{session}/issue', [ProjectIssueController::class, 'store'])->whereUuid('session')->name('issue.store');
+    Route::post('asset-issue/{session}/cancel', [ProjectIssueController::class, 'cancel'])->whereUuid('session')->name('issue.cancel');
     Route::post('asset-issue/{session}/close', [ProjectIssueController::class, 'close'])->whereUuid('session')->name('issue.close');
     Route::get('asset-issue/{session}/{issue}/sign', [ProjectIssueController::class, 'resume'])->whereUuid('session')->whereNumber('issue')->name('issue.sign')
         ->breadcrumbs(fn (Trail $trail, string $session) => $trail->parent('projects.issue.show', $session)->push(trans('projects.signature')));

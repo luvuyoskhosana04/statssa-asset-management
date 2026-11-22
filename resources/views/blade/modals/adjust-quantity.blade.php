@@ -4,6 +4,7 @@
 <x-modals
     id="adjustQuantityModal"
     stacked
+    :submit_label="trans('presentation.adjust_save')"
     form_attrs='id="adjustQuantityForm" enctype="multipart/form-data"'
 >
     <x-slot:header>
@@ -13,11 +14,26 @@
         </h4>
     </x-slot:header>
 
-    <p>
-        {{ trans('general.available') }}:
-        <strong class="adjust-quantity-available"></strong>
-    </p>
-
+    @php
+        $quantityAdjustmentCopy = [
+            'invalid' => trans('presentation.adjust_invalid'),
+            'exceeds' => trans('presentation.adjust_exceeds'),
+            'audit' => trans('presentation.adjust_audit_help'),
+            'reason' => trans('presentation.adjust_reason_placeholder'),
+            'quantity' => trans('presentation.adjust_quantity_placeholder'),
+            'close' => trans('general.close'),
+        ];
+    @endphp
+    <div class="quantity-balance" data-adjust-copy="{{ json_encode($quantityAdjustmentCopy) }}">
+        <div><span>{{ trans('presentation.adjust_available_now') }}</span><strong class="adjust-quantity-available"></strong></div>
+        <span class="quantity-balance-delta" id="adjustQuantityDelta" aria-label="{{ trans('presentation.adjust_change') }}">...</span>
+        <div><span>{{ trans('presentation.adjust_available_after') }}</span><strong id="adjustQuantityAfter" aria-live="polite">...</strong></div>
+    </div>
+    <div class="quantity-adjust-modes" role="group" aria-label="{{ trans('presentation.adjust_mode') }}">
+        <button type="button" data-adjust-mode="add" aria-pressed="true">{{ trans('presentation.adjust_add') }}</button>
+        <button type="button" data-adjust-mode="remove" aria-pressed="false">{{ trans('presentation.adjust_remove') }}</button>
+        <button type="button" data-adjust-mode="audit" aria-pressed="false">{{ trans('presentation.adjust_audit') }}</button>
+    </div>
     {{-- min is populated by snipeit.js when the modal opens (–available).
          The browser stepper then refuses to go below and the built-in
          constraint-validation message surfaces if a user types past it.
@@ -28,11 +44,25 @@
         id="adjustQuantityAmount"
         name="amount"
         type="number"
-        :label="trans('general.adjust_quantity_amount')"
-        :help_text="trans('general.adjust_quantity_amount_help')"
+        :label="trans('presentation.adjust_change')"
+        :help_text="trans('presentation.adjust_units_help')"
         required
     />
 
+    <p class="quantity-adjust-feedback" id="adjustQuantityFeedback" role="status" hidden></p>
+    <x-form.row
+        id="adjustQuantityNote"
+        name="note"
+        type="textarea"
+        :rows="3"
+        :label="trans('general.adjust_quantity_note')"
+        :help_text="trans('presentation.adjust_reason_help')"
+        required
+    />
+
+    <details class="quantity-record-details" id="adjustQuantityDetails">
+        <summary>{{ trans('presentation.adjust_details') }}</summary>
+        <div class="quantity-record-body">
     {{-- Acquisition-only fields (order_number, supplier, unit cost,
          currency). Shown for positive qty changes and hidden by snipeit.js
          when the amount is 0 or negative. Those cases are corrections or
@@ -104,7 +134,7 @@
                 >
             </x-slot:input>
         </x-form.row>
-        <x-form.row class="col-md-4" style="padding-left: 5px;" name="currency" :label="trans('general.currency')">
+        <x-form.row class="col-md-4" style="padding-left: 5px;" name="currency" :label="trans('presentation.adjust_currency')">
             <x-slot:input>
                 <input
                     type="text"
@@ -126,15 +156,6 @@
     <x-form.help name="adjustQuantityCost" id="adjustQuantityCostHint" style="display: none; margin-top: -5px;">
         {{ trans('general.adjust_quantity_prefilled_from_last_order') }}
     </x-form.help>
-
-    <x-form.row
-        id="adjustQuantityNote"
-        name="note"
-        type="textarea"
-        :rows="3"
-        :label="trans('general.notes')"
-        required
-    />
 
     {{-- Inlined instead of x-input.file-upload because that component wraps
          its markup in x-form.row's horizontal scaffold. --}}
@@ -160,4 +181,15 @@
             </div>
         </x-slot:input>
     </x-form.row>
+        </div>
+    </details>
 </x-modals>
+
+@once
+@push('css')
+<link rel="stylesheet" href="{{ asset('css/quantity-adjustment.css') }}?v=4">
+@endpush
+@push('js')
+<script defer src="{{ asset('js/quantity-adjustment.js') }}?v=5" nonce="{{ csrf_token() }}"></script>
+@endpush
+@endonce

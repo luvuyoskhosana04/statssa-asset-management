@@ -130,7 +130,15 @@ class AuthServiceProvider extends ServiceProvider
          * If this condition is true, ANYTHING else below will be assumed to be true.
          * This is where we set the superadmin permission to allow superadmins to be able to do everything within the system.
          */
-        Gate::before(function ($user, $ability) {
+        Gate::before(function ($user, $ability, $arguments) {
+            // Inventory is registered through receiving or imports, including for superusers.
+            $subject = $arguments[0] ?? null;
+            $model = is_object($subject) ? get_class($subject) : $subject;
+            if (in_array($ability, ['create', 'clone'], true)
+                && in_array($model, [Asset::class, Accessory::class, License::class], true)) {
+                return false;
+            }
+
 
             // Disallow even superadmins to edit non-editable things when in demo mode.
             // (We have to do this to prevent jerks from trying to break the demo by editing things they shouldn't.)

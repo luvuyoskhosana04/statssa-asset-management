@@ -113,7 +113,7 @@
                         'stroke-dasharray': (row.share * circumference) + ' ' + ((1 - row.share) * circumference), 'stroke-dashoffset': -offset, transform: 'rotate(-90 80 80)'}));
                     offset += row.share * circumference;
                 });
-                graphic.appendChild(svg); var center = node('div', 'insight-donut-center'); center.append(node('strong', '', numbers.format(data.total)), node('span', '', copy.chart_active_assets)); graphic.appendChild(center); layout.appendChild(graphic);
+                graphic.appendChild(svg); var center = node('div', 'insight-donut-center'); var totalNumber = node('strong'); window.StatsDashboardNumbers.count(totalNumber, data.total, numbers.format); center.append(totalNumber, node('span', '', copy.chart_active_assets)); graphic.appendChild(center); layout.appendChild(graphic);
             }
             if (type === 'composition') {
                 var strip = node('div', 'insight-composition-strip'); strip.setAttribute('aria-hidden', 'true');
@@ -123,7 +123,8 @@
             }
             var list = node('ul', 'insight-variant-list');
             (expanded ? data.rows : data.rows.slice(0, 6)).forEach(function (row, index) {
-                var li = node('li'), label = node('span', 'insight-variant-label', row.label), value = node('strong', 'insight-variant-value', numbers.format(row.value));
+                var li = node('li'), label = node('span', 'insight-variant-label', row.label), value = node('strong', 'insight-variant-value');
+                (financial ? window.StatsDashboardNumbers.set : window.StatsDashboardNumbers.count)(value, row.value, numbers.format);
                 if (type === 'tiles') {
                     li.append(label, value, node('span', 'insight-variant-share', formatShare(row.share, financial, locale)));
                 } else if (type === 'dots') {

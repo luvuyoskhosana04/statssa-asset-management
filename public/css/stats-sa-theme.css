@@ -689,8 +689,21 @@ body.ui-refresh {--ui-nav-hover-bg:color-mix(in srgb,var(--ui-brand-green-soft) 
 .ui-refresh .main-sidebar .treeview-menu :is(a,button)>:is(i,svg,span[class*="fa-"]):not(.pull-right):not(.fa-angle-left):not(.fa-angle-right):not(.fa-chevron-left):not(.fa-chevron-right):not(.fa-caret-left):not(.fa-caret-right),
 .ui-refresh .asset-nav-panel .asset-nav-links :is(a,button)>:is(i,svg,span[class*="fa-"]):not(.pull-right):not(.fa-angle-left):not(.fa-angle-right):not(.fa-chevron-left):not(.fa-chevron-right):not(.fa-caret-left):not(.fa-caret-right) {display:none!important;}
 
-/* Emphasise the total asset count with a vivid brand gold accent. */
-.ui-refresh .sidebar-menu .asset-nav-groups>li>a.asset-nav-trigger[aria-controls="asset-nav-status"]>.badge{background:#a95310!important;color:#fff!important;font-size:13px!important;font-weight:700!important;line-height:1.3!important;padding:4px 8px!important;min-width:42px;font-variant-numeric:tabular-nums;letter-spacing:.2px;opacity:1!important;filter:none!important}
+/* Neutral frosted material keeps the inventory count readable without an accent fill. */
+.ui-refresh .sidebar-menu .asset-nav-groups>li>a.asset-nav-trigger[aria-controls="asset-nav-status"]>.badge{
+    --nav-count-glass:rgba(255,255,255,.78);
+    background:var(--nav-count-glass)!important;color:var(--ui-ink)!important;
+    border:1px solid rgba(128,128,128,.22);border-radius:999px!important;
+    -webkit-backdrop-filter:blur(12px) saturate(0);backdrop-filter:blur(12px) saturate(0);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 1px 3px rgba(0,0,0,.06);
+    font-size:13px!important;font-weight:650!important;line-height:1.3!important;
+    padding:4px 9px!important;min-width:42px;font-variant-numeric:tabular-nums;
+    letter-spacing:.2px;opacity:1!important;filter:none!important;
+}
+[data-theme=dark] .ui-refresh .sidebar-menu .asset-nav-groups>li>a.asset-nav-trigger[aria-controls="asset-nav-status"]>.badge{
+    --nav-count-glass:rgba(55,55,57,.86);
+    border-color:rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 1px 3px rgba(0,0,0,.12);
+}
 
 /* Shared workflow progress: muted completed ticks, prominent current step. */
 .ui-refresh .form-stepper:not(.form-section-nav) .stepper-item.is-current .stepper-marker{background:var(--ui-primary-button,#996735);border-color:var(--ui-primary-button,#996735);color:#fff;box-shadow:0 0 0 4px var(--ui-focus)}
@@ -1102,7 +1115,7 @@ body.ui-refresh .ui-search-disclosure .ui-search-toggle:focus-visible{outline:2p
 body.ui-refresh .ui-search-disclosure .ui-search-toggle i{font-size:15px;line-height:1;width:18px}
 body.ui-refresh .ui-search-disclosure.has-search-query:not(.is-search-open) .ui-search-toggle::after{content:'';position:absolute;right:7px;top:7px;width:5px;height:5px;border-radius:50%;background:var(--ui-accent)}
 body.ui-refresh .ui-search-disclosure [hidden]{display:none!important}
-body.ui-refresh .fixed-table-toolbar .search:has(.ui-search-disclosure){width:auto!important;flex:0 0 auto!important;max-width:100%;margin-top:0}
+body.ui-refresh .fixed-table-toolbar .search:has(.ui-search-disclosure){width:auto!important;min-width:0!important;flex:0 0 auto!important;max-width:100%;margin-top:0}
 body.ui-refresh .ui-search-disclosure [name="clearSearch"]{width:36px!important;min-width:36px!important;height:42px!important;min-height:42px!important;border:0!important;border-radius:0!important;background:transparent!important;color:var(--ui-muted)!important;margin:0!important;padding:0!important}
 body.ui-refresh .ui-search-disclosure #searchclear{position:static!important;flex:0 0 30px;width:30px;cursor:pointer}
 @media(prefers-reduced-motion:reduce){body.ui-refresh .ui-search-disclosure,body.ui-refresh .ui-search-disclosure input{transition:none!important}}
@@ -1117,3 +1130,46 @@ body.ui-refresh .ui-search-disclosure>a{display:inline-flex;align-items:center;j
     :is(body.ui-refresh,body.stats-sa-welcome,body.setup-controls) :is(button,.btn,input[type="button"],input[type="submit"],input[type="reset"],[role="button"],.table-control-group>summary){border-radius:var(--ui-action-radius)!important}
     body.ui-refresh :is(.sidebar-menu,.asset-nav-panel) .badge{border-radius:var(--ui-action-radius)!important}
 }
+
+/* Shared tab selection follows the Branding settings reference. */
+@layer ui-tab-style {
+ .ui-refresh .content :is(.settings-section-tabs,.nav-tabs,.project-tabs,.receiving-tabs,.dashboard-jump-nav,[role=tablist]){gap:4px!important}
+ .ui-refresh .content .dashboard-jump-nav{border:0!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;padding:0!important}
+ .ui-refresh .content .nav-tabs>li{border-top:0!important}
+ .ui-refresh .content :is(.settings-section-tabs,.project-tabs,.receiving-tabs,.dashboard-jump-nav)>:is(a,[role=tab]),
+ .ui-refresh .content [role=tablist]>[role=tab],
+ .ui-refresh .content :is(.nav-tabs,[role=tablist])>li>a:not(.btn){
+  display:inline-flex!important;align-items:center;justify-content:center;gap:7px;flex-shrink:0;min-height:48px;max-width:100%;padding:13px 12px!important;margin:0!important;
+  border:0!important;border-bottom:2px solid transparent!important;border-radius:9999px!important;background:transparent!important;box-shadow:none!important;
+  color:var(--ui-muted)!important;font-size:13px!important;font-weight:400!important;line-height:1.4;text-decoration:none!important;
+  transition:color .25s ease,border-color .3s ease!important;
+ }
+ .ui-refresh .content :is(.settings-section-tabs,.project-tabs,.receiving-tabs,.dashboard-jump-nav)>:is(a,[role=tab]):hover,
+ .ui-refresh .content [role=tablist]>[role=tab]:hover,
+ .ui-refresh .content :is(.nav-tabs,[role=tablist])>li>a:not(.btn):hover{color:var(--ui-ink)!important;background:transparent!important}
+ .ui-refresh .content :is(.settings-section-tabs,.project-tabs,.receiving-tabs,.dashboard-jump-nav)>:is([aria-selected=true],[aria-current=page],[aria-current=location],.is-current),
+ .ui-refresh .content [role=tablist]>[role=tab][aria-selected=true],
+ .ui-refresh .content :is(.nav-tabs,[role=tablist])>li.active>a:not(.btn),
+ .ui-refresh .content :is(.nav-tabs,[role=tablist])>li>a[aria-selected=true]:not(.btn){border-bottom-color:var(--ui-primary-button,#996735)!important;color:var(--ui-ink)!important;font-weight:600!important;background:transparent!important;box-shadow:none!important}
+ .ui-refresh .content :is(.settings-section-tabs,.project-tabs,.receiving-tabs,.dashboard-jump-nav)>:is(a,[role=tab]):focus-visible,
+ .ui-refresh .content [role=tablist]>[role=tab]:focus-visible,
+ .ui-refresh .content :is(.nav-tabs,[role=tablist])>li>a:not(.btn):focus-visible{outline:2px solid var(--ui-focus-ring)!important;outline-offset:-4px!important}
+ @media(prefers-reduced-motion:reduce){
+  .ui-refresh .content :is(.settings-section-tabs,.project-tabs,.receiving-tabs,.dashboard-jump-nav)>:is(a,[role=tab]),
+  .ui-refresh .content [role=tablist]>[role=tab],
+  .ui-refresh .content :is(.nav-tabs,[role=tablist])>li>a:not(.btn){transition:none!important}
+ }
+}
+
+@media(prefers-reduced-transparency:reduce),(forced-colors:active){
+ .ui-refresh .sidebar-menu .asset-nav-groups>li>a.asset-nav-trigger[aria-controls="asset-nav-status"]>.badge{background:var(--ui-surface)!important;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+ .ui-refresh .sidebar-menu .asset-nav-groups>li>a.asset-nav-trigger[aria-controls="asset-nav-status"]>.badge{background:var(--ui-surface)!important}
+}
+
+/* Operational status names remain readable in narrow inventory columns. */
+body.ui-refresh .asset-status-display{display:block;white-space:normal;min-width:110px}
+body.ui-refresh .asset-status-display>a{display:inline-flex;align-items:baseline;gap:7px;white-space:normal;line-height:1.5;max-width:100%}
+body.ui-refresh .asset-status-display>a>i{flex-shrink:0}
+body.ui-refresh .asset-status-display>a>span{overflow-wrap:break-word}

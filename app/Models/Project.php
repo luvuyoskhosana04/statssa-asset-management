@@ -43,6 +43,12 @@ class Project extends SnipeModel
         return $this->belongsToMany(User::class, 'project_user')->withTimestamps();
     }
 
+    public function accessories(): BelongsToMany
+    {
+        return $this->belongsToMany(Accessory::class, 'project_accessory_allocations')
+            ->withPivot('qty', 'from_location_id', 'reference')->withTimestamps();
+    }
+
     public function assets(): BelongsToMany
     {
         return $this->belongsToMany(Asset::class, 'project_asset')->withPivot('original_status_id', 'reserved_by')->withTimestamps();

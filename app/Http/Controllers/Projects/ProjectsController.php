@@ -7,6 +7,7 @@ use App\Helpers\TableColumnFilters;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProjectAssetRequest;
 use App\Http\Requests\SaveProjectRequest;
+use App\Models\Accessory;
 use App\Models\Asset;
 use App\Models\Project;
 use App\Models\Statuslabel;
@@ -32,9 +33,13 @@ class ProjectsController extends Controller
         }
         $request->validate(['search' => 'nullable|string|max:255', 'sort' => 'nullable|string', 'order' => 'nullable|in:asc,desc']);
         $canViewPeople = Gate::allows('view', User::class);
+        $canViewAccessories = Gate::allows('view', Accessory::class);
         $query = Project::query()->with('location')->withCount('assets');
         if ($canViewPeople) {
-            $query->withCount('members');
+            $query->withCount(['members' => fn ($query) => $query->withTrashed()]);
+        }
+        if ($canViewAccessories) {
+            $query->withSum('accessories as accessories_count', 'project_accessory_allocations.qty');
         }
         if ($search = mb_substr(trim((string) $request->input('search')), 0, 255)) {
             $query->where(fn ($q) => $q->where('name', 'like', '%'.$search.'%')->orWhere('code', 'like', '%'.$search.'%'));
@@ -43,10 +48,13 @@ class ProjectsController extends Controller
         if ($canViewPeople) {
             $columns['members_count'] = 'number';
         }
+        if ($canViewAccessories) {
+            $columns['accessories_count'] = 'number';
+        }
         if ($request->boolean('column_filter_meta')) {
             return response()->json(TableColumnFilters::handleRows([], $columns, $request));
         }
-        $rows = $query->orderBy('name')->get()->map(function (Project $project) use ($canViewPeople) {
+        $rows = $query->orderBy('name')->get()->map(function (Project $project) use ($canViewPeople, $canViewAccessories) {
             $row = [
                 'name' => $project->name, 'code' => $project->code,
                 'start_date' => $project->start_date?->toDateString(), 'end_date' => $project->end_date?->toDateString(),
@@ -56,6 +64,10 @@ class ProjectsController extends Controller
             ];
             if ($canViewPeople) {
                 $row['members_count'] = $project->members_count;
+            }
+
+            if ($canViewAccessories) {
+                $row['accessories_count'] = (int) $project->accessories_count;
             }
 
             return $row;
@@ -91,14 +103,18 @@ class ProjectsController extends Controller
     public function show(Request $request, Project $project): View
     {
         $this->authorize('view', $project);
-        $tab = in_array($request->input('tab'), ['assets', 'people', 'locations', 'history'], true) ? $request->input('tab') : 'assets';
+        $tab = in_array($request->input('tab'), ['assets', 'accessories', 'people', 'locations', 'history'], true) ? $request->input('tab') : 'assets';
         if ($tab === 'people') {
             $this->authorize('view', User::class);
         }
+        if ($tab === 'accessories') {
+            $this->authorize('view', Accessory::class);
+        }
         $assets = $project->assets()->with(['model', 'status', 'location', 'assignedTo'])->orderBy('asset_tag')->get();
-        $members = $tab === 'people' ? $project->members()->orderBy('first_name')->paginate(20) : null;
+        $members = $tab === 'people' ? $project->members()->withTrashed()->orderBy('first_name')->paginate(20) : null;
 
         return view('projects.show', compact('project', 'tab', 'assets', 'members') + [
+            'accessories' => $tab === 'accessories' ? $project->accessories()->orderBy('name')->get() : null,
             'events' => $tab === 'history' ? DB::table('project_events')->where('project_id', $project->id)->orderByDesc('id')->paginate(30) : null,
         ]);
     }

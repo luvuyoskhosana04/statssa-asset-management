@@ -2,17 +2,24 @@
 
 namespace App\Actions\Projects;
 
+use App\Models\Accessory;
 use App\Models\Asset;
 use App\Models\OrderItem;
 use App\Models\Project;
 use App\Models\Setting;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class BuildProjectAnalyticsAction
 {
     public static function run(?string $requestedCurrency = null): array
     {
-        $projects = Project::with(['assets.location', 'assets.status'])->orderBy('name')->get();
+        $query = Project::with(['assets.location', 'assets.status']);
+        $canViewAccessories = Gate::allows('view', Accessory::class);
+        if ($canViewAccessories) {
+            $query->withSum('accessories as accessories_count', 'project_accessory_allocations.qty');
+        }
+        $projects = $query->orderBy('name')->get();
         $assets = $projects->flatMap->assets->unique('id');
         $purchases = OrderItem::with('order')->where('item_type', Asset::class)->whereIn('item_id', $assets->pluck('id')->all())
             ->where('qty', '>', 0)->whereHas('order')->orderByDesc('id')->get()->unique('item_id')->keyBy('item_id');
@@ -67,6 +74,7 @@ class BuildProjectAnalyticsAction
         usort($rows, fn ($a, $b) => $b['value'] <=> $a['value']);
 
         return ['currency' => $currency, 'currencies' => $currencies, 'projects' => count($rows), 'assets' => $assets->count(),
+            'accessories' => $canViewAccessories ? (int) $projects->sum('accessories_count') : null,
             'value' => array_sum(array_column($rows, 'value')), 'at_risk' => array_sum(array_column($rows, 'at_risk')),
             'pending_returns' => $pendingReturns, 'overdue' => $overdue, 'missing_costs' => $missingCosts,
             'stages' => $stages, 'rows' => $rows];

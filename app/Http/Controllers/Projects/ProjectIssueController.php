@@ -93,6 +93,7 @@ class ProjectIssueController extends Controller
             if ($reservation && (int) $reservation->project_id !== $project->id) {
                 throw ValidationException::withMessages(['asset' => trans('projects.asset_unavailable', ['value' => $asset->asset_tag])]);
             }
+            $wasReserved = (bool) $reservation;
             if (! $reservation) {
                 if (! $asset->availableForCheckout()) {
                     throw ValidationException::withMessages(['asset' => trans('projects.asset_unavailable', ['value' => $asset->asset_tag])]);
@@ -100,7 +101,7 @@ class ProjectIssueController extends Controller
                 $project->assets()->attach($asset->id, ['original_status_id' => $asset->status_id, 'reserved_by' => auth()->id()]);
                 $reservation = (object) ['original_status_id' => $asset->status_id];
             }
-            $snapshot = $this->assetDetails($asset) + ['recipient_employee_number' => $worker->employee_num, 'recipient_email' => $worker->email, 'issuer_name' => $request->user()->display_name, 'planned_handover_at' => now()->toIso8601String()];
+            $snapshot = $this->assetDetails($asset) + ['recipient_employee_number' => $worker->employee_num, 'recipient_email' => $worker->email, 'issuer_name' => $request->user()->display_name, 'planned_handover_at' => now()->toIso8601String(), 'original_location_id' => $asset->location_id, 'reservation_existed' => $wasReserved];
             $project->members()->syncWithoutDetaching([$worker->id]);
             if (DB::table('project_issues')->where('asset_id', $asset->id)->whereNull('handed_over_at')->whereNull('cancelled_at')->exists()) {
                 throw ValidationException::withMessages(['asset' => trans('projects.finish_handover')]);
@@ -140,7 +141,7 @@ class ProjectIssueController extends Controller
             return $acceptance;
         }, 3);
 
-        return redirect()->route('projects.issue.audit', $session)->with('success', trans('projects.request_created'));
+        return redirect()->route('projects.issue.show', $session);
     }
 
     public function resume(string $session, int $issue): RedirectResponse
@@ -266,6 +267,53 @@ class ProjectIssueController extends Controller
         });
 
         return redirect()->route('projects.issue.show', $session)->with('success', trans('projects.handover_saved'));
+    }
+
+    public function cancel(ProjectAssetRequest $request, string $session): RedirectResponse
+    {
+        DB::transaction(function () use ($session): void {
+            $sessionRow = $this->session($session, true);
+            $issues = DB::table('project_issues')->where('session_id', $session)->whereNull('handed_over_at')->whereNull('cancelled_at')->lockForUpdate()->get();
+            if ($sessionRow->closed_at && $issues->isEmpty()) {
+                return;
+            }
+            foreach ($issues as $issue) {
+                $acceptance = CheckoutAcceptance::whereKey($issue->acceptance_id)->lockForUpdate()->firstOrFail();
+                $asset = Asset::whereKey($issue->asset_id)->lockForUpdate()->firstOrFail();
+                $this->authorize('checkin', $asset);
+                if ($asset->assigned_to && ($asset->assigned_type !== User::class || (int) $asset->assigned_to !== (int) $issue->user_id)) {
+                    throw ValidationException::withMessages(['asset' => trans('projects.cancel_assignment_changed')]);
+                }
+                $snapshot = json_decode($issue->asset_snapshot ?? '{}', true);
+                $reservation = DB::table('project_asset')->where('project_id', $sessionRow->project_id)->where('asset_id', $asset->id)->first();
+                if ($asset->assigned_to) {
+                    $asset->assignedTo()->disassociate();
+                    $asset->accepted = null;
+                    $asset->expected_checkin = null;
+                    $asset->location_id = array_key_exists('original_location_id', $snapshot) ? $snapshot['original_location_id'] : $asset->rtd_location_id;
+                    $asset->last_checkin = now();
+                    $asset->logCheckin(User::find($issue->user_id), trans('projects.cancel_issue_note'), now());
+                }
+                if ($reservation) {
+                    if ($snapshot['reservation_existed'] ?? true) {
+                        $asset->status_id = Project::findOrFail($sessionRow->project_id)->reservation_status_id ?: $reservation->original_status_id;
+                    } else {
+                        $asset->status_id = $reservation->original_status_id;
+                        DB::table('project_asset')->where('id', $reservation->id)->delete();
+                    }
+                }
+                $asset->saveOrFail();
+                // Retain the response history while preventing the old link from accepting again.
+                $acceptance->declined_at = now();
+                $acceptance->note = trans('projects.cancel_issue_note');
+                $acceptance->saveOrFail();
+                DB::table('project_issues')->where('id', $issue->id)->update(['cancelled_at' => now(), 'confirmed_by' => auth()->id(), 'updated_at' => now()]);
+                DB::table('project_events')->insert(['project_id' => $sessionRow->project_id, 'actor_id' => auth()->id(), 'action' => 'cancelled', 'description' => $issue->asset_tag.' / '.$issue->recipient_name, 'created_at' => now(), 'updated_at' => now()]);
+            }
+            DB::table('project_issue_sessions')->where('id', $session)->update(['closed_at' => now(), 'updated_at' => now()]);
+        });
+
+        return redirect()->route('projects.issue.index')->with('success', trans('projects.issue_cancelled'));
     }
 
     public function close(ProjectAssetRequest $request, string $session): RedirectResponse

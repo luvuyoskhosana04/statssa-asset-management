@@ -4,7 +4,6 @@
 <form class="box box-default project-edit" method="post" action="{{ $project->exists ? route('projects.update', $project) : route('projects.store') }}">
     @csrf @if ($project->exists) @method('PUT') @endif
     <div class="box-body">
-        <p class="help-block">{{ trans('projects.local_source') }}</p>
         <div class="form-group"><label for="project-name">{{ trans('general.name') }}</label><input class="form-control" id="project-name" name="name" value="{{ old('name', $project->name) }}" required maxlength="255"></div>
         <div class="form-group"><label for="project-code">{{ trans('projects.code') }}</label><input class="form-control" id="project-code" name="code" value="{{ old('code', $project->code) }}" required maxlength="100"></div>
         <div class="row"><div class="col-sm-6 form-group"><label for="project-start">{{ trans('projects.start_date') }}</label><input class="form-control" type="date" id="project-start" name="start_date" value="{{ old('start_date', $project->start_date?->toDateString()) }}" required></div><div class="col-sm-6 form-group"><label for="project-end">{{ trans('projects.end_date') }}</label><input class="form-control" type="date" id="project-end" name="end_date" value="{{ old('end_date', $project->end_date?->toDateString()) }}" required></div></div>

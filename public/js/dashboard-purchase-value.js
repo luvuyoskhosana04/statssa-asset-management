@@ -31,10 +31,11 @@
         function amount(value) { return currency + ' ' + money.format(value); }
         function interpolate(text, values) { return Object.keys(values).reduce(function (out, key) { return out.replace(':' + key, values[key]); }, text); }
         function dateLabel(period, options) { var date = new Date(0); date.setFullYear(Number(period.slice(0, 4)), Number(period.slice(5, 7)) - 1, 1); date.setHours(12); return new Intl.DateTimeFormat(locale, options).format(date); }
-        document.getElementById('purchase-average-value').textContent = data.priced ? amount(data.average) : copy.chart_empty;
+        if (data.priced) window.StatsDashboardNumbers.set(document.getElementById('purchase-average-value'), data.average, amount);
+        else document.getElementById('purchase-average-value').textContent = copy.chart_empty;
         document.getElementById('purchase-latest-value').textContent = data.entries.length ? dateLabel(data.entries[0].period, {month: 'short', year: 'numeric'}) : copy.chart_cost_undated_label;
         var ratio = coverage && coverage.assetTotal ? coverage.pricedTotal / coverage.assetTotal : 0;
-        document.getElementById('purchase-coverage-value').textContent = percentage.format(ratio);
+        window.StatsDashboardNumbers.set(document.getElementById('purchase-coverage-value'), ratio, percentage.format);
         document.getElementById('purchase-coverage-count').textContent = interpolate(copy.chart_cost_coverage_count, {count: numbers.format(coverage ? coverage.pricedTotal : 0), total: numbers.format(coverage ? coverage.assetTotal : 0)});
         var year = document.getElementById('purchase-ledger-year');
         var years = Array.from(new Set(data.entries.map(function (entry) { return entry.period.slice(0,4); })));

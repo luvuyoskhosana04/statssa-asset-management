@@ -1,0 +1,46 @@
+body.ui-refresh #adjustQuantityModal .modal-dialog{width:min(700px,calc(100% - 32px));margin:24px auto}
+body.ui-refresh #adjustQuantityModal .modal-content{border-radius:24px;overflow:hidden;max-height:calc(100dvh - 48px);display:flex;flex-direction:column;background:var(--ui-surface);border:1px solid var(--ui-line);box-shadow:0 24px 80px #0003}
+body.ui-refresh #adjustQuantityForm{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+body.ui-refresh #adjustQuantityModal .modal-header{padding:22px 24px;flex-shrink:0}
+body.ui-refresh #adjustQuantityModal .modal-title{font-size:22px;letter-spacing:-.4px;font-weight:650}
+body.ui-refresh #adjustQuantityModal .adjust-quantity-item-name{display:block;margin-top:5px;font-size:13px;font-weight:400;color:var(--ui-muted)}
+body.ui-refresh #adjustQuantityModal .modal-body{padding:22px 24px;overflow-y:auto;min-height:0}
+body.ui-refresh #adjustQuantityForm .ui-form-estimate{display:none}
+body.ui-refresh #adjustQuantityModal .modal-footer{flex-shrink:0;background:var(--ui-surface);border-top:1px solid var(--ui-line);padding:16px 24px}
+body.ui-refresh #adjustQuantityModal .modal-footer .btn{min-height:44px;padding:10px 18px}
+body.ui-refresh #adjustQuantityModal .quantity-balance{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;padding:18px 20px;margin-bottom:20px;border:1px solid var(--ui-line);border-radius:18px;background:var(--ui-soft)}
+body.ui-refresh #adjustQuantityModal .quantity-balance>div{display:flex;flex-direction:column;gap:8px}
+body.ui-refresh #adjustQuantityModal .quantity-balance>div:last-child{text-align:end}
+body.ui-refresh #adjustQuantityModal .quantity-balance span{font-size:12px;color:var(--ui-muted)}
+body.ui-refresh #adjustQuantityModal .quantity-balance strong{font-size:30px;line-height:1;font-weight:650;font-variant-numeric:tabular-nums;color:var(--ui-ink)}
+body.ui-refresh #adjustQuantityModal .quantity-balance .quantity-balance-delta{border:1px solid var(--ui-line);border-radius:999px;padding:6px 10px;background:var(--ui-surface);font-weight:600;color:var(--ui-ink);font-variant-numeric:tabular-nums}
+body.ui-refresh #adjustQuantityModal .quantity-adjust-modes{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+body.ui-refresh #adjustQuantityModal .quantity-adjust-modes button{border:1px solid var(--ui-line);border-radius:999px;padding:10px 16px;min-height:44px;background:var(--ui-surface);color:var(--ui-muted);font-size:13px}
+body.ui-refresh #adjustQuantityModal .quantity-adjust-modes button[aria-pressed=true]{background:var(--ui-selection);color:var(--ui-ink);border-color:var(--ui-action-edge);font-weight:600}
+body.ui-refresh #adjustQuantityModal .quantity-adjust-modes button:hover{border-color:var(--ui-muted);color:var(--ui-ink)}
+body.ui-refresh #adjustQuantityModal .quantity-adjust-modes button:focus-visible{outline:2px solid var(--ui-focus-ring);outline-offset:3px}
+body.ui-refresh #adjustQuantityModal .form-group{margin-bottom:16px}
+body.ui-refresh #adjustQuantityModal .help-block{font-size:12px;line-height:1.6}
+body.ui-refresh #adjustQuantityModal .quantity-adjust-feedback{font-size:13px;line-height:1.5;margin:-4px 0 16px;color:var(--ui-muted)}
+body.ui-refresh #adjustQuantityModal .quantity-adjust-feedback[hidden]{display:none}
+body.ui-refresh #adjustQuantityModal .has-adjust-error{color:var(--ui-danger)!important}
+body.ui-refresh #adjustQuantityModal .quantity-record-details{border:1px solid var(--ui-line);border-radius:16px;margin-top:18px;background:var(--ui-surface)}
+body.ui-refresh #adjustQuantityModal .quantity-record-details>summary{position:relative;display:flex;align-items:center;min-height:50px;padding:14px 46px 14px 16px;font-size:13px;font-weight:600;color:var(--ui-ink);list-style:none;cursor:pointer}
+body.ui-refresh #adjustQuantityModal .quantity-record-details>summary::-webkit-details-marker{display:none}
+body.ui-refresh #adjustQuantityModal .quantity-record-details>summary::after{content:"";position:absolute;right:20px;top:50%;width:8px;height:8px;border:solid currentColor;border-width:0 1.5px 1.5px 0;transform:translateY(-70%) rotate(45deg);transition:transform .25s ease}
+body.ui-refresh #adjustQuantityModal .quantity-record-details[open]>summary::after{transform:translateY(-25%) rotate(225deg)}
+body.ui-refresh #adjustQuantityModal .quantity-record-details>summary:focus-visible{outline:2px solid var(--ui-focus-ring);outline-offset:3px;border-radius:16px}
+body.ui-refresh #adjustQuantityModal .quantity-record-body{padding:8px 16px 4px;border-top:1px solid var(--ui-line)}
+body.ui-refresh #adjustQuantityModal #adjustQuantityCostRow{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin:0}
+body.ui-refresh #adjustQuantityModal #adjustQuantityCostRow>.form-group{width:100%;padding:0!important;float:none}
+body.ui-refresh #adjustQuantityModal textarea{min-height:90px!important;height:90px}
+@media(max-width:600px){body.ui-refresh #adjustQuantityModal .modal-dialog{width:calc(100% - 16px);margin:8px auto}body.ui-refresh #adjustQuantityModal .modal-content{max-height:calc(100dvh - 16px)}body.ui-refresh #adjustQuantityModal .modal-header,body.ui-refresh #adjustQuantityModal .modal-body{padding:18px}body.ui-refresh #adjustQuantityModal .quantity-balance{gap:10px;padding:16px}body.ui-refresh #adjustQuantityModal .quantity-adjust-modes button{padding:10px 13px}}
+@media(prefers-reduced-motion:reduce){body.ui-refresh #adjustQuantityModal .quantity-record-details>summary::after{transition:none}}
+
+body.ui-refresh #adjustQuantityModal:is([data-adjust-mode=remove],[data-adjust-mode=audit]) :is(#adjustQuantityAcquisitionFields,#adjustQuantityCostRow,#adjustQuantityCostHint){display:none!important}
+
+body.ui-refresh #adjustQuantityModal #adjustQuantityCostRow::before,body.ui-refresh #adjustQuantityModal #adjustQuantityCostRow::after{display:none!important}
+body.ui-refresh #adjustQuantityModal .modal-content>.bootstrap-datetimepicker-widget{z-index:1060}
+
+body.ui-refresh #adjustQuantityModal .modal-header>.close{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;min-height:44px;padding:0;margin:-6px -8px 0 12px;opacity:1;color:var(--ui-muted);font-size:24px;background:transparent;border:0;text-shadow:none}
+body.ui-refresh #adjustQuantityModal .modal-header>.close:hover{color:var(--ui-ink);background:var(--ui-soft)}

@@ -21,7 +21,6 @@ class ProjectAssetRequest extends Request
             'project_id' => ($this->routeIs('projects.issue.start') ? 'required' : 'sometimes|required').'|integer',
             'expected_checkin' => ($this->routeIs('projects.issue.store') ? 'required' : 'sometimes|required').'|date_format:Y-m-d|after_or_equal:today',
             'reviewed' => ($this->routeIs('projects.issue.store') ? 'accepted' : 'sometimes|accepted'),
-            'handover_declared' => ($this->routeIs('projects.issue.store') ? 'accepted' : 'sometimes|accepted'),
             'note' => 'nullable|string|max:5000',
         ];
     }

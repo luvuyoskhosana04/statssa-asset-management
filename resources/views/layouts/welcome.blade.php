@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#e2d7bf">
     @include('partials.branding.favicon')
     <link rel="stylesheet" href="{{ asset('css/welcome.css') }}?v=10">
-    <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=96">
+    <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=100">
 </head>
 <body class="stats-sa-welcome">
     <a class="skip-link" href="#{{ config('auth.demo_role_login') ? 'role' : 'username' }}">{{ trans('auth/role-login.skip') }}</a>

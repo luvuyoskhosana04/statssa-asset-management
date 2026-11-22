@@ -75,7 +75,7 @@ return [
     'scan_placeholder' => 'Scan a barcode here', 'scan_ready' => 'Scanner ready',
     'draft_hint' => 'Scan the original asset barcode, then its printed Stats SA barcode. End session registers all tagged assets and records the receipt.',
     'empty' => 'No tagged assets yet. Complete both scans above to move an asset here.',
-    'barcode' => 'Previous identity (original barcode)', 'model' => 'Asset model', 'batch_model' => 'Model for this batch',
+    'barcode' => 'Serial number', 'model' => 'Asset model', 'batch_model' => 'Model for this batch',
     'batch_model_named' => 'Batch: :model', 'batch_model_option' => 'Use batch model', 'choose_model' => 'Choose an asset model',
     'model_help' => 'Choose a model once for the batch. Use the model column for any asset that needs a different model.',
     'details' => 'Details for new assets', 'optional' => 'Additional batch details',

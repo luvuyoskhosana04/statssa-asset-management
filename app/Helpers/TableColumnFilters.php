@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Support\OperationalAssetStatuses;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -52,7 +53,8 @@ class TableColumnFilters
             $relation('location', 'locations', 'location_id');
             $relation('rtd_location', 'locations', 'rtd_location_id');
             $status = "(SELECT cf_status.name FROM {$prefix}status_labels AS cf_status WHERE cf_status.id = $base.status_id LIMIT 1)";
-            $add('status', 'text', "CASE WHEN $base.assigned_to IS NOT NULL THEN 'Deployed' ELSE $status END");
+            $operationalNames = implode(',', array_map(fn ($name) => DB::getPdo()->quote($name), OperationalAssetStatuses::names()));
+            $add('status', 'text', "CASE WHEN $base.assigned_to IS NOT NULL AND $status NOT IN ($operationalNames) THEN 'Deployed' ELSE $status END");
             $add('assigned_to', 'text', "CASE $base.assigned_type WHEN 'App\\\\Models\\\\User' THEN (SELECT COALESCE(NULLIF(cf_user.display_name,''), CONCAT_WS(' ', cf_user.first_name, cf_user.last_name)) FROM {$prefix}users cf_user WHERE cf_user.id = $base.assigned_to) WHEN 'App\\\\Models\\\\Location' THEN (SELECT cf_loc.name FROM {$prefix}locations cf_loc WHERE cf_loc.id = $base.assigned_to) WHEN 'App\\\\Models\\\\Asset' THEN (SELECT COALESCE(NULLIF(cf_asset.name,''), cf_asset.asset_tag) FROM {$prefix}assets cf_asset WHERE cf_asset.id = $base.assigned_to) END");
             foreach (['purchase_date', 'expected_checkin', 'next_audit_date', 'last_audit_date', 'last_checkout', 'last_checkin', 'asset_eol_date'] as $field) {
                 $add($field, 'date');
@@ -161,6 +163,10 @@ class TableColumnFilters
         // Replace existing select/withCount columns, never load listing records or keys.
         $source->getQuery()->columns = [DB::raw("$expression AS column_value")];
         $source->getQuery()->setBindings([], 'select');
+        if ($facet === 'status' && $query->getModel()->getTable() === 'assets') {
+            // Include unused labels so the complete workflow remains discoverable.
+            $source->union(DB::table('status_labels')->whereNull('deleted_at')->selectRaw('name AS column_value'));
+        }
         $values = DB::query()->fromSub($source, 'column_source')
             ->selectRaw("COALESCE(CAST(column_value AS CHAR), '') AS value")->distinct();
         $search = $request->input('column_filter_search') ?? '';
