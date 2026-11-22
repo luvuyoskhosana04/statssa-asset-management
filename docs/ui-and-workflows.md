@@ -71,3 +71,38 @@ Project accessories, loss, damage and transit do not have allocation tracking in
 Runtime display names, page titles, setup, translated UI copy, notification sender names, mail templates, PDF metadata and backup filenames use Stats SA Asset Management. The existing Stats SA crest supplies the SVG favicon, touch icon and legacy fallback logo assets. Fresh demo settings also use the Stats SA name. Private environment values and the current installation settings are configured separately from Git.
 
 Help links use the authenticated `/user-guide` page, and support links use the configured Stats SA support contact. Original source licences and attribution remain available at `/about/open-source` and `public/legal/LICENSE.txt`. Internal JavaScript names, custom-field keys, database/storage identifiers and CLI command names retain their established values for compatibility.
+
+## Dashboard presentation
+
+Dashboard-specific styles live in `public/css/dashboard-modern.css`. The desktop canvas uses an unequal 12-column grid: status spans eight columns, utilisation four, and the distribution panels four each. Section anchors provide Overview, Distribution and Purchase costs navigation. The active anchor tracks viewport position. Mobile uses one column. Upcoming attention, inventory and purchase intelligence form separate visual groups. Status uses one proportional composition with exact values in a legend; categories use a ring, locations use inspectable rounded columns, utilisation uses an SVG gauge with the native progress element retained for accessibility, and department costs use value tiles. Currency, expansion controls and underlying API scopes stay unchanged.
+
+`dashboard-motion.js` reveals cards once as they enter the viewport. Chart entry animation runs only with no reduced-motion preference. Reduced-motion mode and print show content immediately. Keep actual values stable while animating visual marks. Do not invent trends or sample data to create decorative sparklines.
+
+The dashboard presentation is scoped to `.dashboard-studio`. Surfaces, ink, focus states, bronze actions and sage/sand/stone chart series inherit the shared Stats SA `--ui-*` tokens. The dashboard does not override shell theme variables or force a mode. SVG marks, columns and readouts change immediately when the existing theme control updates `data-theme`. Location and monthly purchase columns support pointer inspection, button focus, arrow keys, Home and End; exact values appear in a tooltip anchored to the hovered, focused or tapped column. Mobile purchase columns keep 44-pixel targets inside a horizontally scrolling plot. The active column is brought into view without scrolling the document.
+
+Monthly purchase bins use the selected year, or the most recent recorded year when All years is selected. Months without dated purchases show zero; undated acquisitions stay in the separate ledger and overall total. Negative adjustments retain their sign and extend below zero. Keep this distinction when extending the chart. The all-years acquisition value is not presented as the selected year's total.
+
+## Navigation glass material
+
+The shared theme defines `--ui-glass-nav`, `--ui-glass-panel` and `--ui-glass-header` from the existing surface, sage and theme tokens. Side navigation, the top bar and desktop flyouts use a restrained matte tint, 24-pixel backdrop blur and fine edges. Text and interactive states retain their normal contrast and semantic colours in both modes.
+
+The sidebar applies blur to a background pseudo-element. Do not put a backdrop filter on the sidebar itself: that creates a backdrop root which prevents nested collapsed flyouts from blurring the page behind them. Body-mounted child flyouts filter their own backdrop. Mobile nested groups keep their inline presentation.
+
+Unsupported backdrop filters, reduced transparency and forced colours use solid surfaces. Browser checks covered light/dark themes, expanded/collapsed navigation, keyboard child-panel access, the mobile drawer and the reduced-transparency fallback. No navigation timing, links or permission checks changed.
+
+Dashboard column tooltips start hidden, follow the active bar and clear on pointer exit, blur, scrolling or Escape. Keyboard scrolling repositions the focused tooltip within the chart. Each column keeps its exact value in its accessible label. Do not restore a persistent readout above the plot. Category legends sit beneath the larger ring; summary counts lead their labels/context, footer arrows align at the right edge, and shared dashboard gutters are 10 pixels (8 on narrow screens). The selected bronze section link uses white text explicitly rather than inheriting the regular link colour.
+
+
+## Shared actions and search controls
+
+Header Quick actions groups the six catalogue viewing links and the existing permitted creation links. Pointer movement across the full flyout width and diagonal movement into either column retain the open panel. Escape, focus leaving and outside clicks dismiss it. Creation links retain the existing admin and per-type creation gates; viewing links use the catalogue gates.
+
+The header asset lookup and standalone searches reveal from an icon. Opening or dismissing search preserves its query and table page. Search controls with an active query start expanded; a collapsed active query has a small indicator. Select2 combobox inputs retain their form-field interaction. Table clear-search actions are hidden and disabled for empty queries and clear only their own table state. Shared table toolbars place Create/Add after View & filters and Table tools in DOM and visual order.
+
+`--ui-action-radius` defines the fully rounded action shape. Its dedicated cascade layer keeps buttons consistent despite older component radius overrides, including form actions, table tools, header controls and sidebar count chips. Field and card shapes remain governed by their own tokens.
+
+## Dashboard operational coverage
+
+The dashboard includes permission-filtered stock alerts, recent activity with notes, and recorded acquisition values for assets due for return or approaching warranty expiry. Currency totals stay separate and missing asset costs are reported. Stock alerts follow the existing site threshold. Pending offboarding follows the inventory charts and includes visible outstanding assets, accessories and directly assigned licence seats for ended, disabled or archived users. Its monetary value explicitly covers active assets only.
+
+Recent Activity uses a dedicated feed backed by the existing scoped activity API. It supports search, refresh, incremental loading, readable notes and record links only when the API marks each record as viewable. No audit records are merged or removed for display.

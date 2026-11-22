@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {buildLedger} = require('../../../public/js/dashboard-purchase-value.js');
+const {buildLedger, yearBins} = require('../../../public/js/dashboard-purchase-value.js');
 test('monthly records aggregate without changing the total or priced asset count', () => {
     const result = buildLedger([{currency:'ZAR',period:'2026-10-01',amount:100,priced:2},{currency:'ZAR',period:'2026-10-01',amount:20,priced:1}], 'ZAR');
     assert.equal(result.total,120); assert.equal(result.priced,3); assert.equal(result.average,40);
@@ -30,4 +30,18 @@ test('chronology spans years without mutating the supplied records', () => {
 });
 test('empty inventory has no amounts, averages or invented acquisition entries', () => {
     assert.deepEqual(buildLedger([],'ZAR'),{total:0,priced:0,average:0,undated:{amount:0,priced:0},entries:[]});
+});
+
+test('annual bins preserve the selected year, empty months and negative adjustments', () => {
+    const result = yearBins([
+        {period:'2026-01-01',amount:120,priced:2},
+        {period:'2026-01-01',amount:30,priced:1},
+        {period:'2026-03-01',amount:-10,priced:1},
+        {period:'2025-01-01',amount:999,priced:4}
+    ], '2026');
+    assert.equal(result.length,12);
+    assert.deepEqual(result[0],{period:'2026-01-01',amount:150,priced:3});
+    assert.deepEqual(result[1],{period:'2026-02-01',amount:0,priced:0});
+    assert.equal(result[2].amount,-10);
+    assert.equal(result.reduce((sum,row)=>sum+row.amount,0),140);
 });

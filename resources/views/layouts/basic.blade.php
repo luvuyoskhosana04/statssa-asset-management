@@ -46,7 +46,7 @@
     @endif
 
     <link rel="stylesheet" href="{{ asset('css/interface-refresh.css') }}?v=75">
-    <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=86">
+    <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=96">
 </head>
 
 <body class="ui-refresh hold-transition login-page">

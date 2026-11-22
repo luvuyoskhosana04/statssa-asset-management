@@ -31,7 +31,9 @@ class DashboardTest extends TestCase
             ->assertSee('data-insight-chart="statuses"', false)
             ->assertDontSee('dashboard small-box', false)
             ->assertDontSee('dashboard-today-calendar', false)
-            ->assertDontSee('activityReport', false)
+            ->assertSee('id="dashActivityReport"', false)
+            ->assertSee('id="dashLowStock"', false)
+            ->assertSee('id="dashboard-pending-offboarding"', false)
             ->assertDontSee('wire:lazy', false);
     }
 
@@ -77,5 +79,28 @@ class DashboardTest extends TestCase
             ->assertSee(trans('presentation.reporting_unavailable'))
             ->assertDontSee('id="dashboard-insights"', false)
             ->assertDontSee('dashboard small-box', false);
+    }
+
+    public function test_quick_actions_only_expose_permitted_view_links_to_scoped_viewers(): void
+    {
+        $response = $this->actingAs(User::factory()->viewAccessories()->create())->get(route('home'))->assertOk();
+        preg_match('/<nav[^>]+id="quick-actions-panel".*?<\/nav>/s', $response->getContent(), $matches);
+        $this->assertNotEmpty($matches);
+        $this->assertStringContainsString(route('accessories.index'), $matches[0]);
+        $this->assertStringNotContainsString(route('hardware.index'), $matches[0]);
+        $this->assertStringNotContainsString('data-quick-action-group="create"', $matches[0]);
+    }
+
+    public function test_admin_quick_actions_include_existing_creation_destinations(): void
+    {
+        $response = $this->actingAs(User::factory()->admin()->create())->get(route('home'))->assertOk();
+        preg_match('/<nav[^>]+id="quick-actions-panel".*?<\/nav>/s', $response->getContent(), $matches);
+        $this->assertNotEmpty($matches);
+        $this->assertStringContainsString('data-quick-action-group="view"', $matches[0]);
+        $this->assertStringContainsString('data-quick-action-group="create"', $matches[0]);
+        foreach (['hardware', 'licenses', 'accessories', 'consumables', 'components', 'users'] as $route) {
+            $this->assertStringContainsString(route($route.'.index'), $matches[0]);
+            $this->assertStringContainsString(route($route.'.create'), $matches[0]);
+        }
     }
 }

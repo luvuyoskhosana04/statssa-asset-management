@@ -8,7 +8,7 @@
             <a href="{{ route('projects.index', ['tab' => 'analytics']) }}" @if($tab === 'analytics') aria-current="page" @endif>{{ trans('projects.analytics_tab') }}</a>
         </nav>
         <div class="project-actions">
-            @can('issue', \App\Models\Project::class)<a class="btn btn-default" href="{{ route('projects.issue.index') }}">{{ trans('projects.issue') }}</a>@endcan
+            @can('issue', \App\Models\Project::class)<a class="btn btn-primary" href="{{ route('projects.issue.index') }}">{{ trans('projects.issue') }}</a>@endcan
         </div>
     </div>
     <div class="box-body">

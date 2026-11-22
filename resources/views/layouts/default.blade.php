@@ -48,7 +48,7 @@
 
         <link rel="stylesheet" href="{{ asset('css/interface-refresh.css') }}?v=92">
         <link rel="stylesheet" href="{{ asset('css/icon-states.css') }}?v=3">
-        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=86">
+        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=96">
 
     <script nonce="{{ csrf_token() }}">
         window.snipeit = {
@@ -107,66 +107,16 @@
                             </li>
 
                             @can('index', \App\Models\Asset::class)
-                                <li aria-hidden="true"{!! (request()->is('hardware*') ? ' class="active" aria-current="page"' : '') !!}>
-                                    <a href="{{ url('hardware') }}" {{$snipeSettings->shortcuts_enabled == 1 ? "accesskey=1" : ''}} tabindex="-1" data-tooltip="true" data-placement="bottom" data-title="{{ trans('general.assets') }}">
-                                        <x-icon type="assets" class="fa-fw" />
-                                        <span class="sr-only">{{ trans('general.assets') }}</span>
-                                    </a>
-                                </li>
-                            @endcan
-                            @can('view', \App\Models\License::class)
-                                <li aria-hidden="true"{!! (request()->is('licenses*') ? ' class="active" aria-current="page"' : '') !!}>
-                                    <a href="{{ route('licenses.index') }}" {{$snipeSettings->shortcuts_enabled == 1 ? "accesskey=2" : ''}} tabindex="-1" data-tooltip="true" data-placement="bottom" data-title="{{ trans('general.licenses') }}">
-                                        <x-icon type="licenses" class="fa-fw" />
-                                        <span class="sr-only">{{ trans('general.licenses') }}</span>
-                                    </a>
-                                </li>
-                            @endcan
-                            @can('index', \App\Models\Accessory::class)
-                                <li aria-hidden="true"{!! (request()->is('accessories*') ? ' class="active" aria-current="page"' : '') !!}>
-                                    <a href="{{ route('accessories.index') }}" {{$snipeSettings->shortcuts_enabled == 1 ? "accesskey=3" : ''}} tabindex="-1" data-tooltip="true" data-placement="bottom" data-title="{{ trans('general.accessories') }}">
-                                        <x-icon type="accessories" class="fa-fw" />
-                                        <span class="sr-only">{{ trans('general.accessories') }}</span>
-                                    </a>
-                                </li>
-                            @endcan
-                            @can('index', \App\Models\Consumable::class)
-                                <li aria-hidden="true"{!! (request()->is('consumables*') ? ' class="active" aria-current="page"' : '') !!}>
-                                    <a href="{{ url('consumables') }}" {{$snipeSettings->shortcuts_enabled == 1 ? "accesskey=4" : ''}} tabindex="-1" data-tooltip="true" data-placement="bottom" data-title="{{ trans('general.consumables') }}">
-                                        <x-icon type="consumables" class="fa-fw" />
-                                        <span class="sr-only">{{ trans('general.consumables') }}</span>
-                                    </a>
-                                </li>
-                            @endcan
-                            @can('view', \App\Models\Component::class)
-                                <li aria-hidden="true"{!! (request()->is('components*') ? ' class="active" aria-current="page"' : '') !!}>
-                                    <a href="{{ route('components.index') }}" {{$snipeSettings->shortcuts_enabled == 1 ? "accesskey=5" : ''}} tabindex="-1" data-tooltip="true" data-placement="bottom" data-title="{{ trans('general.components') }}">
-                                        <x-icon type="components" class="fa-fw" />
-                                        <span class="sr-only">{{ trans('general.components') }}</span>
-                                    </a>
-                                </li>
-                            @endcan
-
-                            @can('index', \App\Models\User::class)
-                                <li aria-hidden="true"{!! (request()->is('users*') ? ' class="active" aria-current="page"' : '') !!}>
-                                    <a href="{{ route('users.index') }}" {{$snipeSettings->shortcuts_enabled == 1 ? "accesskey=6" : ''}} tabindex="-1" data-tooltip="true" data-placement="bottom" data-title="{{ trans('general.users') }}">
-                                        <x-icon type="users" class="fa-fw" />
-                                        <span class="sr-only">{{ trans('general.users') }}</span>
-                                    </a>
-                                </li>
-                            @endcan
-
-                            @can('index', \App\Models\Asset::class)
-                                <li>
-                                    <form class="navbar-form navbar-left form-inline" role="search" action="{{ route('findbytag/hardware') }}" method="get">
+                                <li class="header-lookup-slot">
+                                    <form id="header-asset-lookup" class="navbar-form navbar-left form-inline header-lookup-form is-collapsed" role="search" action="{{ route('findbytag/hardware') }}" method="get">
 
                                                 <div class="input-group col-xs-12 header-asset-search">
                                                     <label class="sr-only" for="tagSearch">
                                                         {{ trans('general.lookup_by_tag') }}
                                                     </label>
-                                                    <input type="text" class="form-control" id="tagSearch" name="assetTag" placeholder="{{ trans('general.lookup_by_tag') }}">
+                                                    <input type="text" class="form-control" id="tagSearch" name="assetTag" tabindex="-1" required placeholder="{{ trans('general.lookup_by_tag') }}">
                                                     <span class="input-group-btn">
-                                                        <button type="submit" id="topSearchButton" class="btn btn-sm btn-default"><x-icon type="search" class="fa-fw" /><div class="sr-only">{{ trans('general.search') }}</div></button>
+                                                        <button type="submit" id="topSearchButton" class="btn btn-sm btn-default" aria-expanded="false" aria-controls="tagSearch" aria-label="{{ trans('general.lookup_by_tag') }}"><x-icon type="search" class="fa-fw" /><div class="sr-only">{{ trans('general.search') }}</div></button>
                                                     </span>
                                                 </div>
 
@@ -176,66 +126,7 @@
                                 </li>
                             @endcan
 
-                            @can('admin')
-                                <li class="dropdown user-menu" aria-hidden="true">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" tabindex="-1" aria-haspopup="true" aria-expanded="false">
-                                        {{ trans('general.create') }}
-                                        <strong class="caret"></strong>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        @can('create', \App\Models\Asset::class)
-                                            <li{!! (request()->is('hardware/create') ? ' class="active" aria-current="page"' : '') !!}>
-                                                <a href="{{ route('hardware.create') }}" tabindex="-1">
-                                                    <x-icon type="assets" class="fa-fw" />
-                                                    {{ trans('general.asset') }}
-                                                </a>
-                                            </li>
-                                        @endcan
-                                        @can('create', \App\Models\License::class)
-                                            <li{!! (request()->is('licenses/create') ? ' class="active" aria-current="page"' : '') !!}>
-                                                <a href="{{ route('licenses.create') }}" tabindex="-1">
-                                                    <x-icon type="licenses" class="fa-fw" />
-                                                    {{ trans('general.license') }}
-                                                </a>
-                                            </li>
-                                        @endcan
-                                        @can('create', \App\Models\Accessory::class)
-                                            <li {!! (request()->is('accessories/create') ? 'class="active"' : '') !!}>
-                                                <a href="{{ route('accessories.create') }}" tabindex="-1">
-                                                    <x-icon type="accessories" class="fa-fw" />
-                                                    {{ trans('general.accessory') }}
-                                                </a>
-                                            </li>
-                                        @endcan
-                                        @can('create', \App\Models\Consumable::class)
-                                            <li {!! (request()->is('consunmables/create') ? 'class="active"' : '') !!}>
-                                                <a href="{{ route('consumables.create') }}" tabindex="-1">
-                                                    <x-icon type="consumables" class="fa-fw" />
-                                                    {{ trans('general.consumable') }}
-                                                </a>
-                                            </li>
-                                        @endcan
-                                        @can('create', \App\Models\Component::class)
-                                            <li {!! (request()->is('components/create') ? 'class="active"' : '') !!}>
-                                                <a href="{{ route('components.create') }}" tabindex="-1">
-                                                    <x-icon type="components" class="fa-fw" />
-                                                    {{ trans('general.component') }}
-                                                </a>
-                                            </li>
-                                        @endcan
-                                        @can('create', \App\Models\User::class)
-                                            <li {!! (request()->is('users/create') ? 'class="active"' : '') !!}>
-                                                <a href="{{ route('users.create') }}" tabindex="-1">
-                                                    <x-icon type="users" class="fa-fw" />
-                                                    {{ trans('general.user') }}
-                                                </a>
-                                            </li>
-                                        @endcan
-
-
-                                    </ul>
-                                </li>
-                            @endcan
+                            @include('partials.header-quick-actions')
 
                             @can('admin')
                                 @if ($snipeSettings->show_alerts_in_menu == '1')
@@ -1333,11 +1224,10 @@
 
         </script>
 
-        @if ((session()->get('topsearch')=='true') || (request()->is('/')))
-            <script nonce="{{ csrf_token() }}">
-                $("#tagSearch").focus();
-            </script>
-        @endif
+
+
+        <script defer src="{{ asset('js/header-quick-actions.js') }}?v=2" nonce="{{ csrf_token() }}"></script>
+        <script defer src="{{ asset('js/header-asset-search.js') }}?v=1" nonce="{{ csrf_token() }}"></script>
 
         @include('partials.theme-mode-toggle')
 
@@ -1366,12 +1256,13 @@
             window.SnipePresentation.restored_form_input = @json(session()->has('_old_input'));
             window.SnipeTableViews = @json(\App\Presenters\Presenter::tableViews());
         </script>
-        <script defer src="{{ asset('js/interface-presentation.js') }}?v=38" nonce="{{ csrf_token() }}"></script>
+        <script defer src="{{ asset('js/interface-presentation.js') }}?v=39" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/table-column-filters.js') }}?v=7" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/table-pagination.js') }}?v=1" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/interface-motion.js') }}?v=8" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/form-stepper.js') }}?v=19" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/vendor/lottie-light-5.13.0.min.js') }}" nonce="{{ csrf_token() }}"></script>
+        <script defer src="{{ asset('js/search-disclosures.js') }}?v=2" nonce="{{ csrf_token() }}"></script>
         <script defer src="{{ asset('js/form-field-experience.js') }}?v=13" data-success-animation="{{ asset('animations/validation-success.json') }}" nonce="{{ csrf_token() }}"></script>
         @if (request()->routeIs('settings.*') && ! request()->routeIs('settings.index', 'settings.ldap.wizard'))
             <script defer src="{{ asset('js/settings-tabs.js') }}?v=1" nonce="{{ csrf_token() }}"></script>

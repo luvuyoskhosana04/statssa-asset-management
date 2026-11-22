@@ -127,9 +127,13 @@ body.ui-refresh {
 .ui-refresh .summary-cards .dashboard.small-box .icon {background:var(--ui-alt);color:var(--ui-muted)}
 .ui-refresh .summary-cards>div>a {border-radius:12px}
 .ui-refresh .summary-cards a:hover .dashboard.small-box {border-color:var(--ui-accent)}
-/* The official logo is kept intact on a white plate in both themes. */
-.ui-refresh .stats-sa-wordmark {background:#fff;padding:3px 8px;border-radius:4px;min-width:0}
-.ui-refresh .stats-sa-wordmark .navbar-brand-img {width:132px;height:auto;max-height:50px;object-fit:contain;padding:0;background:transparent}
+/* Use the original transparent artwork. Only the lettering and rule change
+   colour in dark mode; the crest is always rendered from the original image. */
+.ui-refresh .stats-sa-wordmark {position:relative;display:block;background:transparent;padding:0;border-radius:0;min-width:0;line-height:0;max-width:100%}
+.ui-refresh .stats-sa-wordmark .navbar-brand-img {display:block;width:clamp(126px,11vw,152px);max-width:100%;height:auto;max-height:58px;object-fit:contain;padding:0;background:transparent}
+.ui-refresh .stats-sa-wordmark::after {content:"";display:none;position:absolute;inset:0;pointer-events:none;background:#fff;clip-path:inset(0 0 0 31%);-webkit-mask:url('../img/stats-sa-logo.png') center/contain no-repeat;mask:url('../img/stats-sa-logo.png') center/contain no-repeat}
+[data-theme="dark"] .ui-refresh .stats-sa-wordmark .navbar-brand-img {clip-path:inset(0 69% 0 0)}
+[data-theme="dark"] .ui-refresh .stats-sa-wordmark::after {display:block}
 .ui-refresh .main-header .navbar {box-shadow:0 2px 12px rgba(0,0,0,.025)}
 .ui-refresh .sidebar-menu>li.active>a,
 .ui-refresh .sidebar-menu .treeview-menu>li.active>a {color:var(--ui-accent)!important;background:var(--ui-selection)!important}
@@ -970,3 +974,146 @@ body.ui-refresh .table-group-count[hidden]{display:none}
 
 body.ui-refresh #main .table-control-panel .btn{border:0!important;box-shadow:none!important}
 body.ui-refresh .table-control-panel{overflow:auto;overscroll-behavior:contain}
+
+/* Shared matte glass for navigation, using the current Stats SA theme. */
+body.ui-refresh{
+    --ui-glass-nav:color-mix(in srgb,var(--ui-nav) 83%,transparent);
+    --ui-glass-panel:color-mix(in srgb,var(--ui-surface) 86%,transparent);
+    --ui-glass-header:color-mix(in srgb,var(--ui-header) 89%,transparent);
+    --ui-glass-tint:color-mix(in srgb,var(--ui-brand-green-soft) 28%,transparent);
+    --ui-glass-edge:color-mix(in srgb,var(--ui-ink) 10%,transparent);
+    --ui-glass-light:color-mix(in srgb,var(--ui-surface) 65%,transparent);
+}
+[data-theme=dark] body.ui-refresh{
+    --ui-glass-nav:color-mix(in srgb,var(--ui-nav) 90%,transparent);
+    --ui-glass-panel:color-mix(in srgb,var(--ui-surface) 91%,transparent);
+    --ui-glass-header:color-mix(in srgb,var(--ui-header) 92%,transparent);
+    --ui-glass-tint:color-mix(in srgb,var(--ui-brand-green-soft) 20%,transparent);
+    --ui-glass-edge:color-mix(in srgb,var(--ui-ink) 13%,transparent);
+    --ui-glass-light:color-mix(in srgb,var(--ui-ink) 5%,transparent);
+}
+body.ui-refresh .main-sidebar{
+    background:transparent!important;
+    border-inline-end:1px solid var(--ui-glass-edge);
+    box-shadow:inset -1px 0 var(--ui-glass-light),4px 0 20px color-mix(in srgb,var(--ui-ink) 3%,transparent);
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+}
+body.ui-refresh .main-sidebar>.sidebar{background:transparent!important}
+body.ui-refresh .main-header .navbar{
+    background:linear-gradient(100deg,var(--ui-glass-tint),transparent 60%),var(--ui-glass-header)!important;
+    border-bottom-color:var(--ui-glass-edge);
+    box-shadow:inset 0 -1px var(--ui-glass-light),0 2px 14px color-mix(in srgb,var(--ui-ink) 3%,transparent);
+    -webkit-backdrop-filter:blur(24px) saturate(115%);
+    backdrop-filter:blur(24px) saturate(115%);
+}
+body.ui-refresh .main-sidebar .treeview.menu-open>.treeview-menu{
+    background:color-mix(in srgb,var(--ui-brand-green-soft) 30%,transparent)!important;
+}
+body.ui-refresh .asset-nav-panel.asset-nav-floating,
+body.ui-refresh.sidebar-collapse .main-sidebar .sidebar-menu>li.treeview>.treeview-menu{
+    background:linear-gradient(145deg,var(--ui-glass-tint),transparent 65%),var(--ui-glass-panel)!important;
+    border:1px solid var(--ui-glass-edge);
+    box-shadow:inset 0 1px var(--ui-glass-light),var(--ui-float-shadow);
+    -webkit-backdrop-filter:blur(24px) saturate(115%);
+    backdrop-filter:blur(24px) saturate(115%);
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    body.ui-refresh :is(.main-sidebar,.main-header .navbar,.asset-nav-panel.asset-nav-floating),
+    body.ui-refresh.sidebar-collapse .main-sidebar .sidebar-menu>li.treeview>.treeview-menu{background:var(--ui-surface)!important}
+}
+@media(prefers-reduced-transparency:reduce),(forced-colors:active){
+    body.ui-refresh :is(.main-sidebar,.main-header .navbar,.asset-nav-panel.asset-nav-floating),
+    body.ui-refresh.sidebar-collapse .main-sidebar .sidebar-menu>li.treeview>.treeview-menu{
+        background:var(--ui-surface)!important;
+        -webkit-backdrop-filter:none!important;
+        backdrop-filter:none!important;
+        box-shadow:none;
+    }
+}
+/* Put the rail's filter on its own layer. A filtered ancestor would prevent
+   collapsed flyouts from sampling and blurring the page behind the rail. */
+body.ui-refresh .main-sidebar::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:-1;
+    pointer-events:none;
+    background:linear-gradient(155deg,var(--ui-glass-tint),transparent 65%),var(--ui-glass-nav);
+    -webkit-backdrop-filter:blur(24px) saturate(115%);
+    backdrop-filter:blur(24px) saturate(115%);
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    body.ui-refresh .main-sidebar::before{background:var(--ui-surface)}
+}
+@media(prefers-reduced-transparency:reduce),(forced-colors:active){
+    body.ui-refresh .main-sidebar::before{
+        background:var(--ui-surface);
+        -webkit-backdrop-filter:none!important;
+        backdrop-filter:none!important;
+    }
+}
+
+/* Search grows left over unused header space while its trigger stays fixed. */
+body.ui-refresh .main-header .navbar-custom-menu>.navbar-nav>.header-lookup-slot{display:block!important;position:relative;flex:0 0 44px!important;width:44px;height:62px;order:0!important;padding:0!important}
+body.ui-refresh .main-header .header-lookup-slot .header-lookup-form{position:absolute;inset-inline-end:0;top:50%;transform:translateY(-50%);width:var(--lookup-open-width,300px);max-width:none;margin:0!important;padding:0!important;float:none!important;border:0!important;z-index:3;transition:width 440ms cubic-bezier(.22,1,.36,1)}
+body.ui-refresh .main-header .header-lookup-slot .header-lookup-form.is-collapsed{width:44px}
+body.ui-refresh .main-header .header-lookup-form .header-asset-search{width:100%!important;height:44px!important;min-height:44px;padding:0!important;border-radius:10px;box-sizing:border-box}
+body.ui-refresh .main-header .header-lookup-form.is-collapsed .header-asset-search{background:transparent!important;border-color:transparent!important}
+body.ui-refresh .main-header .header-lookup-form #tagSearch{opacity:1;visibility:visible;transition:opacity 180ms ease 90ms;padding:8px 12px;min-width:0}
+body.ui-refresh .main-header .header-lookup-form.is-collapsed #tagSearch{opacity:0;visibility:hidden;pointer-events:none;padding-inline:0;transition:opacity 100ms ease,visibility 0s linear 100ms}
+body.ui-refresh .main-header .header-lookup-form #topSearchButton{width:42px;min-width:42px;padding:0!important;flex-shrink:0}
+body.ui-refresh .main-header .header-lookup-form.is-collapsed #topSearchButton{background:transparent!important;border-inline-start-color:transparent!important}
+body.ui-refresh .main-header .header-lookup-form #topSearchButton:focus-visible{outline:2px solid var(--ui-focus-ring)!important;outline-offset:-3px!important;border-radius:8px}
+@media(max-width:767px){body.ui-refresh .main-header .navbar-custom-menu>.navbar-nav>.header-lookup-slot{height:54px}}
+@media(prefers-reduced-motion:reduce){body.ui-refresh .main-header .header-lookup-form,body.ui-refresh .main-header .header-lookup-form #tagSearch{transition:none!important}}
+
+/* Root navigation uses the same pill silhouette in every interaction state. */
+body.ui-refresh .main-sidebar .sidebar-menu>li>a{border-radius:999px}
+/* One disclosure groups header destinations and creation shortcuts. */
+body.ui-refresh .main-header .header-quick-actions{position:relative;flex:0 0 auto!important}
+body.ui-refresh .main-header .header-quick-actions-trigger{display:flex;align-items:center;justify-content:center;gap:8px;min-height:62px;padding:10px 14px;border:0;border-radius:0;background:transparent;color:var(--ui-ink);font:inherit;white-space:nowrap}
+body.ui-refresh .main-header .header-quick-actions-trigger:is(:hover,:focus-visible){background:var(--ui-alt)}
+body.ui-refresh .main-header .header-quick-actions-trigger:focus-visible{outline:2px solid var(--ui-focus-ring);outline-offset:-4px;border-radius:10px}
+body.ui-refresh .main-header .header-quick-actions-panel{position:absolute;inset-inline-end:0;top:calc(100% + 6px);z-index:1050;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:18px;width:420px;max-width:calc(100vw - 24px);max-height:calc(100dvh - var(--ui-header-height,62px) - 24px);overflow-y:auto;padding:18px;border:1px solid var(--ui-line);border-radius:16px;background:var(--ui-surface);box-shadow:var(--ui-float-shadow,0 12px 36px #0002);opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-6px);transition:opacity 180ms ease,transform 240ms cubic-bezier(.22,1,.36,1),visibility 0s linear 240ms}
+body.ui-refresh .main-header .header-quick-actions::after{content:'';position:absolute;top:100%;left:0;right:0;height:8px}
+body.ui-refresh .main-header .header-quick-actions.is-open .header-quick-actions-panel{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0);transition-delay:0s}
+body.ui-refresh .main-header .quick-actions-group h2{font-size:11px;line-height:1.4;font-weight:650;letter-spacing:.7px;text-transform:uppercase;color:var(--ui-muted);margin:0 0 9px;padding:0 10px}
+body.ui-refresh .main-header .quick-actions-group ul{list-style:none;margin:0;padding:0}
+body.ui-refresh .main-header .quick-actions-group a{display:flex;align-items:center;gap:10px;min-height:44px;padding:10px;border-radius:9px;font-size:13px;line-height:1.4;color:var(--ui-ink);text-decoration:none;white-space:normal}
+body.ui-refresh .main-header .quick-actions-group a:hover{background:var(--ui-alt)}
+body.ui-refresh .main-header .quick-actions-group a:focus-visible{outline:2px solid var(--ui-focus-ring);outline-offset:-2px;background:var(--ui-alt)}
+body.ui-refresh .main-header .quick-actions-group a>i{width:18px;flex-shrink:0;color:var(--ui-muted)}
+@media(max-width:767px){body.ui-refresh .main-header .header-quick-actions-trigger{min-height:54px;padding:8px 6px;font-size:11px;gap:4px}body.ui-refresh .main-header .header-quick-actions-panel{position:fixed;top:calc(var(--ui-header-height,62px) + 6px);left:12px;right:12px;inset-inline-end:12px;width:auto;max-width:none;gap:10px;padding:14px;grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){body.ui-refresh .main-header .header-quick-actions-panel{transition:none}}
+
+/* Bridge both flyout columns so crossing the gap does not dismiss the menu. */
+body.ui-refresh .main-header .header-quick-actions.is-open::after{left:auto;right:0;width:min(420px,calc(100vw - 24px));height:10px}
+/* Standalone searches reveal on demand without changing their query state. */
+body.ui-refresh .ui-search-disclosure{display:inline-flex!important;align-items:center;position:relative;flex:0 0 auto!important;vertical-align:middle;width:44px!important;max-width:100%;min-width:0!important;height:44px!important;min-height:44px!important;margin:0; padding:0!important;float:none!important;border:1px solid transparent!important;border-radius:10px!important;background:transparent!important;box-shadow:none!important;overflow:hidden;transition:width 440ms cubic-bezier(.22,1,.36,1),border-color 180ms ease}
+body.ui-refresh .ui-search-disclosure::before,body.ui-refresh .ui-search-disclosure::after{display:none!important}
+body.ui-refresh .ui-search-disclosure.is-search-open{width:min(280px,calc(100vw - 48px))!important;border-color:var(--ui-field-edge)!important;background:var(--ui-surface)!important}
+body.ui-refresh .ui-search-disclosure input:not([type="hidden"]){display:block!important;flex:1!important;min-width:0!important;max-width:none!important;width:0!important;height:42px!important;min-height:42px!important;margin:0!important;padding:8px 0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;opacity:0;visibility:hidden;pointer-events:none;transition:opacity 140ms ease}
+body.ui-refresh .ui-search-disclosure.is-search-open input:not([type="hidden"]){opacity:1;visibility:visible;pointer-events:auto;padding:8px 12px!important;color:var(--ui-ink)}
+body.ui-refresh .ui-search-disclosure>.input-group-btn{display:flex!important;flex:0 0 auto;width:auto!important}
+body.ui-refresh .ui-search-disclosure .ui-search-toggle{display:inline-flex!important;align-items:center;justify-content:center;position:relative;flex:0 0 42px!important;width:42px!important;min-width:42px!important;height:42px!important;min-height:42px!important;padding:0!important;margin:0!important;border:0!important;border-radius:9px!important;background:transparent!important;color:var(--ui-ink)!important;box-shadow:none!important}
+body.ui-refresh .ui-search-disclosure .ui-search-toggle:hover{background:var(--ui-alt)!important}
+body.ui-refresh .ui-search-disclosure .ui-search-toggle:focus-visible{outline:2px solid var(--ui-focus-ring)!important;outline-offset:-3px!important}
+body.ui-refresh .ui-search-disclosure .ui-search-toggle i{font-size:15px;line-height:1;width:18px}
+body.ui-refresh .ui-search-disclosure.has-search-query:not(.is-search-open) .ui-search-toggle::after{content:'';position:absolute;right:7px;top:7px;width:5px;height:5px;border-radius:50%;background:var(--ui-accent)}
+body.ui-refresh .ui-search-disclosure [hidden]{display:none!important}
+body.ui-refresh .fixed-table-toolbar .search:has(.ui-search-disclosure){width:auto!important;flex:0 0 auto!important;max-width:100%;margin-top:0}
+body.ui-refresh .ui-search-disclosure [name="clearSearch"]{width:36px!important;min-width:36px!important;height:42px!important;min-height:42px!important;border:0!important;border-radius:0!important;background:transparent!important;color:var(--ui-muted)!important;margin:0!important;padding:0!important}
+body.ui-refresh .ui-search-disclosure #searchclear{position:static!important;flex:0 0 30px;width:30px;cursor:pointer}
+@media(prefers-reduced-motion:reduce){body.ui-refresh .ui-search-disclosure,body.ui-refresh .ui-search-disclosure input{transition:none!important}}
+
+body.ui-refresh .ui-search-disclosure.is-search-open:focus-within{border-color:var(--ui-focus-ring)!important}
+
+body.ui-refresh .ui-search-disclosure.has-search-clear input[type=search]::-webkit-search-cancel-button{display:none}
+body.ui-refresh .ui-search-disclosure>a{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-height:42px!important;height:42px!important;padding:8px 10px;font-size:12px}
+/* A single action-shape token also wins over older component-specific radii. */
+:root{--ui-action-radius:9999px}
+@layer ui-action-shape {
+    :is(body.ui-refresh,body.stats-sa-welcome,body.setup-controls) :is(button,.btn,input[type="button"],input[type="submit"],input[type="reset"],[role="button"],.table-control-group>summary){border-radius:var(--ui-action-radius)!important}
+    body.ui-refresh :is(.sidebar-menu,.asset-nav-panel) .badge{border-radius:var(--ui-action-radius)!important}
+}

@@ -2,7 +2,9 @@
 
 namespace App\Actions\Dashboard;
 
+use App\Models\Accessory;
 use App\Models\Asset;
+use App\Models\License;
 use App\Models\OrderItem;
 use App\Models\Setting;
 use App\Models\User;
@@ -14,9 +16,10 @@ class BuildDashboardInsightsAction
     {
         $start = today();
         $end = $start->copy()->addDays(14);
-        $data = ['start' => $start->toDateString(), 'end' => $end->copy()->subDay()->toDateString(), 'assets' => null, 'offboarding' => null];
+        $data = ['start' => $start->toDateString(), 'end' => $end->copy()->subDay()->toDateString(), 'assets' => null, 'offboarding' => null, 'pending_offboarding' => null];
         if (Gate::allows('view', User::class)) {
             $data['offboarding'] = User::where('end_date', '>=', $start)->where('end_date', '<', $end)->count();
+            $data['pending_offboarding'] = self::pendingOffboarding();
         }
         if (! Gate::allows('view', Asset::class)) {
             return $data;
@@ -25,10 +28,10 @@ class BuildDashboardInsightsAction
         $active = Asset::notArchived();
         $due = (clone $active)->where('assigned_to', '>', 0)->where('expected_checkin', '>=', $start)->where('expected_checkin', '<', $end)->count();
         $overdue = (clone $active)->where('assigned_to', '>', 0)->where('expected_checkin', '<', $start)->count();
-        $warranties = 0;
+        $warrantyIds = [];
         foreach ((clone $active)->whereNotNull('purchase_date')->where('warranty_months', '>', 0)->select(['id', 'purchase_date', 'warranty_months'])->cursor() as $asset) {
             if ($asset->warranty_expires?->gte($start) && $asset->warranty_expires->lt($end)) {
-                $warranties++;
+                $warrantyIds[] = $asset->id;
             }
         }
         $total = (clone $active)->count();
@@ -54,7 +57,9 @@ class BuildDashboardInsightsAction
             ->map(fn ($row) => ['id' => $row->group_id, 'label' => $row->label ?? trans('presentation.chart_unspecified'), 'count' => (int) $row->count])->all();
 
         $data['assets'] = [
-            'due' => $due, 'overdue' => $overdue, 'warranties' => $warranties,
+            'due' => $due, 'overdue' => $overdue, 'warranties' => count($warrantyIds),
+            'due_value' => self::assetValues((clone $active)->where('assigned_to', '>', 0)->where('expected_checkin', '>=', $start)->where('expected_checkin', '<', $end)),
+            'warranty_value' => self::assetValues((clone $active)->whereIn('assets.id', $warrantyIds)),
             'total' => $total, 'deployed' => $deployed, 'statuses' => $statuses,
             'categories' => $byCategory, 'locations' => $locations,
             'costs' => self::purchaseCosts(),
@@ -63,21 +68,83 @@ class BuildDashboardInsightsAction
         return $data;
     }
 
-    private static function purchaseCosts(): array
+    private static function pendingOffboarding(): array
+    {
+        $relations = [];
+        if (Gate::allows('view', Asset::class)) {
+            $relations['assets as outstanding_assets'] = fn ($query) => $query->notArchived()->whereNull('assets.deleted_at');
+        }
+        if (Gate::allows('view', Accessory::class)) {
+            $relations['accessories as outstanding_accessories'] = fn ($query) => $query->whereNull('accessories.deleted_at');
+        }
+        if (Gate::allows('view', License::class)) {
+            $relations['directLicenses as outstanding_licenses'] = fn ($query) => $query->whereNull('licenses.deleted_at');
+        }
+        $people = User::withTrashed()->select(['users.id', 'first_name', 'last_name', 'display_name', 'end_date'])->where(function ($query) {
+            $query->where('end_date', '<=', today())->orWhere('activated', false)->orWhereNotNull('users.deleted_at');
+        })->withCount($relations)->get()->filter(function ($user) {
+            return ($user->outstanding_assets ?? 0) + ($user->outstanding_accessories ?? 0) + ($user->outstanding_licenses ?? 0) > 0;
+        });
+        $value = Gate::allows('view', Asset::class)
+            ? self::assetValues(Asset::notArchived()->where('assigned_type', User::class)->whereIn('assigned_to', $people->pluck('id')))
+            : null;
+
+        return [
+            'count' => $people->count(),
+            'assets' => Gate::allows('view', Asset::class) ? $people->sum('outstanding_assets') : null,
+            'accessories' => Gate::allows('view', Accessory::class) ? $people->sum('outstanding_accessories') : null,
+            'licenses' => Gate::allows('view', License::class) ? $people->sum('outstanding_licenses') : null,
+            'asset_value' => $value,
+            'people' => $people->map(fn ($user) => [
+                'id' => $user->id, 'name' => $user->full_name,
+                'end_date' => $user->getRawOriginal('end_date'),
+                'assets' => $user->outstanding_assets,
+                'accessories' => $user->outstanding_accessories,
+                'licenses' => $user->outstanding_licenses,
+            ])->values()->all(),
+        ];
+    }
+
+    // Share one acquisition basis across totals, alert values and breakdowns.
+    // Latest order lines replace asset cost, rather than counting order history twice.
+    private static function valuedAssets($query)
     {
         $lastPurchase = OrderItem::where('item_type', Asset::class)->where('qty', '>', 0)
             ->whereHas('order')->selectRaw('item_id, MAX(id) AS line_id')->groupBy('item_id');
-        $query = Asset::notArchived()->leftJoinSub($lastPurchase, 'chart_purchase', 'chart_purchase.item_id', '=', 'assets.id')
+
+        return $query->leftJoinSub($lastPurchase, 'chart_purchase', 'chart_purchase.item_id', '=', 'assets.id')
             ->leftJoin('order_items as chart_line', 'chart_line.id', '=', 'chart_purchase.line_id')
             ->leftJoin('orders as chart_order', 'chart_order.id', '=', 'chart_line.order_id')
             ->leftJoin('locations as cost_location', 'cost_location.id', '=', 'assets.location_id')
             ->leftJoin('models as cost_model', 'cost_model.id', '=', 'assets.model_id')
             ->leftJoin('manufacturers as cost_maker', 'cost_maker.id', '=', 'cost_model.manufacturer_id');
+    }
+
+    private static function assetValues($query): array
+    {
+        $count = (clone $query)->count();
+        $totals = self::valueTotals(self::valuedAssets($query));
+
+        return ['totals' => $totals, 'unpriced' => $count - array_sum(array_column($totals, 'priced'))];
+    }
+
+    private static function valueTotals($query): array
+    {
+        $currency = 'COALESCE(NULLIF(chart_order.currency, ?), NULLIF(cost_location.currency, ?), ?)';
+        $bindings = ['', '', Setting::getSettings()->default_currency ?: trans('presentation.chart_currency_unspecified')];
+
+        return $query->whereRaw('COALESCE(chart_line.price, assets.purchase_cost) IS NOT NULL')
+            ->selectRaw($currency.' AS currency, SUM(COALESCE(chart_line.price, assets.purchase_cost)) AS amount, COUNT(*) AS priced', $bindings)
+            ->groupBy('currency')->orderBy('currency')->get()->map(fn ($row) => ['currency' => $row->currency, 'amount' => (float) $row->amount, 'priced' => (int) $row->priced])->all();
+    }
+
+    private static function purchaseCosts(): array
+    {
+        $query = self::valuedAssets(Asset::notArchived());
         $currency = 'COALESCE(NULLIF(chart_order.currency, ?), NULLIF(cost_location.currency, ?), ?)';
         $bindings = ['', '', Setting::getSettings()->default_currency ?: trans('presentation.chart_currency_unspecified')];
         $amount = 'COALESCE(chart_line.price, assets.purchase_cost)';
-        $totals = (clone $query)->whereRaw($amount.' IS NOT NULL')->selectRaw($currency.' AS currency, SUM('.$amount.') AS amount, COUNT(*) AS priced', $bindings)
-            ->groupBy('currency')->orderBy('currency')->get()->map(fn ($row) => ['currency' => $row->currency, 'amount' => (float) $row->amount, 'priced' => (int) $row->priced])->all();
+        $totals = self::valueTotals(clone $query);
         $groups = [
             'location' => ['cost_location.id', 'cost_location.name'],
             'manufacturer' => ['cost_maker.id', 'cost_maker.name'],

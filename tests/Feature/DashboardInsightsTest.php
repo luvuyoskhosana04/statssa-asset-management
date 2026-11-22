@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Accessory;
 use App\Models\Asset;
 use App\Models\AssetModel;
 use App\Models\Category;
 use App\Models\Company;
+use App\Models\LicenseSeat;
 use App\Models\Location;
 use App\Models\Statuslabel;
 use App\Models\User;
@@ -137,5 +139,87 @@ class DashboardInsightsTest extends TestCase
         $this->actingAsForApi(User::factory()->viewAssets()->create())->getJson(route('api.dashboard.insights'))
             ->assertOk()->assertJsonPath('payload.assets.total', 0)->assertJsonPath('payload.assets.due', 0)
             ->assertJsonPath('payload.assets.categories', [])->assertJsonPath('payload.assets.costs.totals', [])->assertJsonPath('payload.assets.costs.timeline', []);
+    }
+
+    public function test_alert_values_use_latest_acquisition_separate_currencies_and_report_missing_costs(): void
+    {
+        $this->travelTo(now()->setDate(2026, 11, 20)->setTime(14, 0));
+        $ready = Statuslabel::factory()->readyToDeploy()->create();
+        foreach (['ZAR' => 1200, 'EUR' => 80] as $currency => $cost) {
+            $asset = Asset::factory()->assignedToUser()->create([
+                'status_id' => $ready->id, 'expected_checkin' => today(),
+                'purchase_date' => '2025-11-20', 'warranty_months' => 12,
+                'location_id' => Location::factory()->create(['currency' => $currency])->id,
+                'purchase_cost' => 99,
+            ]);
+            $line = $asset->orderItems()->firstOrFail();
+            $line->forceFill(['price' => $cost])->save();
+            $line->order->forceFill(['currency' => $currency])->save();
+            $line->replicate()->save();
+        }
+        Asset::factory()->assignedToUser()->create([
+            'status_id' => $ready->id, 'expected_checkin' => today(),
+            'purchase_date' => '2025-11-20', 'warranty_months' => 12, 'purchase_cost' => null,
+        ]);
+        $response = $this->actingAsForApi(User::factory()->viewAssets()->create())->getJson(route('api.dashboard.insights'))->assertOk();
+        foreach (['due_value', 'warranty_value'] as $key) {
+            $totals = collect($response->json('payload.assets.'.$key.'.totals'))->keyBy('currency');
+            $this->assertEquals(1200, $totals['ZAR']['amount']);
+            $this->assertEquals(80, $totals['EUR']['amount']);
+            $response->assertJsonPath('payload.assets.'.$key.'.unpriced', 1);
+        }
+    }
+
+    public function test_pending_offboarding_counts_people_once_and_excludes_future_departures_and_non_user_assignments(): void
+    {
+        $this->travelTo(now()->setDate(2026, 11, 20)->setTime(14, 0));
+        $departed = User::factory()->create(['end_date' => today()->subDay()->toDateString()]);
+        $future = User::factory()->create(['end_date' => today()->addDays(3)->toDateString()]);
+        $disabled = User::factory()->create(['activated' => false, 'end_date' => null]);
+        $attributes = ['status_id' => Statuslabel::factory()->readyToDeploy()->create()->id, 'warranty_months' => 0, 'purchase_cost' => 100];
+        Asset::factory()->count(2)->create(array_merge($attributes, ['assigned_to' => $departed->id, 'assigned_type' => User::class]));
+        Asset::factory()->create(array_merge($attributes, ['assigned_to' => $disabled->id, 'assigned_type' => User::class]));
+        Asset::factory()->create(array_merge($attributes, ['assigned_to' => $future->id, 'assigned_type' => User::class]));
+        Asset::factory()->create(array_merge($attributes, ['assigned_to' => $departed->id, 'assigned_type' => Asset::class]));
+        $response = $this->actingAsForApi(User::factory()->viewAssets()->viewUsers()->create(['end_date' => null]))->getJson(route('api.dashboard.insights'))->assertOk();
+        $response->assertJsonPath('payload.offboarding', 1)->assertJsonPath('payload.pending_offboarding.count', 2)
+            ->assertJsonPath('payload.pending_offboarding.assets', 3)->assertJsonCount(2, 'payload.pending_offboarding.people');
+        $this->assertEquals(300, array_sum(array_column($response->json('payload.pending_offboarding.asset_value.totals'), 'amount')));
+        $this->actingAsForApi(User::factory()->viewUsers()->create())->getJson(route('api.dashboard.insights'))->assertOk()
+            ->assertJsonPath('payload.pending_offboarding.count', 0)->assertJsonPath('payload.pending_offboarding.asset_value', null);
+    }
+
+    public function test_pending_offboarding_and_alert_values_respect_company_scope(): void
+    {
+        $this->settings->enableMultipleFullCompanySupport();
+        [$own, $other] = Company::factory()->count(2)->create();
+        $ready = Statuslabel::factory()->readyToDeploy()->create();
+        foreach ([$own, $other] as $company) {
+            $person = User::factory()->forCompany($company->id)->create(['activated' => false, 'end_date' => null]);
+            Asset::factory()->create(['company_id' => $company->id, 'assigned_to' => $person->id, 'assigned_type' => User::class,
+                'status_id' => $ready->id, 'expected_checkin' => today(), 'purchase_cost' => 100, 'warranty_months' => 0]);
+        }
+        $response = $this->actingAsForApi(User::factory()->viewUsers()->viewAssets()->forCompany($own->id)->create())
+            ->getJson(route('api.dashboard.insights'))->assertOk()->assertJsonPath('payload.pending_offboarding.count', 1)
+            ->assertJsonPath('payload.pending_offboarding.assets', 1)->assertJsonPath('payload.assets.due', 1);
+        $this->assertEquals(100, array_sum(array_column($response->json('payload.assets.due_value.totals'), 'amount')));
+    }
+
+    public function test_pending_offboarding_includes_accessories_and_direct_license_seats_only_when_viewable(): void
+    {
+        $person = User::factory()->create(['activated' => false, 'end_date' => null]);
+        $accessory = Accessory::factory()->create();
+        $person->accessories()->attach($accessory->id, ['assigned_type' => User::class]);
+        LicenseSeat::factory()->assignedToUser($person)->create();
+        LicenseSeat::factory()->assignedToUser($person)->assignedToAsset()->create();
+        $viewer = User::factory()->viewUsers()->viewAccessories()->viewLicenses()->create(['end_date' => null]);
+        $this->actingAsForApi($viewer)->getJson(route('api.dashboard.insights'))->assertOk()
+            ->assertJsonPath('payload.pending_offboarding.count', 1)
+            ->assertJsonPath('payload.pending_offboarding.assets', null)
+            ->assertJsonPath('payload.pending_offboarding.accessories', 1)
+            ->assertJsonPath('payload.pending_offboarding.licenses', 1)
+            ->assertJsonPath('payload.pending_offboarding.asset_value', null);
+        $this->actingAsForApi(User::factory()->viewUsers()->create(['end_date' => null]))
+            ->getJson(route('api.dashboard.insights'))->assertOk()->assertJsonPath('payload.pending_offboarding.count', 0);
     }
 }

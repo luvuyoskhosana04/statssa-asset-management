@@ -4240,16 +4240,19 @@
 
         $("[name='clearSearch']").click(function () {
 
-            // This hacks around a stupid issue in BS tables where the search text would get remembered for way too long even after it was cleared
-            for (storedSearch in localStorage) {
-                if (storedSearch.endsWith('.bs.table.searchText')) {
-                    localStorage.removeItem(storedSearch);
-                }
+            // Clear only this table's saved query. The previous handler cleared
+            // every table's storage and inputs, including unrelated tables.
+            var $toolbar = $(this).closest('.fixed-table-toolbar');
+            var $input = $(this).closest('.search').find('input.search-input');
+            var $table = $('table.snipe-table').filter(function () {
+                var instance = $(this).data('bootstrap.table');
+                return instance && instance.$toolbar && instance.$toolbar[0] === $toolbar[0];
+            }).first();
+            var tableKey = $table.data('cookie-id-table');
+            if (tableKey) {
+                try { localStorage.removeItem(tableKey + '.bs.table.searchText'); } catch (error) {}
             }
-
-            $('.search-input').each(function (index, element) {
-                $(element).val('');
-            });
+            $input.val('').trigger('input');
         });
 
         $('.search button[name=clearSearch]').click(searchboxHighlighter);

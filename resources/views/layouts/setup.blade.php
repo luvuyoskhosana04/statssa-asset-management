@@ -9,7 +9,7 @@
         @show
       </title>
         <link rel="stylesheet" href="{{ url(mix('css/dist/all.css')) }}">
-        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=86">
+        <link rel="stylesheet" href="{{ asset('css/stats-sa-theme.css') }}?v=96">
 
 
 

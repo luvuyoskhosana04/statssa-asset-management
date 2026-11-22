@@ -30,11 +30,19 @@
         function draw() {
             body.replaceChildren();
             if (!rows.length) { var empty = document.createElement('p'); empty.className = 'help-block'; empty.textContent = copy.chart_empty; body.appendChild(empty); button.hidden = true; return; }
+            var overview = document.createElement('div'); overview.className = 'status-composition-overview';
+            var totalLabel = document.createElement('div'); totalLabel.className = 'status-estate-total';
+            var totalNumber = document.createElement('strong'), totalCaption = document.createElement('span');
+            totalNumber.textContent = numbers.format(total); totalCaption.textContent = copy.chart_active_assets;
+            totalLabel.append(totalNumber, totalCaption);
+            var composition = document.createElement('div'); composition.className = 'status-composition-track'; composition.setAttribute('aria-hidden', 'true');
+            rows.forEach(function (row) { var segment = document.createElement('span'); segment.style.flexGrow = row.count; segment.style.backgroundColor = barColor('statuses', row.label); if (row.count > 0) composition.appendChild(segment); });
+            overview.append(totalLabel, composition); body.appendChild(overview);
             var list = document.createElement('ul'); list.className = 'insight-status-list';
             (expanded ? rows : rows.slice(0, 6)).forEach(function (row) {
                 var share = total ? row.count / total * 100 : 0;
                 var item = document.createElement('li'), label = document.createElement('span'), percent = document.createElement('strong');
-                label.className = 'status-meter-label'; label.textContent = row.label;
+                label.className = 'status-meter-label'; label.textContent = row.label; item.style.setProperty('--status-color', barColor('statuses', row.label));
                 percent.className = 'status-meter-percent'; percent.textContent = decimals.format(share) + '%';
                 var track = document.createElement('span'), fill = document.createElement('span');
                 track.className = 'status-meter-track'; track.setAttribute('aria-hidden', 'true');
@@ -98,14 +106,42 @@
             if (card) card.querySelector('.help-block').textContent = selector.value ? selector.value + ' · ' + card.dataset.description : card.dataset.description;
         });
     }
+    function alertValue(element, valuation) {
+        if (!valuation) { element.hidden = true; return; }
+        var values = valuation.totals.map(function (row) { return row.currency + ' ' + money.format(row.amount); });
+        element.replaceChildren();
+        if (values.length > 2) {
+            var details = document.createElement('details'), summary = document.createElement('summary');
+            summary.textContent = interpolate(copy.chart_alert_currencies, {count: numbers.format(values.length)}); details.appendChild(summary);
+            values.forEach(function (value) { var line = document.createElement('p'); line.textContent = value; details.appendChild(line); }); element.appendChild(details);
+        } else element.textContent = values.length ? interpolate(copy.chart_alert_value, {value: values.join(' / ')}) : copy.chart_no_recorded_value;
+        if (valuation.unpriced) { var unpriced = document.createElement('span'); unpriced.className = 'alert-unpriced'; unpriced.textContent = interpolate(copy.chart_alert_unpriced, {count: numbers.format(valuation.unpriced)}); element.appendChild(unpriced); }
+    }
+    function pendingOffboarding(data) {
+        if (!data) return;
+        text('insight-pending-offboarding', numbers.format(data.count));
+        text('insight-pending-items', ['assets', 'accessories', 'licenses'].filter(function (key) { return data[key] !== null; }).map(function (key) { return interpolate(copy['chart_pending_' + key], {count: numbers.format(data[key])}); }).join(' · '));
+        var value = document.querySelector('[data-alert-value="pending_asset_value"]');
+        if (value) alertValue(value, data.asset_value);
+        var table = document.getElementById('insight-pending-people'); table.replaceChildren();
+        data.people.forEach(function (person) {
+            var row = document.createElement('tr'), name = document.createElement('th'), link = document.createElement('a');
+            name.scope = 'row'; link.textContent = person.name; link.href = root.dataset.userUrl + '/' + encodeURIComponent(person.id); name.appendChild(link); row.appendChild(name);
+            [person.end_date || '–'].concat(['assets', 'accessories', 'licenses'].filter(function (key) { return data[key] !== null; }).map(function (key) { return numbers.format(person[key]); })).forEach(function (value) { var cell = document.createElement('td'); cell.textContent = value; row.appendChild(cell); });
+            table.appendChild(row);
+        });
+        if (!data.people.length) { var empty = table.insertRow().insertCell(); empty.colSpan = 5; empty.textContent = copy.chart_empty_offboarding; }
+    }
     function render(data) {
         payload = data;
+        pendingOffboarding(data.pending_offboarding);
         var start = new Date(data.start + 'T12:00:00'), end = new Date(data.end + 'T12:00:00');
         var dateFormat = new Intl.DateTimeFormat(locale, {day: 'numeric', month: 'short', year: 'numeric'});
         document.querySelectorAll('.insight-period').forEach(function (el) { el.textContent = interpolate(copy.chart_period, {start: dateFormat.format(start), end: dateFormat.format(end)}); });
         document.querySelectorAll('[data-insight-value]').forEach(function (el) { var key = el.dataset.insightValue; el.textContent = numbers.format(key === 'offboarding' ? data.offboarding : data.assets[key]); });
         if (!data.assets) return;
         var assets = data.assets;
+        ['due_value', 'warranty_value'].forEach(function (key) { var element = document.querySelector('[data-alert-value="' + key + '"]'); if (element) alertValue(element, assets[key]); });
         text('insights-overdue', interpolate(copy.chart_overdue, {count: numbers.format(assets.overdue)}));
         ['statuses', 'categories', 'locations'].forEach(function (key) { chart(key, assets[key], false); });
         var table = document.getElementById('insight-deployable-rows'); table.replaceChildren();
@@ -119,6 +155,7 @@
         text('insight-utilisation-value', decimals.format(utilisation) + '%');
         text('insight-utilisation-context', interpolate(copy.chart_checked_out, {deployed: numbers.format(assets.deployed), total: numbers.format(assets.total)}));
         var meter = document.getElementById('insight-utilisation-meter'); meter.value = utilisation;
+        document.querySelector('.utilisation-arc')?.style.setProperty('--utilisation', utilisation);
         var selector = document.getElementById('insight-currency'); selector.replaceChildren();
         assets.costs.totals.forEach(function (row) { var option = document.createElement('option'); option.value = row.currency; option.textContent = row.currency; selector.appendChild(option); });
         selector.disabled = !assets.costs.totals.length;

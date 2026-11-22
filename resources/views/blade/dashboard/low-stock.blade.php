@@ -1,20 +1,14 @@
-{{-- bs-table backed by /api/v1/low-stock which delegates to
-     Helper::checkLowInventory so this widget and the top-nav alert
-     bell can't drift. polymorphicItemFormatter handles the per-type
-     icon + drilldown link. The shared adjust-quantity button hangs
-     off each row's available_actions.adjust_quantity via the generic
-     actions column. LowStockController filters rows by per-type view
-     permission server-side, so a viewer only sees rows for the types
-     they can view. --}}
+{{-- Use the existing permission-filtered stock API and the site's configured
+     alert threshold. This dashboard table is read-only; item links open details. --}}
 @if (Gate::allows('view', \App\Models\Consumable::class)
      || Gate::allows('view', \App\Models\Accessory::class)
      || Gate::allows('view', \App\Models\Component::class)
      || Gate::allows('view', \App\Models\AssetModel::class)
      || Gate::allows('view', \App\Models\License::class))
-    <div class="box box-default">
+    <div class="box box-default dashboard-low-stock-panel">
             <div class="box-header with-border">
                 <h2 class="box-title">
-                    {{ trans('general.dashboard_low_stock') }}
+                    {{ trans('general.dashboard_low_stock') }} <span id="dashboard-low-stock-count" class="dashboard-stock-count" aria-live="polite">{{ trans('general.loading') }}</span>
                     {{-- Info icon: explains the formula the alert
                          uses (remaining < min + alert_threshold) so
                          the widget doesn't look arbitrary to someone
@@ -40,7 +34,9 @@
             <div class="box-body">
                 <table
                     data-cookie-id-table="dashLowStock"
-                    data-pagination="false"
+                    data-pagination="true"
+                    data-page-size="10"
+                    data-page-list="[10, 25, 50]"
                     data-side-pagination="server"
                     data-id-table="dashLowStock"
                     data-sticky-header="false"
@@ -54,15 +50,13 @@
                     data-empty-message="{{ trans('general.dashboard_low_stock_empty') }}"
                     id="dashLowStock"
                     class="table table-striped snipe-table snipe-table--sticky-right-1"
-                    data-url="{{ route('api.low-stock.index', ['limit' => 25]) }}">
+                    data-url="{{ route('api.low-stock.index', ['limit' => 10]) }}">
                     <thead>
                         <tr>
                             <th scope="col" data-field="item" data-formatter="polymorphicItemFormatter">{{ trans('general.name') }}</th>
                             <th scope="col" data-field="remaining" data-sortable="true" class="text-right">{{ trans('general.remaining') }}</th>
                             <th scope="col" data-field="min_amt" data-sortable="true" data-formatter="minAmtFormatter" class="text-right">{{ trans('general.min_amt') }}</th>
-                            <th scope="col" data-field="available_actions" data-formatter="lowStockActionsFormatter" class="hidden-print text-right">
-                                <span class="sr-only">{{ trans('table.actions') }}</span>
-                            </th>
+
                         </tr>
                     </thead>
                 </table>

@@ -298,9 +298,9 @@
             button.removeAttribute('data-tooltip');
             destination.append(holder);
         });
-        // Keep the primary action before the two secondary menus.
+        // Keep the primary action last in both visual and keyboard order.
         const create = controls.querySelector(':scope > [name="btnAdd"]');
-        if (create) controls.prepend(create);
+        if (create && controls.lastElementChild !== create) controls.append(create);
         [view, tools].forEach(details => { details.hidden = !details.querySelector('.table-control-panel').childElementCount; });
         const active = viewPanel.querySelectorAll('.btn-selected,[aria-pressed="true"]').length;
         let count = view.querySelector('summary .table-group-count');
